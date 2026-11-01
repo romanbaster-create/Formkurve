@@ -124,7 +124,7 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 
 /* Segmented */
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--fill);border-radius:9px;padding:2px;gap:2px}
-.seg button{height:30px;border-radius:7px;font-size:13px;font-weight:500;letter-spacing:-.08px;color:var(--label)}
+.seg button{min-height:30px;padding:0 4px;border-radius:7px;font-size:13px;font-weight:500;letter-spacing:-.08px;color:var(--label)}
 .seg button[aria-pressed="true"]{background:var(--card);box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);font-weight:600}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .seg button[aria-pressed="true"]{background:#636366} }
 :root[data-theme="dark"] .seg button[aria-pressed="true"]{background:#636366}
@@ -194,6 +194,14 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 .cell input{width:100%;height:44px;border-radius:10px;border:0;background:var(--fill);text-align:center;font-family:var(--font-round);font-size:19px;font-weight:600;outline:none;font-variant-numeric:tabular-nums;color:var(--label)}
 .cell input:focus{box-shadow:inset 0 0 0 2px var(--tint)}
 .cell input.hit{color:var(--green)}
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:-4px -6px 2px}
+.figs figure{margin:0;background:#FFFFFF;border-radius:10px;position:relative;overflow:hidden}
+.figs svg{display:block;width:100%;height:auto}
+.figs figcaption{position:absolute;left:8px;top:6px;font-size:11px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:.04em}
+.ex-t .mchip{display:inline-block;margin-top:0;padding:1px 7px;border-radius:9px;background:color-mix(in srgb,#D9533A 14%,transparent);color:#C2412B;font-weight:600;margin-right:2px}
+.plan-meta{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:12px 4px 0;font-size:13px;font-weight:600;color:var(--label2);letter-spacing:-.08px}
+.ex.cardio{margin-top:10px;background:color-mix(in srgb,var(--tint) 7%,var(--card))}
+.ex.cardio .ex-n{background:var(--tint);color:#fff}
 details.tech summary{list-style:none;font-size:13px;color:var(--tint);cursor:pointer}
 details.tech summary::-webkit-details-marker{display:none}
 details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4;letter-spacing:-.08px}
@@ -275,6 +283,324 @@ details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+/* Formkurve – Übungsillustrationen. Eigene Zeichnungen: Körper hellgrau, Zielmuskeln rot. */
+const FIG = (() => {
+  const D2R = Math.PI / 180;
+  const V = (a, l) => [Math.cos(a * D2R) * l, Math.sin(a * D2R) * l];
+  const add = (p, q) => [p[0] + q[0], p[1] + q[1]];
+  const f = n => n.toFixed(1);
+  const L = { neck: 6, torso: 50, head: 10, thigh: 44, shin: 42, foot: 17, ua: 29, fa: 25 };
+  const GROUND = 186;
+
+  const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="fk-skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D4D4D6"/></linearGradient>
+    <linearGradient id="fk-far" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9E9EB"/><stop offset="1" stop-color="#BDBDC2"/></linearGradient>
+    <linearGradient id="fk-mus" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F08A6E"/><stop offset=".55" stop-color="#D9533A"/><stop offset="1" stop-color="#A93424"/></linearGradient>
+    <linearGradient id="fk-plate" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A3A3C"/><stop offset="1" stop-color="#0E0E10"/></linearGradient>
+    <radialGradient id="fk-shadow"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs></svg>`;
+
+  // ---------- Grundformen ----------
+  function capsule(A, B, rA, rB) {
+    const dx = B[0] - A[0], dy = B[1] - A[1], len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    const a1 = [A[0] + nx * rA, A[1] + ny * rA], b1 = [B[0] + nx * rB, B[1] + ny * rB];
+    const b2 = [B[0] - nx * rB, B[1] - ny * rB], a2 = [A[0] - nx * rA, A[1] - ny * rA];
+    return `M${f(a1[0])} ${f(a1[1])}L${f(b1[0])} ${f(b1[1])}A${f(rB)} ${f(rB)} 0 0 1 ${f(b2[0])} ${f(b2[1])}L${f(a2[0])} ${f(a2[1])}A${f(rA)} ${f(rA)} 0 0 1 ${f(a1[0])} ${f(a1[1])}Z`;
+  }
+  const body = (d, far) => `<path d="${d}" fill="url(#fk-${far ? "far" : "skin"})" stroke="#9C9CA2" stroke-width=".9" stroke-linejoin="round"/>`;
+  const musPath = d => `<path d="${d}" fill="url(#fk-mus)" stroke="#8E2A1C" stroke-width=".6" stroke-linejoin="round"/>`;
+  // Muskelbauch auf einer Seite eines Segments (side +1 = vorne, -1 = hinten)
+  function belly(A, B, rA, rB, side, t0, t1, k = 1, normalSign = 1) {
+    const dx = B[0] - A[0], dy = B[1] - A[1], len = Math.hypot(dx, dy) || 1;
+    const nx = (dy / len) * normalSign * side, ny = (-dx / len) * normalSign * side;
+    const at = (t, w) => { const r = rA + (rB - rA) * t; return [A[0] + dx * t + nx * r * w, A[1] + dy * t + ny * r * w]; };
+    const p0 = at(t0, 0.25), p1 = at(t1, 0.25), c0 = at(t0 + (t1 - t0) * 0.25, 1.15 * k), c1 = at(t0 + (t1 - t0) * 0.75, 1.15 * k);
+    const q0 = at(t0 + (t1 - t0) * 0.7, -0.15), q1 = at(t0 + (t1 - t0) * 0.3, -0.15);
+    return musPath(`M${f(p0[0])} ${f(p0[1])}C${f(c0[0])} ${f(c0[1])} ${f(c1[0])} ${f(c1[1])} ${f(p1[0])} ${f(p1[1])}C${f(q0[0])} ${f(q0[1])} ${f(q1[0])} ${f(q1[1])} ${f(p0[0])} ${f(p0[1])}Z`);
+  }
+  const ell = (c, rx, ry, rot, fill, stroke = "#9C9CA2") => `<ellipse cx="${f(c[0])}" cy="${f(c[1])}" rx="${f(rx)}" ry="${f(ry)}" transform="rotate(${f(rot)} ${f(c[0])} ${f(c[1])})" fill="${fill}" stroke="${stroke}" stroke-width=".8"/>`;
+
+  // ---------- Geräte ----------
+  const EQ = {
+    plate: (p, r = 17) => `<circle cx="${f(p[0])}" cy="${f(p[1])}" r="${r}" fill="url(#fk-plate)"/><circle cx="${f(p[0])}" cy="${f(p[1])}" r="${f(r * .62)}" fill="none" stroke="#4A4A4E" stroke-width="1"/><circle cx="${f(p[0])}" cy="${f(p[1])}" r="${f(r * .22)}" fill="#8E8E93"/><circle cx="${f(p[0])}" cy="${f(p[1])}" r="${f(r * .09)}" fill="#3A3A3C"/>`,
+    db: (p) => `<rect x="${f(p[0] - 7)}" y="${f(p[1] - 7)}" width="14" height="14" rx="3" fill="url(#fk-plate)"/><circle cx="${f(p[0])}" cy="${f(p[1])}" r="2.6" fill="#8E8E93"/>`,
+    bar: (p) => `<circle cx="${f(p[0])}" cy="${f(p[1])}" r="2.6" fill="#6E6E73"/>`,
+    handle: (p) => `<rect x="${f(p[0] - 4)}" y="${f(p[1] - 2.2)}" width="8" height="4.4" rx="2" fill="#3A3A3C"/>`,
+    cable: (a, b) => `<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="#8E8E93" stroke-width="1.1"/><circle cx="${f(a[0])}" cy="${f(a[1])}" r="4" fill="#48484A"/><circle cx="${f(a[0])}" cy="${f(a[1])}" r="1.4" fill="#C7C7CC"/>`,
+    tower: (x, y0 = 6, y1 = GROUND) => `<rect x="${x - 4}" y="${y0}" width="8" height="${y1 - y0}" rx="2" fill="#E5E5EA" stroke="#C7C7CC"/>`,
+    pad: (x, y, w, h, rot = 0) => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" rx="3.5" fill="#2C2C2E" transform="rotate(${rot} ${f(x)} ${f(y)})"/>`,
+    leg: (x, y0, y1 = GROUND) => `<line x1="${f(x)}" y1="${f(y0)}" x2="${f(x)}" y2="${y1}" stroke="#636366" stroke-width="3" stroke-linecap="round"/>`,
+    roller: (p, r = 6) => `<circle cx="${f(p[0])}" cy="${f(p[1])}" r="${r}" fill="#2C2C2E"/><circle cx="${f(p[0])}" cy="${f(p[1])}" r="${f(r * .35)}" fill="#8E8E93"/>`,
+    box: (x, y, w, h) => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" rx="2" fill="#D1D1D6" stroke="#AEAEB2"/>`,
+    beam: (a, b, w = 4, c = "#636366") => `<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`
+  };
+
+  // ---------- Seitenansicht ----------
+  function side(pose, muscles) {
+    const P = Object.assign({ torso: -90, tilt: 0, legs: [{ th: 90, sh: 90 }, { th: 92, sh: 92 }], arms: [{ ua: 90, fa: 90 }, { ua: 92, fa: 92 }] }, pose);
+    const M = new Set(muscles);
+    let H = [0, 0];
+    const S = add(H, V(P.torso, L.torso));
+    const head = add(S, V(P.torso + P.tilt, L.neck + L.head));
+    const legs = P.legs.map(l => { const K = add(H, V(l.th, L.thigh)), A = add(K, V(l.sh, L.shin)); const fa = l.ft ?? (l.sh - 90); const T = add(A, V(fa, L.foot)); return { K, A, T }; });
+    const arms = P.arms.map(a => { const E = add(S, V(a.ua, L.ua)), W = add(E, V(a.fa, L.fa)); return { E, W }; });
+    // Anker
+    let off = [0, 0];
+    if (P.hip) off = P.hip;
+    else if (P.anchor) {
+      const [part, idx, at] = P.anchor;
+      const src = part === "ankle" ? legs[idx].A : part === "toe" ? legs[idx].T : part === "hand" ? arms[idx].W : part === "knee" ? legs[idx].K : part === "shoulder" ? S : H;
+      off = [at[0] - src[0], at[1] - src[1]];
+    }
+    const T = p => add(p, off);
+    const J = { H: T(H), S: T(S), head: T(head), legs: legs.map(l => ({ K: T(l.K), A: T(l.A), T: T(l.T) })), arms: arms.map(a => ({ E: T(a.E), W: T(a.W) })), torso: P.torso };
+    const eq = P.eq ? P.eq(J) : {};
+    let s = "";
+    if (P.shadow !== false) s += `<ellipse cx="${f((J.legs[0].A[0] + J.legs[1].A[0]) / 2)}" cy="${GROUND + 2}" rx="34" ry="4" fill="url(#fk-shadow)"/>`;
+    s += eq.back || "";
+    const leg = (i, far) => {
+      const l = J.legs[i]; let o = "";
+      o += body(capsule(l.K, l.A, 7.6, 4.6), far) + body(capsule(l.A, l.T, 4.6, 3.4), far);
+      if (M.has("calves")) o += belly(l.K, l.A, 7.6, 4.6, -1, 0.06, 0.55, 1.1);
+      o += body(capsule(J.H, l.K, 11, 7.6), far);
+      if (M.has("quads")) o += belly(J.H, l.K, 11, 7.6, 1, 0.12, 0.93);
+      if (M.has("hams")) o += belly(J.H, l.K, 11, 7.6, -1, 0.14, 0.9);
+      return o;
+    };
+    const arm = (i, far) => {
+      const a = J.arms[i]; let o = "";
+      o += body(capsule(a.E, a.W, 5, 3.6), far);
+      o += `<circle cx="${f(a.W[0])}" cy="${f(a.W[1])}" r="4.2" fill="url(#fk-${far ? "far" : "skin"})" stroke="#9C9CA2" stroke-width=".9"/>`;
+      o += body(capsule(J.S, a.E, 7, 5), far);
+      if (M.has("biceps")) o += belly(J.S, a.E, 7, 5, 1, 0.22, 0.92);
+      if (M.has("triceps")) o += belly(J.S, a.E, 7, 5, -1, 0.18, 0.92);
+      return o;
+    };
+    s += arm(1, true) + leg(1, true);
+    // Rumpf
+    const dir = V(P.torso, 1), back = [dir[1], -dir[0]]; // hinten
+    const post = (t, r) => add(add(J.H, V(P.torso, L.torso * t)), [back[0] * r, back[1] * r]);
+    // Gesäß
+    const gC = post(0.05, 8.5);
+    const ant = [-back[0], -back[1]];
+    const chestC = add(add(J.H, V(P.torso, L.torso * 0.74)), [ant[0] * 6, ant[1] * 6]);
+    s += body(capsule(J.H, J.S, 12.5, 14.5));
+    s += ell(gC, 12, 10.5, P.torso, "url(#fk-skin)");
+    s += ell(chestC, 12, 13, P.torso, "url(#fk-skin)");
+    s += body(capsule(J.S, J.head, 4.2, 4.2));
+    s += `<circle cx="${f(J.head[0])}" cy="${f(J.head[1])}" r="${L.head}" fill="url(#fk-skin)" stroke="#9C9CA2" stroke-width=".9"/>`;
+    const ns = -1; // Rumpf: vorne = gegen die Bein-Normale
+    if (M.has("glutes")) s += ell(gC, 11, 9.5, P.torso, "url(#fk-mus)", "#8E2A1C");
+    if (M.has("abs")) s += belly(J.H, J.S, 12.5, 14.5, 1, 0.14, 0.58, 0.95, ns);
+    if (M.has("chest")) s += ell(add(chestC, [ant[0] * 2, ant[1] * 2]), 10, 11, P.torso, "url(#fk-mus)", "#8E2A1C");
+    if (M.has("lats")) s += belly(J.H, J.S, 12.5, 14.5, -1, 0.4, 0.95, 1.1, ns);
+    if (M.has("lowback")) s += belly(J.H, J.S, 12.5, 14.5, -1, 0.16, 0.42, 0.85, ns);
+    if (M.has("traps")) s += belly(J.S, J.head, 9, 5, 1, 0.0, 0.5, 1, 1);
+    s += eq.mid || "";
+    s += leg(0, false) + arm(0, false);
+    // Schulterkappe
+    s += `<circle cx="${f(J.S[0])}" cy="${f(J.S[1])}" r="8.2" fill="${M.has("delts") ? "url(#fk-mus)" : "url(#fk-skin)"}" stroke="${M.has("delts") ? "#8E2A1C" : "#9C9CA2"}" stroke-width=".8"/>`;
+    if (M.has("reardelt")) s += ell(add(J.S, [back[0] * 3.5, back[1] * 3.5]), 4.5, 6.5, P.torso, "url(#fk-mus)", "#8E2A1C");
+    s += eq.front || "";
+    return s;
+  }
+
+  // ---------- Frontansicht ----------
+  function front(pose, muscles) {
+    const P = Object.assign({ cx: 100, hipY: 110, arm: 84, fa: 0, leg: 92, seated: false }, pose);
+    const M = new Set(muscles);
+    const cx = P.cx, hy = P.hipY, sy = hy - 50;
+    let s = `<ellipse cx="${cx}" cy="${GROUND + 2}" rx="40" ry="4" fill="url(#fk-shadow)"/>`;
+    s += P.eq ? (P.eq({ cx, hy, sy }).back || "") : "";
+    const sides = [-1, 1];
+    // Beine
+    sides.forEach(sd => {
+      const H = [cx + sd * 10, hy + 4];
+      const thLen = P.seated ? 20 : 44, ang = 90 - sd * (P.leg - 90);
+      const K = add(H, V(ang, thLen));
+      const A = P.seated ? [K[0], K[1] + 40] : add(K, V(90 - sd * (P.leg - 90) * 0.4, 42));
+      s += body(capsule(K, A, 6.4, 4.2)) + body(capsule(A, [A[0] + sd * 3, A[1] + 6], 4.2, 3.6));
+      s += body(capsule(H, K, 10, 7));
+      if (M.has("quads")) s += belly(H, K, 10, 7, sd, 0.15, 0.9, 0.8);
+      if (M.has("abductor")) s += ell([cx + sd * 19, hy + 2], 6, 10, sd * 12, "url(#fk-mus)", "#8E2A1C");
+    });
+    // Rumpf
+    s += `<path d="M${cx - 21} ${sy + 2}Q${cx - 24} ${sy + 22} ${cx - 15} ${hy - 6}L${cx - 19} ${hy + 10}Q${cx} ${hy + 18} ${cx + 19} ${hy + 10}L${cx + 15} ${hy - 6}Q${cx + 24} ${sy + 22} ${cx + 21} ${sy + 2}Q${cx} ${sy - 6} ${cx - 21} ${sy + 2}Z" fill="url(#fk-skin)" stroke="#9C9CA2" stroke-width=".9"/>`;
+    if (M.has("chest")) sides.forEach(sd => s += ell([cx + sd * 9, sy + 11], 9.5, 7, 0, "url(#fk-mus)", "#8E2A1C"));
+    if (M.has("abs")) s += `<rect x="${cx - 8}" y="${sy + 21}" width="16" height="${hy - sy - 22}" rx="6" fill="url(#fk-mus)" stroke="#8E2A1C" stroke-width=".6"/>`;
+    s += body(capsule([cx, sy], [cx, sy - 14], 4.5, 4.5));
+    s += `<circle cx="${cx}" cy="${sy - 22}" r="${L.head}" fill="url(#fk-skin)" stroke="#9C9CA2" stroke-width=".9"/>`;
+    // Arme
+    sides.forEach(sd => {
+      const S = [cx + sd * 22, sy + 4];
+      const ang = 90 - sd * (90 - P.arm);
+      const E = add(S, V(ang, L.ua)), W = add(E, V(90 - sd * (90 - P.arm) - sd * P.fa, L.fa));
+      s += body(capsule(E, W, 4.4, 3.3)) + `<circle cx="${f(W[0])}" cy="${f(W[1])}" r="4.2" fill="url(#fk-skin)" stroke="#9C9CA2" stroke-width=".9"/>`;
+      s += body(capsule(S, E, 6.2, 4.5));
+      s += `<circle cx="${f(S[0])}" cy="${f(S[1])}" r="7.6" fill="${M.has("delts") ? "url(#fk-mus)" : "url(#fk-skin)"}" stroke="${M.has("delts") ? "#8E2A1C" : "#9C9CA2"}" stroke-width=".8"/>`;
+      if (P.hold) s += P.hold(W, sd);
+    });
+    s += P.eq ? (P.eq({ cx, hy, sy }).front || "") : "";
+    return s;
+  }
+
+  // ---------- Übungen: je zwei Phasen ----------
+  const LIE = (y = 150) => ({ hip: [118, y] });
+  // Polster quer zu einem Segment auf der Vorder- (+1) oder Rückseite (-1)
+  function padAcross(A, B, t, side, dist, w = 22, h = 8) {
+    const dx = B[0] - A[0], dy = B[1] - A[1], len = Math.hypot(dx, dy);
+    const ux = dx / len, uy = dy / len, nx = uy * side, ny = -ux * side;
+    const c = [A[0] + dx * t + nx * dist, A[1] + dy * t + ny * dist];
+    const ang = Math.atan2(uy, ux) * 180 / Math.PI;
+    return { c, svg: `<rect x="${f(c[0] - w / 2)}" y="${f(c[1] - h / 2)}" width="${w}" height="${h}" rx="3.5" fill="#2C2C2E" transform="rotate(${f(ang)} ${f(c[0])} ${f(c[1])})"/>` };
+  }
+  function hyperEq(J) {
+    const l = J.legs[0];
+    const pad = padAcross(J.H, l.K, 0.22, 1, 15, 26, 9);
+    const roll = padAcross(l.K, l.A, 0.92, -1, 9, 14, 8);
+    const base = [pad.c[0] + 4, GROUND];
+    return { back: EQ.beam(pad.c, base, 4) + EQ.beam([base[0] - 70, GROUND], [base[0] + 6, GROUND], 4) + EQ.beam(roll.c, [roll.c[0], GROUND], 3) + pad.svg + roll.svg };
+  }
+  const seatBench = (J, w = 46) => EQ.pad(J.H[0] - 22, J.H[1] + 9, w, 7) + EQ.leg(J.H[0] - 12, J.H[1] + 16) + EQ.leg(J.H[0] + 16, J.H[1] + 16);
+  const X = {
+    // ---------- Oberkörper ----------
+    bench: { m: ["chest", "triceps", "delts"], p: [
+      { torso: 180, hip: [118, 126], legs: [{ th: 14, sh: 94 }, { th: 18, sh: 96 }], arms: [{ ua: -92, fa: -90 }, { ua: -94, fa: -92 }],
+        eq: J => ({ back: EQ.pad(46, 138, 96, 8) + EQ.leg(56, 146) + EQ.leg(132, 146), front: EQ.plate(J.arms[0].W) + EQ.bar(J.arms[0].W) }) },
+      { torso: 180, hip: [118, 126], legs: [{ th: 14, sh: 94 }, { th: 18, sh: 96 }], arms: [{ ua: 18, fa: -90 }, { ua: 20, fa: -92 }],
+        eq: J => ({ back: EQ.pad(46, 138, 96, 8) + EQ.leg(56, 146) + EQ.leg(132, 146), front: EQ.plate(J.arms[0].W) + EQ.bar(J.arms[0].W) }) }] },
+    incline: { m: ["chest", "delts", "triceps"], p: [
+      { torso: -148, hip: [120, 146], legs: [{ th: 20, sh: 100 }, { th: 24, sh: 102 }], arms: [{ ua: -95, fa: -92 }, { ua: -97, fa: -94 }],
+        eq: J => ({ back: EQ.beam([128, 158], [58, 114], 9, "#2C2C2E") + EQ.leg(76, 125) + EQ.leg(122, 158), front: EQ.db(J.arms[0].W) }) },
+      { torso: -148, hip: [120, 146], legs: [{ th: 20, sh: 100 }, { th: 24, sh: 102 }], arms: [{ ua: 40, fa: -92 }, { ua: 42, fa: -94 }],
+        eq: J => ({ back: EQ.beam([128, 158], [58, 114], 9, "#2C2C2E") + EQ.leg(76, 125) + EQ.leg(122, 158), front: EQ.db(J.arms[0].W) }) }] },
+    chestpress: { m: ["chest", "triceps", "delts"], p: [
+      { torso: -100, hip: [80, 132], legs: [{ th: 0, sh: 92 }, { th: 3, sh: 94 }], arms: [{ ua: 165, fa: 2 }, { ua: 167, fa: 4 }],
+        eq: J => ({ back: EQ.pad(56, 76, 9, 62) + EQ.pad(60, 141, 44, 8) + EQ.leg(80, 149) + EQ.tower(160), front: EQ.handle(J.arms[0].W) + EQ.beam(J.arms[0].W, [158, J.arms[0].W[1]], 2.5) }) },
+      { torso: -100, hip: [80, 132], legs: [{ th: 0, sh: 92 }, { th: 3, sh: 94 }], arms: [{ ua: 2, fa: 0 }, { ua: 4, fa: 2 }],
+        eq: J => ({ back: EQ.pad(56, 76, 9, 62) + EQ.pad(60, 141, 44, 8) + EQ.leg(80, 149) + EQ.tower(160), front: EQ.handle(J.arms[0].W) + EQ.beam(J.arms[0].W, [158, J.arms[0].W[1]], 2.5) }) }] },
+    pulldown: { m: ["lats", "biceps"], p: [
+      { torso: -98, hip: [92, 136], legs: [{ th: -2, sh: 92 }, { th: 2, sh: 94 }], arms: [{ ua: -84, fa: -86 }, { ua: -86, fa: -88 }],
+        eq: J => ({ back: EQ.pad(72, 145, 42, 8) + EQ.leg(92, 153) + EQ.pad(114, 118, 18, 7) + EQ.tower(160) + EQ.cable([156, 12], J.arms[0].W), front: EQ.beam([J.arms[0].W[0] - 14, J.arms[0].W[1] + 3], [J.arms[0].W[0] + 14, J.arms[0].W[1] - 3], 3) }) },
+      { torso: -104, hip: [92, 136], legs: [{ th: -2, sh: 92 }, { th: 2, sh: 94 }], arms: [{ ua: 112, fa: -62 }, { ua: 114, fa: -64 }],
+        eq: J => ({ back: EQ.pad(72, 145, 42, 8) + EQ.leg(92, 153) + EQ.pad(114, 118, 18, 7) + EQ.tower(160) + EQ.cable([156, 12], J.arms[0].W), front: EQ.beam([J.arms[0].W[0] - 14, J.arms[0].W[1] + 3], [J.arms[0].W[0] + 14, J.arms[0].W[1] - 3], 3) }) }] },
+    bbrow: { m: ["lats", "reardelt", "biceps"], p: [
+      { torso: -22, anchor: ["ankle", 0, [108, 180]], legs: [{ th: 78, sh: 100 }, { th: 80, sh: 102 }], arms: [{ ua: 88, fa: 90 }, { ua: 90, fa: 92 }],
+        eq: J => ({ mid: EQ.plate(J.arms[0].W) + EQ.bar(J.arms[0].W) }) },
+      { torso: -22, anchor: ["ankle", 0, [108, 180]], legs: [{ th: 78, sh: 100 }, { th: 80, sh: 102 }], arms: [{ ua: 160, fa: 70 }, { ua: 162, fa: 72 }],
+        eq: J => ({ mid: EQ.plate(J.arms[0].W) + EQ.bar(J.arms[0].W) }) }] },
+    cablerow: { m: ["lats", "reardelt", "biceps"], p: [
+      { torso: -86, hip: [76, 156], legs: [{ th: -8, sh: 10 }, { th: -6, sh: 12 }], arms: [{ ua: 2, fa: 0 }, { ua: 4, fa: 2 }],
+        eq: J => ({ back: EQ.pad(50, 165, 52, 8) + EQ.leg(60, 173) + EQ.leg(96, 173) + EQ.tower(170, 100) + EQ.pad(158, 158, 6, 26) + EQ.cable([166, 132], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) },
+      { torso: -98, hip: [76, 156], legs: [{ th: -8, sh: 10 }, { th: -6, sh: 12 }], arms: [{ ua: 168, fa: 4 }, { ua: 170, fa: 6 }],
+        eq: J => ({ back: EQ.pad(50, 165, 52, 8) + EQ.leg(60, 173) + EQ.leg(96, 173) + EQ.tower(170, 100) + EQ.pad(158, 158, 6, 26) + EQ.cable([166, 132], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) }] },
+    ohpress: { m: ["delts", "triceps"], p: [
+      { torso: -92, hip: [96, 140], legs: [{ th: 0, sh: 92 }, { th: 3, sh: 94 }], arms: [{ ua: 70, fa: -92 }, { ua: 72, fa: -94 }],
+        eq: J => ({ back: EQ.pad(76, 80, 9, 58) + seatBench(J), front: EQ.db(J.arms[0].W) }) },
+      { torso: -92, hip: [96, 140], legs: [{ th: 0, sh: 92 }, { th: 3, sh: 94 }], arms: [{ ua: -88, fa: -90 }, { ua: -90, fa: -92 }],
+        eq: J => ({ back: EQ.pad(76, 80, 9, 58) + seatBench(J), front: EQ.db(J.arms[0].W) }) }] },
+    machpress: { m: ["delts", "triceps"], p: [
+      { torso: -92, hip: [96, 140], legs: [{ th: 0, sh: 92 }, { th: 3, sh: 94 }], arms: [{ ua: 70, fa: -92 }, { ua: 72, fa: -94 }],
+        eq: J => ({ back: EQ.pad(76, 80, 9, 58) + seatBench(J) + EQ.tower(146, 10), front: EQ.handle(J.arms[0].W) + EQ.beam(J.arms[0].W, [142, J.arms[0].W[1]], 2.5) }) },
+      { torso: -92, hip: [96, 140], legs: [{ th: 0, sh: 92 }, { th: 3, sh: 94 }], arms: [{ ua: -86, fa: -88 }, { ua: -88, fa: -90 }],
+        eq: J => ({ back: EQ.pad(76, 80, 9, 58) + seatBench(J) + EQ.tower(146, 10), front: EQ.handle(J.arms[0].W) + EQ.beam(J.arms[0].W, [142, J.arms[0].W[1]], 2.5) }) }] },
+    lateral: { view: "front", m: ["delts"], p: [
+      { arm: 86, fa: 0, hold: W => EQ.db(W) }, { arm: 4, fa: 0, hold: W => EQ.db(W) }] },
+    lateralcable: { view: "front", m: ["delts"], p: [
+      { arm: 84, fa: 0, hold: (W, sd) => sd < 0 ? "" : EQ.handle(W) + EQ.cable([168, 182], W), }, { arm: 6, fa: 0, hold: (W, sd) => sd < 0 ? "" : EQ.handle(W) + EQ.cable([168, 182], W) }] },
+    facepull: { m: ["reardelt", "traps"], p: [
+      { torso: -92, anchor: ["ankle", 0, [86, 180]], arms: [{ ua: -22, fa: -18 }, { ua: -20, fa: -16 }],
+        eq: J => ({ back: EQ.tower(168) + EQ.cable([164, 46], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) },
+      { torso: -94, anchor: ["ankle", 0, [86, 180]], arms: [{ ua: 182, fa: -48 }, { ua: 184, fa: -50 }],
+        eq: J => ({ back: EQ.tower(168) + EQ.cable([164, 46], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) }] },
+    curl: { m: ["biceps"], p: [
+      { anchor: ["ankle", 0, [100, 180]], arms: [{ ua: 88, fa: 90 }, { ua: 90, fa: 92 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) },
+      { anchor: ["ankle", 0, [100, 180]], arms: [{ ua: 84, fa: -58 }, { ua: 86, fa: -56 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) }] },
+    pushdown: { m: ["triceps"], p: [
+      { torso: -84, anchor: ["ankle", 0, [88, 180]], arms: [{ ua: 96, fa: -48 }, { ua: 98, fa: -46 }], eq: J => ({ back: EQ.tower(160) + EQ.cable([156, 22], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) },
+      { torso: -84, anchor: ["ankle", 0, [88, 180]], arms: [{ ua: 96, fa: 92 }, { ua: 98, fa: 94 }], eq: J => ({ back: EQ.tower(160) + EQ.cable([156, 22], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) }] },
+    ohtri: { m: ["triceps"], p: [
+      { anchor: ["ankle", 0, [100, 180]], arms: [{ ua: -98, fa: 96 }, { ua: -100, fa: 94 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) },
+      { anchor: ["ankle", 0, [100, 180]], arms: [{ ua: -96, fa: -94 }, { ua: -98, fa: -96 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) }] },
+    // ---------- Unterkörper ----------
+    squat: { m: ["quads", "glutes"], p: [
+      { torso: -88, anchor: ["ankle", 0, [100, 180]], legs: [{ th: 88, sh: 92 }, { th: 90, sh: 94 }], arms: [{ ua: 128, fa: -60 }, { ua: 130, fa: -62 }], eq: J => ({ mid: EQ.plate([J.S[0] - 4, J.S[1] - 3]) + EQ.bar([J.S[0] - 4, J.S[1] - 3]) }) },
+      { torso: -48, anchor: ["ankle", 0, [100, 180]], legs: [{ th: 14, sh: 112 }, { th: 16, sh: 114 }], arms: [{ ua: 168, fa: -50 }, { ua: 170, fa: -52 }], eq: J => ({ mid: EQ.plate([J.S[0] - 3, J.S[1] - 4]) + EQ.bar([J.S[0] - 3, J.S[1] - 4]) }) }] },
+    goblet: { m: ["quads", "glutes"], p: [
+      { torso: -88, anchor: ["ankle", 0, [104, 180]], legs: [{ th: 88, sh: 92 }, { th: 90, sh: 94 }], arms: [{ ua: 70, fa: -105 }, { ua: 72, fa: -103 }], eq: J => ({ back: EQ.box(46, 138, 34, 48), front: EQ.db(J.arms[0].W) }) },
+      { torso: -58, anchor: ["ankle", 0, [104, 180]], legs: [{ th: 10, sh: 108 }, { th: 12, sh: 110 }], arms: [{ ua: 58, fa: -112 }, { ua: 60, fa: -110 }], eq: J => ({ back: EQ.box(46, 138, 34, 48), front: EQ.db(J.arms[0].W) }) }] },
+    rdl: { m: ["hams", "glutes", "lowback"], p: [
+      { torso: -86, anchor: ["ankle", 0, [100, 180]], legs: [{ th: 88, sh: 92 }, { th: 90, sh: 94 }], arms: [{ ua: 94, fa: 92 }, { ua: 96, fa: 94 }], eq: J => ({ mid: EQ.plate(J.arms[0].W) + EQ.bar(J.arms[0].W) }) },
+      { torso: -12, anchor: ["ankle", 0, [100, 180]], legs: [{ th: 74, sh: 96 }, { th: 76, sh: 98 }], arms: [{ ua: 88, fa: 90 }, { ua: 90, fa: 92 }], eq: J => ({ mid: EQ.plate(J.arms[0].W) + EQ.bar(J.arms[0].W) }) }] },
+    rdldb: { m: ["hams", "glutes", "lowback"], p: [
+      { torso: -86, anchor: ["ankle", 0, [100, 180]], legs: [{ th: 88, sh: 92 }, { th: 90, sh: 94 }], arms: [{ ua: 94, fa: 92 }, { ua: 96, fa: 94 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) },
+      { torso: -14, anchor: ["ankle", 0, [100, 180]], legs: [{ th: 74, sh: 96 }, { th: 76, sh: 98 }], arms: [{ ua: 88, fa: 90 }, { ua: 90, fa: 92 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) }] },
+    split: { m: ["quads", "glutes"], p: [
+      { torso: -86, anchor: ["ankle", 0, [118, 180]], legs: [{ th: 86, sh: 96 }, { th: 118, sh: 166, ft: 190 }], arms: [{ ua: 92, fa: 90 }, { ua: 94, fa: 92 }], eq: J => ({ back: EQ.pad(18, J.legs[1].T[1] + 3, 40, 9) + EQ.leg(28, J.legs[1].T[1] + 12) + EQ.leg(48, J.legs[1].T[1] + 12), front: EQ.db(J.arms[0].W) }) },
+      { torso: -80, anchor: ["ankle", 0, [118, 180]], legs: [{ th: 22, sh: 104 }, { th: 102, sh: 176, ft: 196 }], arms: [{ ua: 90, fa: 90 }, { ua: 92, fa: 92 }], eq: J => ({ back: EQ.pad(18, J.legs[1].T[1] + 3, 40, 9) + EQ.leg(28, J.legs[1].T[1] + 12) + EQ.leg(48, J.legs[1].T[1] + 12), front: EQ.db(J.arms[0].W) }) }] },
+    lunge: { m: ["glutes", "quads"], p: [
+      { torso: -88, anchor: ["ankle", 0, [112, 180]], legs: [{ th: 88, sh: 92 }, { th: 92, sh: 94 }], arms: [{ ua: 92, fa: 90 }, { ua: 94, fa: 92 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) },
+      { torso: -82, anchor: ["ankle", 0, [128, 180]], legs: [{ th: 20, sh: 100 }, { th: 110, sh: 178, ft: 140 }], arms: [{ ua: 92, fa: 90 }, { ua: 94, fa: 92 }], eq: J => ({ front: EQ.db(J.arms[0].W) }) }] },
+    legcurl: { m: ["hams"], p: [
+      { torso: 0, hip: [100, 120], tilt: 20, legs: [{ th: 180, sh: 180 }, { th: 182, sh: 182 }], arms: [{ ua: 70, fa: 10 }, { ua: 72, fa: 12 }],
+        eq: J => ({ back: EQ.pad(30, 130, 132, 8) + EQ.leg(60, 138) + EQ.leg(140, 138), front: EQ.roller([J.legs[0].A[0] + 2, J.legs[0].A[1] - 9]) }) },
+      { torso: 0, hip: [100, 120], tilt: 20, legs: [{ th: 182, sh: -95 }, { th: 184, sh: -93 }], arms: [{ ua: 70, fa: 10 }, { ua: 72, fa: 12 }],
+        eq: J => ({ back: EQ.pad(30, 130, 132, 8) + EQ.leg(60, 138) + EQ.leg(140, 138), front: EQ.roller([J.legs[0].A[0] + 9, J.legs[0].A[1] + 2]) }) }] },
+    seatcurl: { m: ["hams"], p: [
+      { torso: -100, hip: [84, 130], legs: [{ th: 0, sh: 4 }, { th: 2, sh: 6 }], arms: [{ ua: 80, fa: 30 }, { ua: 82, fa: 32 }],
+        eq: J => ({ back: EQ.pad(60, 74, 9, 62) + EQ.pad(62, 139, 44, 8) + EQ.leg(84, 147), front: EQ.pad(J.legs[0].K[0] - 8, J.legs[0].K[1] - 15, 16, 6) + EQ.roller([J.legs[0].A[0] - 2, J.legs[0].A[1] + 9]) }) },
+      { torso: -100, hip: [84, 130], legs: [{ th: 0, sh: 118 }, { th: 2, sh: 120 }], arms: [{ ua: 80, fa: 30 }, { ua: 82, fa: 32 }],
+        eq: J => ({ back: EQ.pad(60, 74, 9, 62) + EQ.pad(62, 139, 44, 8) + EQ.leg(84, 147), front: EQ.pad(J.legs[0].K[0] - 8, J.legs[0].K[1] - 15, 16, 6) + EQ.roller([J.legs[0].A[0] - 9, J.legs[0].A[1] - 2]) }) }] },
+    calf: { m: ["calves"], p: [
+      { anchor: ["toe", 0, [118, 172]], legs: [{ th: 90, sh: 90, ft: -8 }, { th: 92, sh: 92, ft: -6 }], arms: [{ ua: 92, fa: 90 }, { ua: 94, fa: 92 }], eq: J => ({ back: EQ.box(96, 174, 50, 12), front: EQ.db(J.arms[0].W) }) },
+      { anchor: ["toe", 0, [118, 172]], legs: [{ th: 90, sh: 90, ft: 42 }, { th: 92, sh: 92, ft: 44 }], arms: [{ ua: 92, fa: 90 }, { ua: 94, fa: 92 }], eq: J => ({ back: EQ.box(96, 174, 50, 12), front: EQ.db(J.arms[0].W) }) }] },
+    legraise: { m: ["abs"], shadow: false, p: [
+      { anchor: ["hand", 0, [100, 16]], arms: [{ ua: -88, fa: -90 }, { ua: -90, fa: -92 }], legs: [{ th: 92, sh: 92 }, { th: 94, sh: 94 }], shadow: false, eq: () => ({ back: EQ.beam([40, 16], [160, 16], 4) }) },
+      { anchor: ["hand", 0, [100, 16]], arms: [{ ua: -86, fa: -90 }, { ua: -88, fa: -92 }], legs: [{ th: -4, sh: 90 }, { th: -2, sh: 92 }], shadow: false, eq: () => ({ back: EQ.beam([40, 16], [160, 16], 4) }) }] },
+    pallof: { m: ["abs"], p: [
+      { torso: -90, anchor: ["ankle", 0, [96, 180]], legs: [{ th: 86, sh: 94 }, { th: 94, sh: 96 }], arms: [{ ua: 110, fa: -20 }, { ua: 112, fa: -18 }], eq: J => ({ back: EQ.tower(26) + EQ.cable([30, 92], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) },
+      { torso: -90, anchor: ["ankle", 0, [96, 180]], legs: [{ th: 86, sh: 94 }, { th: 94, sh: 96 }], arms: [{ ua: 4, fa: 0 }, { ua: 6, fa: 2 }], eq: J => ({ back: EQ.tower(26) + EQ.cable([30, 92], J.arms[0].W), front: EQ.handle(J.arms[0].W) }) }] },
+    cablecrunch: { m: ["abs"], p: [
+      { torso: -80, hip: [92, 136], legs: [{ th: 90, sh: 180, ft: 90 }, { th: 92, sh: 182, ft: 92 }], arms: [{ ua: -62, fa: 150 }, { ua: -60, fa: 152 }], eq: J => ({ back: EQ.tower(160) + EQ.cable([156, 16], J.arms[0].W) }) },
+      { torso: -18, hip: [92, 136], tilt: 40, legs: [{ th: 90, sh: 180, ft: 90 }, { th: 92, sh: 182, ft: 92 }], arms: [{ ua: 70, fa: -60 }, { ua: 72, fa: -58 }], eq: J => ({ back: EQ.tower(160) + EQ.cable([156, 16], J.arms[0].W) }) }] },
+    hipthrust: { m: ["glutes", "hams"], p: [
+      { torso: -146, hip: [96, 166], legs: [{ th: -24, sh: 98 }, { th: -22, sh: 100 }], arms: [{ ua: 40, fa: -30 }, { ua: 42, fa: -28 }], tilt: -20,
+        eq: J => ({ back: EQ.pad(14, 132, 52, 12) + EQ.leg(26, 144) + EQ.leg(56, 144), front: EQ.plate([J.H[0] + 2, J.H[1] - 16]) + EQ.bar([J.H[0] + 2, J.H[1] - 16]) }) },
+      { torso: 178, hip: [108, 128], legs: [{ th: 2, sh: 92 }, { th: 4, sh: 94 }], arms: [{ ua: 40, fa: -40 }, { ua: 42, fa: -38 }], tilt: -40,
+        eq: J => ({ back: EQ.pad(14, 132, 52, 12) + EQ.leg(26, 144) + EQ.leg(56, 144), front: EQ.plate([J.H[0] + 2, J.H[1] - 16]) + EQ.bar([J.H[0] + 2, J.H[1] - 16]) }) }] },
+    legpress: { m: ["quads", "glutes"], p: [
+      { torso: -160, hip: [100, 150], legs: [{ th: -78, sh: 18 }, { th: -76, sh: 20 }], arms: [{ ua: 40, fa: 10 }, { ua: 42, fa: 12 }],
+        eq: J => ({ back: EQ.beam([108, 162], [40, 140], 10, "#2C2C2E") + EQ.beam([96, 170], [188, 56], 3, "#AEAEB2") + EQ.pad(J.legs[0].T[0] - 2, J.legs[0].T[1] - 18, 8, 34, -45) }) },
+      { torso: -160, hip: [100, 150], legs: [{ th: -44, sh: -42 }, { th: -42, sh: -40 }], arms: [{ ua: 40, fa: 10 }, { ua: 42, fa: 12 }],
+        eq: J => ({ back: EQ.beam([108, 162], [40, 140], 10, "#2C2C2E") + EQ.beam([96, 170], [188, 56], 3, "#AEAEB2") + EQ.pad(J.legs[0].T[0] - 2, J.legs[0].T[1] - 18, 8, 34, -45) }) }] },
+    kickback: { m: ["glutes"], p: [
+      { torso: -70, anchor: ["ankle", 1, [96, 180]], legs: [{ th: 96, sh: 96 }, { th: 92, sh: 92 }], arms: [{ ua: 20, fa: -10 }, { ua: 22, fa: -8 }],
+        eq: J => ({ back: EQ.tower(164) + EQ.beam([160, J.arms[0].W[1]], J.arms[0].W, 3) + EQ.cable([160, 176], J.legs[0].A) }) },
+      { torso: -64, anchor: ["ankle", 1, [96, 180]], legs: [{ th: 140, sh: 150 }, { th: 92, sh: 92 }], arms: [{ ua: 24, fa: -8 }, { ua: 26, fa: -6 }],
+        eq: J => ({ back: EQ.tower(164) + EQ.beam([160, J.arms[0].W[1]], J.arms[0].W, 3) + EQ.cable([160, 176], J.legs[0].A) }) }] },
+    hyper: { m: ["glutes", "hams", "lowback"], p: [
+      { torso: 78, hip: [100, 96], legs: [{ th: 138, sh: 138 }, { th: 140, sh: 140 }], arms: [{ ua: 70, fa: 20 }, { ua: 72, fa: 22 }], tilt: 6,
+        eq: J => hyperEq(J) },
+      { torso: -42, hip: [100, 96], legs: [{ th: 138, sh: 138 }, { th: 140, sh: 140 }], arms: [{ ua: 100, fa: -20 }, { ua: 102, fa: -18 }],
+        eq: J => hyperEq(J) }] },
+    abductor: { view: "front", m: ["abductor", "glutes"], p: [
+      { seated: true, hipY: 108, leg: 92, arm: 80, fa: 4, eq: () => ({ back: EQ.pad(64, 116, 72, 9) + EQ.leg(76, 125) + EQ.leg(124, 125), front: EQ.pad(70, 118, 7, 22) + EQ.pad(123, 118, 7, 22) }) },
+      { seated: true, hipY: 108, leg: 118, arm: 80, fa: 4, eq: () => ({ back: EQ.pad(64, 116, 72, 9) + EQ.leg(76, 125) + EQ.leg(124, 125), front: EQ.pad(58, 120, 7, 22) + EQ.pad(135, 120, 7, 22) }) }] },
+  };
+
+  function render(key, phase, label) {
+    const x = X[key]; if (!x) return "";
+    const pose = x.p[phase], muscles = x.m;
+    const inner = x.view === "front" ? front(pose, muscles) : side(Object.assign({ shadow: x.shadow }, pose), muscles);
+    return `<svg viewBox="0 0 200 200" role="img" aria-label="${label || ""}"><line x1="8" y1="${GROUND + 1}" x2="192" y2="${GROUND + 1}" stroke="#E5E5EA" stroke-width="1"/>${inner}</svg>`;
+  }
+  return { DEFS, render, keys: Object.keys(X) };
+})();
+
+document.body.insertAdjacentHTML("afterbegin", FIG.DEFS);
+</script>
+<script>
 (() => {
 "use strict";
 
@@ -283,56 +609,76 @@ const DEFAULTS = { startDate:"2026-11-02", vacFrom:"2027-08-02", vacTo:"2027-08-
 const PEOPLE = {
   m:{ sex:"m", label:"Plan M · Kraft + Kampfsport", cm:175, kg:90, goal:75, kcal:{Einstieg:2000, Defizit:1850, Erhaltung:2350, Urlaub:2350}, kcalMin:1600,
           protein:165, steps0:4500, stepsEnd:8500, stepInc:150, wp0:60, wpEnd:150, wpInc:10, kraft:2, sport:2, sleep:7,
-          rates:[0.005,0.007,0.0085], sportLabel:"MMA", extra:{k:"travel", label:"Reisetag", type:"switch"}, days:{A:6,B:0} },
+          rates:[0.005,0.007,0.0085], sportLabel:"MMA", extra:{k:"travel", label:"Reisetag", type:"switch"}, days:{A:6,B:0,C:1} },
   w:{ sex:"w", label:"Plan W · Kraft an Geräten", cm:165, kg:80, goal:65, kcal:{Einstieg:1800, Defizit:1600, Erhaltung:1950, Urlaub:1950}, kcalMin:1400,
           protein:125, steps0:6000, stepsEnd:9000, stepInc:125, wp0:60, wpEnd:150, wpInc:10, kraft:2, sport:0, sleep:7,
-          rates:[0.0035,0.005,0.0065], sportLabel:"Zusatzsport", extra:{k:"cycle", label:"Zyklustag", type:"num"}, days:{A:6,B:3} }
+          rates:[0.0035,0.005,0.0065], sportLabel:"Zusatzsport", extra:{k:"cycle", label:"Zyklustag", type:"num"}, days:{A:6,B:3,C:0} }
 };
 const MAINT = new Set([8,9,21,22,33,34,43]);
 const DELOAD = new Set([9,22,34,52]);
 // [Name (identisch mit Excel), Sätze, Wdh min, Wdh max, Reserve, Pause s, +kg, Finisher, Technik, Einheit-Hinweis]
+// [Name (identisch mit Excel), Sätze, Wdh min, Wdh max, Reserve, Pause s, +kg, Supersatz, Technik, Wdh-Hinweis, Bild, Muskel]
 const EX = {
   m:{
-    A:[["Kniebeuge Langhantel",3,6,8,"2–3",150,2.5,0,"Tiefe nur so weit, wie der Rücken neutral bleibt. Knie folgen den Fußspitzen. Bei Problemen: Beinpresse."],
-       ["Bankdrücken Langhantel",3,6,8,"2–3",120,2.5,0,"Schulterblätter zusammen und unten, Füße fest. Ellbogen etwa 45° zum Körper."],
-       ["Klimmzug assistiert / Latzug",3,8,10,"2–3",90,2.5,0,"Brust raus, Ellbogen zur Hüfte ziehen. Weniger Assistenz = Fortschritt."],
-       ["Rumänisches Kreuzheben",3,8,10,"3",120,5,0,"Hüfte nach hinten, Rücken neutral, Stange am Bein. Bis knapp unter das Knie."],
-       ["Schulterdrücken Kurzhantel",2,8,10,"2–3",90,2,0,"Rumpf fest, kein Hohlkreuz. Gewicht je Hand."],
-       ["Pallof Press",2,10,12,"–",60,2.5,0,"Anti-Rotation, Becken ruhig. Direkt übertragbar auf Clinch und Rumpfstabilität.","je Seite"],
-       ["Seitheben Kurzhantel (Finisher)",2,12,20,"1–2",0,1,1,"Supersatz mit Bizepscurl, 60 s Pause nach dem Paar. Breite Schultern formen die Silhouette."],
-       ["Bizepscurl (Finisher)",2,10,15,"1–2",60,1,1,"Ellbogen ruhig, kein Schwung."]],
-    B:[["Trap-Bar-Kreuzheben",3,5,6,"2–3",150,5,0,"Schwerste Hüftstreckung der Woche. Rücken neutral, aus den Beinen drücken."],
-       ["Schrägbankdrücken Kurzhantel",3,8,10,"2–3",90,2,0,"Lehne 30°, nicht steiler. Gewicht je Hand."],
-       ["Langhantelrudern vorgebeugt",3,8,10,"2–3",90,2.5,0,"Oberkörper stabil, kein Wippen, Zug zum Bauchnabel."],
-       ["Bulgarian Split Squat",2,8,10,"3",90,2,0,"Einbeinig, MMA-relevant. Start mit Körpergewicht (0 kg).","je Bein"],
-       ["Beinbeuger liegend",2,10,12,"2",60,2.5,0,"Langsam ablassen, 3 Sekunden."],
-       ["Farmers Walk",2,30,40,"–",60,2,0,"Aufrecht, Schultern hinten. Wiederholungen = Meter, Gewicht je Hand.","Meter"],
-       ["Face Pull (Finisher)",2,12,15,"1–2",0,2.5,1,"Supersatz mit Trizepsdrücken. Hintere Schulter und Haltung."],
-       ["Trizepsdrücken Kabel (Finisher)",2,10,15,"1–2",60,2.5,1,"Ellbogen am Körper."]]
+    A:[["Bankdrücken Langhantel",3,6,8,"2–3",150,2.5,0,"Schulterblätter zusammen und unten, Füße fest am Boden. Stange zur unteren Brust, Ellbogen etwa 45° zum Körper.","","bench","Brust"],
+       ["Klimmzug assistiert / Latzug",3,8,10,"2",120,2.5,0,"Brust raus, Ellbogen zur Hüfte ziehen, nicht in den Nacken. Weniger Assistenz = Fortschritt.","","pulldown","Rücken"],
+       ["Schrägbankdrücken Kurzhantel",3,8,10,"2",90,2,0,"Lehne auf 30°, nicht steiler. Hanteln kontrolliert bis auf Brusthöhe. Gewicht je Hand.","","incline","Brust"],
+       ["Langhantelrudern vorgebeugt",3,8,10,"2",90,2.5,0,"Oberkörper ca. 45° vorgebeugt, Rücken neutral. Zug zum Bauchnabel, kein Schwung.","","bbrow","Rücken"],
+       ["Seitheben Kurzhantel",3,12,20,"1–2",60,1,0,"Leicht vorgebeugt, Ellbogen minimal gebeugt, bis Schulterhöhe. Breite Schultern machen die Silhouette.","","lateral","Schulter"],
+       ["Bizepscurl (Supersatz)",2,10,15,"1–2",0,1,1,"Direkt danach Trizepsdrücken. Ellbogen ruhig am Körper.","","curl","Bizeps"],
+       ["Trizepsdrücken Kabel (Supersatz)",2,10,15,"1–2",60,2.5,1,"Ellbogen fixiert, nur der Unterarm bewegt sich. Unten kurz durchdrücken.","","pushdown","Trizeps"]],
+    B:[["Kniebeuge Langhantel",3,6,8,"2–3",150,2.5,0,"Tiefe nur so weit, wie der Rücken neutral bleibt. Knie folgen den Fußspitzen.","","squat","Beine vorne · Gesäß"],
+       ["Rumänisches Kreuzheben",3,8,10,"2–3",120,5,0,"Hüfte nach hinten, Rücken neutral, Stange am Bein entlang bis knapp unter das Knie.","","rdl","Beinbeuger · Gesäß"],
+       ["Bulgarian Split Squat",2,8,10,"2",90,2,0,"Hinterer Fuß auf der Bank. Senkrecht nach unten, vorderes Knie über dem Fuß.","je Bein","split","Beine vorne · Gesäß"],
+       ["Beinbeuger liegend",2,10,12,"1–2",60,2.5,0,"Hüfte bleibt auf dem Polster. 3 Sekunden ablassen.","","legcurl","Beinbeuger"],
+       ["Wadenheben stehend",2,12,15,"1–2",60,2.5,0,"Ganz tief in die Dehnung, oben 1 Sekunde halten.","","calf","Waden"],
+       ["Hängendes Beinheben",2,8,12,"2",60,0,0,"Ohne Schwung, Becken einrollen. Zu schwer: Knie anziehen.","","legraise","Bauch"]],
+    C:[["Schulterdrücken Kurzhantel",3,8,10,"2",120,2,0,"Sitzend, Rumpf fest, kein Hohlkreuz. Gewicht je Hand.","","ohpress","Schulter"],
+       ["Latzug eng",3,8,10,"2",90,2.5,0,"Enger Griff, Ellbogen nah am Körper zur Hüfte ziehen.","","pulldown","Rücken"],
+       ["Brustpresse Maschine",3,8,12,"1–2",90,2.5,0,"Griffe auf Brusthöhe, Schulterblätter angelegt. Kontrolliert zurück.","","chestpress","Brust"],
+       ["Kabelrudern eng",3,10,12,"2",90,2.5,0,"Oberkörper aufrecht, Zug zum Bauchnabel, kein Wippen.","","cablerow","Rücken"],
+       ["Face Pull",2,12,15,"1–2",60,2.5,0,"Seil auf Augenhöhe zum Gesicht, Ellbogen hoch. Hintere Schulter und Haltung.","","facepull","Hintere Schulter"],
+       ["Hammercurl (Supersatz)",2,10,15,"1–2",0,1,1,"Daumen oben, Ellbogen ruhig. Direkt danach Trizeps.","","curl","Bizeps"],
+       ["Trizepsdrücken über Kopf (Supersatz)",2,10,15,"1–2",60,1,1,"Ellbogen zeigen nach oben, nur der Unterarm bewegt sich.","","ohtri","Trizeps"]]
   },
   w:{
-    A:[["Beinpresse",3,10,12,"3",120,5,0,"Füße schulterbreit mittig. Knie nur so weit beugen, wie es schmerzfrei bleibt. Rücken an der Lehne."],
-       ["Latzug breit",3,10,12,"3",90,2.5,0,"Brust raus, Ellbogen nach unten ziehen. Nicht in den Nacken."],
-       ["Brustpresse Maschine",3,10,12,"3",90,2.5,0,"Schulterblätter angelegt. Ausatmen beim Drücken – keine Pressatmung."],
-       ["Hip Thrust",3,10,12,"3",90,5,0,"Kinn zur Brust, Kraft aus dem Gesäß. Oben 1 Sekunde halten."],
-       ["Beinbeuger sitzend",2,12,15,"3",60,2.5,0,"3 Sekunden ablassen. Knieschonender als der Beinstrecker."],
-       ["Pallof Press Kabel",2,10,12,"–",60,2.5,0,"Rumpf gegen Rotation stabilisieren, Becken ruhig.","je Seite"],
-       ["Seitheben Kabel (Finisher)",2,12,20,"1–2",0,1,1,"Supersatz mit Trizepsdrücken. Schultern lassen die Taille schmaler wirken."],
-       ["Trizepsdrücken (Finisher)",2,12,15,"1–2",60,2.5,1,"Ellbogen am Körper, ausatmen beim Drücken."]],
-    B:[["Goblet Squat auf Box",3,8,10,"3",120,2,0,"Kurzhantel vor der Brust, kontrolliert auf die Box setzen. Box später tiefer."],
-       ["Kabelrudern eng",3,10,12,"3",90,2.5,0,"Zug zum Bauchnabel, Oberkörper aufrecht, kein Wippen."],
-       ["Schulterpresse Maschine",3,10,12,"3",90,2.5,0,"Nicht über Kopf durchstrecken. Ausatmen beim Drücken."],
-       ["Rumänisches Kreuzheben KH",3,10,12,"4",90,2,0,"Hanteln dicht am Bein, Rücken gerade. Start 2 × 5 kg. Bei Rückenschmerz: Rückenstrecker-Maschine."],
-       ["Face Pull",2,12,15,"3",60,2.5,0,"Gegen den Schreibtisch-Rundrücken. Ellbogen hoch."],
-       ["Farmers Walk KH",2,20,30,"–",60,2,0,"Aufrecht gehen. Wiederholungen = Meter, Gewicht je Hand.","Meter"],
-       ["Abduktoren-Maschine (Finisher)",2,15,20,"1–2",0,5,1,"Supersatz mit Bizepscurl. Seitliches Gesäß, stabilisiert Becken und Knie."],
-       ["Bizepscurl (Finisher)",2,12,15,"1–2",60,1,1,"Ellbogen ruhig, kein Schwung."]]
+    A:[["Hip Thrust",3,8,12,"2",120,5,0,"Oberer Rücken auf der Bank, Kinn zur Brust. Kraft aus dem Gesäß, oben 1 Sekunde halten.","","hipthrust","Gesäß"],
+       ["Beinpresse",3,10,12,"2–3",120,5,0,"Füße schulterbreit, etwas höher auf der Platte – das trifft mehr Gesäß. Knie nur so weit beugen, wie es schmerzfrei ist.","","legpress","Beine vorne"],
+       ["Rumänisches Kreuzheben KH",3,10,12,"3",90,2,0,"Hanteln dicht am Bein, Rücken gerade, bis knapp unter das Knie. Bei Rückenschmerz leichter.","","rdldb","Beinbeuger · Gesäß"],
+       ["Abduktoren-Maschine",3,15,20,"1–2",60,5,0,"Oberkörper leicht nach vorn, Knie kontrolliert nach außen. Formt das seitliche Gesäß.","","abductor","Seitliches Gesäß"],
+       ["Beinbeuger sitzend",2,12,15,"1–2",60,2.5,0,"3 Sekunden zurück. Knieschonender als der Beinstrecker.","","seatcurl","Beinbeuger"],
+       ["Kabel-Crunch kniend",2,12,15,"2",60,2.5,0,"Hüfte bleibt ruhig, Brust Richtung Knie einrollen. Ausatmen.","","cablecrunch","Bauch"]],
+    B:[["Latzug breit",3,10,12,"2",90,2.5,0,"Brust raus, Ellbogen nach unten ziehen. Nicht in den Nacken.","","pulldown","Rücken"],
+       ["Brustpresse Maschine",2,10,12,"2",90,2.5,0,"Schulterblätter angelegt. Ausatmen beim Drücken – keine Pressatmung.","","chestpress","Brust"],
+       ["Kabelrudern eng",3,10,12,"2",90,2.5,0,"Zug zum Bauchnabel, Oberkörper aufrecht, kein Wippen.","","cablerow","Rücken"],
+       ["Schulterpresse Maschine",2,10,12,"2",90,2.5,0,"Nicht über Kopf durchstrecken. Ausatmen beim Drücken.","","machpress","Schulter"],
+       ["Seitheben Kabel",2,12,20,"1–2",60,1,0,"Arm leicht gebeugt bis Schulterhöhe. Breitere Schultern lassen die Taille schmaler wirken.","","lateralcable","Schulter"],
+       ["Trizepsdrücken Kabel",2,12,15,"1–2",60,2.5,0,"Ellbogen am Körper, nur der Unterarm bewegt sich. Strafft die Oberarm-Rückseite.","","pushdown","Trizeps"],
+       ["Pallof Press",2,10,12,"–",60,2.5,0,"Seitlich zum Kabel, Arme gerade nach vorn drücken, Becken bleibt ruhig.","je Seite","pallof","Bauch"]],
+    C:[["Goblet Squat auf Box",3,8,10,"2–3",120,2,0,"Kurzhantel vor der Brust, kontrolliert auf die Box setzen und hochdrücken.","","goblet","Beine vorne · Gesäß"],
+       ["Kabel-Kickback",3,12,15,"1–2",60,1,0,"Leicht vorgebeugt, Bein gestreckt nach hinten. Kein Hohlkreuz.","je Bein","kickback","Gesäß"],
+       ["Ausfallschritt rückwärts KH",2,8,10,"2",90,2,0,"Großer Schritt nach hinten, Oberkörper aufrecht. Bei Knieschmerz kürzer.","je Bein","lunge","Beine vorne · Gesäß"],
+       ["Hyperextension Gesäß-Fokus",3,12,15,"2",60,0,0,"Rücken leicht rund, Bewegung aus der Hüfte. Oben Gesäß anspannen.","","hyper","Gesäß · Beinbeuger"],
+       ["Beinbeuger liegend",2,12,15,"1–2",60,2.5,0,"Hüfte bleibt auf dem Polster. 3 Sekunden ablassen.","","legcurl","Beinbeuger"],
+       ["Pallof Press",2,10,12,"–",60,2.5,0,"Seitlich zum Kabel, Arme gerade nach vorn drücken, Becken bleibt ruhig.","je Seite","pallof","Bauch"]]
   }
+};
+const UNITS = {
+  m:{ A:{name:"Upper A", opt:false, min:45}, B:{name:"Lower", opt:false, min:40}, C:{name:"Upper B", opt:true, min:40} },
+  w:{ A:{name:"Lower A", opt:false, min:45}, B:{name:"Upper", opt:false, min:35}, C:{name:"Lower B", opt:true, min:40} }
+};
+const CARDIO = {
+  m:{ A:{min:12, t:"Intervalle auf Rudergerät oder Airbike", d:"3 min locker, dann 6 × 30 s zügig / 60 s locker, 1 min auslaufen. Baut Kondition für MMA."},
+      B:{min:15, t:"Fahrrad locker", d:"Gleichmäßig, Sprechen in ganzen Sätzen möglich. Die Beine sind schon müde – hier geht es um Kalorien und Erholung."},
+      C:{min:15, t:"Laufband mit Steigung", d:"10–12 % Steigung, zügiges Gehen. Gleichmäßig, kein Sprint."} },
+  w:{ A:{min:20, t:"Laufband mit Steigung", d:"8–12 % Steigung, 4,5–5,5 km/h. Sprechen in kurzen Sätzen möglich – kein Pulsziel."},
+      B:{min:20, t:"Laufband mit Steigung oder Crosstrainer", d:"Zügig, Sprechen in kurzen Sätzen möglich. Kein Pulsziel."},
+      C:{min:20, t:"Laufband mit Steigung", d:"8–12 % Steigung, 4,5–5,5 km/h. Sprechen in kurzen Sätzen möglich."} }
 };
 const TP_TEXT = {
   Vorbereitung:"Vor dem Start: Bewegungen kennenlernen, nichts muss.",
-  Technik:"Technikwoche: ein Satz weniger, 4 Wiederholungen in Reserve, kein Finisher. Zu leicht ist richtig.",
-  Fundament:"Fundament: Sätze wie im Plan, 3 Wdh in Reserve. Finisher ab Woche 3.",
+  Technik:"Technikwoche: ein Satz weniger, 4 Wiederholungen in Reserve, keine Supersätze. Zu leicht ist richtig.",
+  Fundament:"Fundament: Sätze wie im Plan, 3 Wdh in Reserve. Supersätze ab Woche 3.",
   Aufbau:"Aufbau: alle Sätze am oberen Ende → nächstes Mal mehr Gewicht.",
   Volumen:"Volumenblock: 4 Sätze bei Übung 1 und 2. Höchster Trainingsreiz des Jahres.",
   Endspurt:"Endspurt: längstes Defizit. Gewichte halten ist ein Erfolg.",
@@ -453,7 +799,7 @@ function weekStats(w){
   const prot = ds.filter(d=>typeof d.p==="number" && d.p>=p.protein*0.9).length;
   const kraft = ds.filter(d=>d.kraft).length, sport = ds.filter(d=>d.sport).length;
   const st = ds.map(d=>d.steps).filter(x=>typeof x==="number"); const stAvg = st.length ? st.reduce((a,b)=>a+b,0)/st.length : null;
-  const wp = ds.reduce((a,d)=>a+(typeof d.wp==="number"?d.wp:0),0);
+  const wp = ds.reduce((a,d)=>a+(typeof d.wp==="number"?d.wp:0)+(typeof d.cardio==="number"?d.cardio:0),0);
   const sl = ds.map(d=>d.sleep).filter(x=>typeof x==="number"); const slAvg = sl.length ? sl.reduce((a,b)=>a+b,0)/sl.length : null;
   const enDays = ds.filter(d=>typeof d.en==="number").length;
   const alc = ds.filter(d=>d.alc).length;
@@ -684,11 +1030,11 @@ function updateSummary(){
 let builtTrain = null;
 function defaultUnit(){
   const p = P(), wd = dow(S.date);
-  if (wd === p.days.A) return "A";
-  if (wd === p.days.B) return "B";
-  const w = weekOf(S.date), dates = weekDates(Math.max(w,1));
-  const hasA = dates.some(d => S.sessions[d+"_A"]), hasB = dates.some(d => S.sessions[d+"_B"]);
-  return hasA && !hasB ? "B" : "A";
+  for (const u of ["A","B","C"]) if (S.sessions[S.date+"_"+u]) return u;
+  for (const u of ["A","B","C"]) if (wd === p.days[u]) return u;
+  const dates = weekDates(Math.max(weekOf(S.date),1));
+  const has = u => dates.some(d => S.sessions[d+"_"+u]);
+  return !has("A") ? "A" : !has("B") ? "B" : "C";
 }
 function sessionOf(date, unit){ return S.sessions[date+"_"+unit]; }
 function lastFor(name, before){
@@ -702,33 +1048,46 @@ function targetFor(ex){
   if (!last) return {last:null, w:null, up:false};
   const reps = (last.r||[]).filter(x=>typeof x==="number");
   const up = reps.length >= 2 && Math.min(...reps) >= hi;
-  return {last, w: typeof last.w==="number" ? (up ? last.w + inc : last.w) : null, up};
+  return {last, w: typeof last.w==="number" ? (up && inc ? last.w + inc : last.w) : null, up};
+}
+function muscleSummary(list){
+  const seen = []; list.forEach(ex => ex[11].split(" · ").forEach(m => { if (!seen.includes(m)) seen.push(m); }));
+  return seen.slice(0, 5).join(" · ");
 }
 function renderTraining(force){
   const el = $("#s-training"), p = P(), w = weekOf(S.date), tp = tphase(w);
   if (!S.unit) S.unit = defaultUnit();
-  const key = S.date + "|" + S.unit + "|" + p.person;
+  const key = S.date + "|" + S.unit + "|" + p.tmpl;
   if (!force && builtTrain === key && el.firstChild && el.contains(document.activeElement)) return;
   const openTech = new Set($$("details.tech[open]", el).map(d => d.closest("article")?.dataset.name));
   builtTrain = key;
-  const list = EX[p.tmpl][S.unit];
+  const U = UNITS[p.tmpl], unit = U[S.unit], list = EX[p.tmpl][S.unit], cardio = CARDIO[p.tmpl][S.unit];
   const ses = sessionOf(S.date, S.unit) || {ex:{}};
+  const cd = ses.cardio || {};
   const today = todayISO();
   let html = `${banner()}
     <div class="nav"><span class="sub">${w<=0 ? "Vorbereitung" : "Woche " + w + " · " + esc(tp)}</span>
       <div class="nav-btns"><button class="icon-btn" id="t-prev" aria-label="Vorheriger Tag">${ICON.left}</button><button class="icon-btn" id="t-next" aria-label="Nächster Tag" ${S.date>=today?"disabled":""}>${ICON.right}</button></div></div>
-    <div class="headline-row"><h1 class="large-title">Einheit ${S.unit}</h1><span class="pill">${esc(WDs[dow(S.date)])} ${esc(dateShort(S.date))}</span></div>
-    <div class="seg" role="group" aria-label="Einheit wählen"><button type="button" data-u="A" aria-pressed="${S.unit==="A"}">A · ${esc(WDs[p.days.A])}</button><button type="button" data-u="B" aria-pressed="${S.unit==="B"}">B · ${esc(WDs[p.days.B])}</button></div>
-    <p class="note" style="margin:12px 4px 18px">${esc(TP_TEXT[tp])} ${esc(p.trainNote)}</p>`;
+    <div class="headline-row"><h1 class="large-title">${esc(unit.name)}</h1><span class="pill">${esc(WDs[dow(S.date)])} ${esc(dateShort(S.date))}</span></div>
+    <div class="seg" role="group" aria-label="Einheit wählen">${["A","B","C"].map(u => `<button type="button" data-u="${u}" aria-pressed="${S.unit===u}">${esc(U[u].name)}${U[u].opt ? " ⁺" : ""}</button>`).join("")}</div>
+    <div class="plan-meta"><span>${esc(muscleSummary(list))}</span><span class="num" style="white-space:nowrap">ca. ${unit.min} + ${cardio.min} min</span></div>
+    <p class="note" style="margin:6px 4px 18px">${unit.opt ? "Optionale Zusatzeinheit – nur wenn Zeit und Erholung passen. " : ""}${esc(TP_TEXT[tp])} ${esc(p.trainNote)}</p>`;
+  let nr = 0;
   list.forEach((ex, i) => {
     const n = setsFor(ex, i, tp, w); if (!n) return;
-    const [name,, lo, hi, rir, pause,, fin, tech, unitHint] = ex;
+    const [name,, lo, hi, rir, pause, inc, fin, tech, unitHint, fig, muscle] = ex;
     const e = ses.ex?.[name] || {}, t = targetFor(ex);
-    const lastTxt = t.last ? `Zuletzt ${fmt(t.last.w,1)} kg · ${(t.last.r||[]).filter(x=>x!=null).join("/") || "–"}` : "Erstes Mal: Startgewicht wählen";
+    nr += 1;
+    const lastTxt = t.last ? `Zuletzt ${t.last.w!=null ? fmt(t.last.w,1) + " kg · " : ""}${(t.last.r||[]).filter(x=>x!=null).join("/") || "–"}` : (inc ? "Erstes Mal: Startgewicht wählen" : "Körpergewicht – Wiederholungen steigern");
     const tgtTxt = t.w == null ? "" : t.up ? `<span class="up">▲ ${fmt(t.w,1)} kg</span>` : `<b>${fmt(t.w,1)} kg</b>`;
+    const label = name.replace(" (Supersatz)", "");
     html += `<article class="ex ${fin?"fin":""}" data-name="${esc(name)}" data-hi="${hi}">
-      <div class="ex-h"><span class="ex-n">${fin?"F":i+1}</span><div class="ex-t"><b>${esc(name.replace(" (Finisher)",""))}</b>
-        <span>${n} × ${lo}–${hi}${unitHint?" "+esc(unitHint):""} · Reserve ${esc(rir)} · ${pause?`<button type="button" class="pause" data-sec="${pause}">${pause} s Pause</button>`:"Supersatz"}</span></div>
+      <div class="figs" aria-hidden="false">
+        <figure>${FIG.render(fig, 0, label + " – Startposition")}<figcaption>Start</figcaption></figure>
+        <figure>${FIG.render(fig, 1, label + " – Endposition")}<figcaption>Ende</figcaption></figure>
+      </div>
+      <div class="ex-h"><span class="ex-n">${fin ? "S" : nr}</span><div class="ex-t"><b>${esc(label)}</b>
+        <span><span class="mchip">${esc(muscle)}</span> ${n} × ${lo}–${hi}${unitHint?" "+esc(unitHint):""} · Reserve ${esc(rir)} · ${pause?`<button type="button" class="pause" data-sec="${pause}">${pause} s Pause</button>`:"Supersatz"}</span></div>
         <button type="button" class="check" aria-pressed="${!!e.done}" aria-label="Übung erledigt">${ICON.check}</button></div>
       <div class="target"><span class="note" style="font-size:13px">${esc(lastTxt)}</span><span>${tgtTxt ? "Ziel " + tgtTxt : ""}</span></div>
       <div class="sets" style="--n:${n}"><div class="cell"><label for="w-${i}">kg</label><input id="w-${i}" data-f="w" inputmode="decimal" placeholder="${t.w!=null?esc(fmt(t.w,1)):"0"}" value="${e.w!=null?esc(fmt(e.w,1)):""}"></div>
@@ -737,14 +1096,21 @@ function renderTraining(force){
         <span class="mini"><label for="p-${i}">Schmerz</label><input id="p-${i}" data-f="pain" inputmode="numeric" placeholder="0" value="${e.pain!=null?e.pain:""}"></span></div>
     </article>`;
   });
-  html += `<div class="section"><div class="section-f" style="padding:0 4px">Alle Sätze am oberen Wiederholungsende → beim nächsten Mal zeigt die App ▲ und das neue Gewicht. Schmerz über 3 von 10: Alternative nehmen.</div></div>`;
+  html += `<article class="ex cardio" id="cardio">
+      <div class="ex-h"><span class="ex-n">♥</span><div class="ex-t"><b>Cardio danach</b><span>${esc(cardio.t)}</span></div>
+        <button type="button" class="check" id="cd-done" aria-pressed="${!!cd.done}" aria-label="Cardio erledigt">${ICON.check}</button></div>
+      <p class="note" style="margin:0;font-size:14px;color:var(--label)">${esc(cardio.d)}</p>
+      <div class="ex-foot"><span class="mini"><label for="cd-min">Minuten</label><input id="cd-min" inputmode="numeric" placeholder="${cardio.min}" value="${cd.min!=null?cd.min:""}"></span>
+        <button type="button" class="pause" data-sec="${cardio.min*60}">Timer ${cardio.min} min</button></div>
+    </article>`;
+  html += `<div class="section"><div class="section-f" style="padding:0 4px">Alle Sätze am oberen Wiederholungsende → beim nächsten Mal zeigt die App ▲ und das neue Gewicht. Schmerz über 3 von 10: Alternative nehmen. Cardio kommt nach dem Krafttraining, nie davor.</div></div>`;
   el.innerHTML = html;
-  $$("article.ex", el).forEach(a => { if (openTech.has(a.dataset.name)) $("details.tech", a).open = true; });
+  $$("article.ex", el).forEach(a => { if (openTech.has(a.dataset.name)) { const d = $("details.tech", a); if (d) d.open = true; } });
   $("#t-prev", el).onclick = () => { S.date = addDays(S.date,-1); S.unit = null; renderAll(); };
   $("#t-next", el).onclick = () => { if (S.date < today){ S.date = addDays(S.date,1); S.unit = null; renderAll(); } };
   $$(".seg button", el).forEach(b => b.onclick = () => { S.unit = b.dataset.u; renderTraining(true); });
   $$(".pause", el).forEach(b => b.onclick = () => startTimer(Number(b.dataset.sec)));
-  $$("article.ex", el).forEach(card => {
+  $$("article.ex:not(.cardio)", el).forEach(card => {
     const name = card.dataset.name, hi = Number(card.dataset.hi);
     $$("input", card).forEach(inp => inp.addEventListener("input", () => {
       const s = ensureSession(), e = s.ex[name] || (s.ex[name] = {});
@@ -761,6 +1127,13 @@ function renderTraining(force){
       saveSession(); if (e.done) toast("Übung erledigt");
     };
   });
+  const cdMin = $("#cd-min", el), cdDone = $("#cd-done", el);
+  cdMin.addEventListener("input", () => { const s = ensureSession(); s.cardio = Object.assign({}, s.cardio, {min: parseNum(cdMin.value)}); saveSession(); });
+  cdDone.onclick = () => {
+    const s = ensureSession(); const c = Object.assign({}, s.cardio); c.done = !c.done;
+    if (c.done && c.min == null){ c.min = cardio.min; cdMin.value = cardio.min; }
+    s.cardio = c; cdDone.setAttribute("aria-pressed", String(c.done)); saveSession(); if (c.done) toast("Cardio erledigt");
+  };
 }
 function ensureSession(){ const k = S.date + "_" + S.unit; return S.sessions[k] || (S.sessions[k] = {date:S.date, unit:S.unit, ex:{}}); }
 let sesT = null;
@@ -770,10 +1143,16 @@ function saveSession(){
   sesT = setTimeout(() => {
     const s = S.sessions[k]; if (!s) return;
     const ex = {}; for (const [n,e] of Object.entries(s.ex)) ex[n] = {w:e.w??null, r:(e.r||[]).map(x=>x??null), pain:e.pain??null, done:!!e.done};
-    writeDoc("sessions", k, {date:s.date, unit:s.unit, ex});
+    const cardio = s.cardio ? {min:s.cardio.min ?? null, done:!!s.cardio.done} : null;
+    writeDoc("sessions", k, {date:s.date, unit:s.unit, ex, cardio});
     const any = Object.values(ex).some(e => e.done || typeof e.w === "number" || e.r.some(x=>typeof x==="number"));
     const d = S.days[date] || (S.days[date] = {});
-    if (any && !d.kraft){ d.kraft = 1; writeDoc("days", date, Object.assign({}, d, {date})); }
+    // Cardio-Minuten des Tages = Summe aller Einheiten dieses Tages
+    const cmin = ["A","B","C"].reduce((a,u) => { const c = S.sessions[date+"_"+u]?.cardio; return a + (c && c.done && typeof c.min === "number" ? c.min : 0); }, 0);
+    let changed = false;
+    if (any && !d.kraft){ d.kraft = 1; changed = true; }
+    if ((d.cardio || 0) !== cmin){ d.cardio = cmin || null; changed = true; }
+    if (changed) writeDoc("days", date, Object.assign({}, d, {date}));
   }, 600);
 }
 let timerI = null;
@@ -877,7 +1256,7 @@ function openWeek(w){
       <div class="row"><span class="lbl">Protein ≥ 90 %</span><span class="val num">${s.prot} / 7</span></div>
       <div class="row"><span class="lbl">Krafttraining · ${esc(p.sportLabel)}</span><span class="val num">${s.kraft} · ${s.sport}</span></div>
       <div class="row"><span class="lbl">Ø Schritte</span><span class="val num">${fmt(s.stAvg)} / ${fmt(stepGoal(w))}</span></div>
-      <div class="row"><span class="lbl">Walking Pad</span><span class="val num">${fmt(s.wp)} / ${fmt(wpGoal(w))} min</span></div>
+      <div class="row"><span class="lbl">Walking Pad + Cardio</span><span class="val num">${fmt(s.wp)} / ${fmt(wpGoal(w))} min</span></div>
       <div class="row"><span class="lbl">Ø Schlaf</span><span class="val num">${fmt(s.slAvg,1)} h</span></div>
       <div class="row"><span class="lbl">Alkohol-Tage</span><span class="val num">${s.alc}</span></div></div></div>
     <div class="section"><button class="btn secondary" id="wk-ci">Check-in für diese Woche</button></div>`,
@@ -934,7 +1313,7 @@ function renderMehr(){
       <div class="row"><span class="lbl">Trainingsplan</span><span class="val">${esc(p.label)}</span></div>
       <div class="row"><span class="lbl">Kalorien Defizit / Erhaltung</span><span class="val num">${fmt(p.kcal.Defizit)} / ${fmt(p.kcal.Erhaltung)}</span></div>
       <div class="row"><span class="lbl">Protein</span><span class="val num">${fmt(p.protein)} g</span></div>
-      <div class="row"><span class="lbl">Krafttraining</span><span class="val">${esc(WD[p.days.A])} A · ${esc(WD[p.days.B])} B</span></div></div></div>
+      <div class="row"><span class="lbl">Krafttraining</span><span class="val">${["A","B","C"].map(u => esc(WDs[p.days[u]]) + " " + esc(UNITS[p.tmpl][u].name)).join(" · ")}</span></div></div></div>
     <div class="section"><div class="section-h">Sicherung</div><div class="group">
       <button type="button" class="row tap" id="o-backup" style="width:100%;text-align:left"><span class="lbl">Sicherung exportieren<small>${lastB ? "Zuletzt " + esc(dateNum(isoOf(lastB))) : "Noch keine Sicherung"} · am besten in iCloud Drive sichern</small></span>${ICON.chev}</button>
       <label class="row tap" for="o-restore" style="cursor:pointer"><span class="lbl">Sicherung laden<small>Ersetzt alle Einträge auf diesem iPhone</small></span>${ICON.chev}</label>
