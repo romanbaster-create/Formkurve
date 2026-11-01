@@ -302,7 +302,8 @@ details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4
 /* Tab-Leiste schwebend */
 .tabbar{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));
   border-radius:32px;border:.5px solid color-mix(in srgb,var(--label) 10%,transparent);padding:7px 6px;box-shadow:0 12px 40px rgba(0,0,0,.16);max-width:560px;margin:0 auto}
-.tabbar-in{grid-template-columns:repeat(5,1fr)}
+.tabbar-in{grid-template-columns:repeat(6,1fr)}
+.tab{font-size:9.5px;letter-spacing:0}
 .tab{border-radius:24px;padding:5px 0 4px;transition:background .2s}
 .tab svg{width:24px;height:24px}
 .tab[aria-selected="true"]{background:color-mix(in srgb,var(--tint) 13%,transparent)}
@@ -383,6 +384,43 @@ details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4
 .itrow input{flex:1;min-width:0;height:36px;border:0;border-radius:8px;background:var(--fill);padding:0 10px;font-size:15px}
 .itrow .del{grid-column:2;grid-row:1/3;width:32px;height:32px;border-radius:16px;background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red);font-size:20px}
 @media (max-width:360px){.checks{grid-template-columns:1fr}.tv{font-size:26px}}
+
+/* Ausblick */
+.next-hero .nh-t{position:relative;z-index:1;font-family:var(--font-display);font-size:22px;font-weight:700;letter-spacing:-.4px}
+.next-hero .nh-d{position:relative;z-index:1;font-family:var(--font-round);font-size:34px;font-weight:700;letter-spacing:-.8px;margin-top:6px;line-height:1.1}
+.next-hero .nh-d small{font-family:var(--font);font-size:14px;font-weight:500;opacity:.7;letter-spacing:0}
+.nh-bar{position:relative;z-index:1;height:8px;border-radius:4px;background:rgba(255,255,255,.18);margin-top:14px;overflow:hidden}
+.nh-bar i{display:block;height:100%;border-radius:4px;background:#fff}
+.nh-s{position:relative;z-index:1;font-size:13px;opacity:.75;margin-top:7px}
+.tilex.goal{background:linear-gradient(155deg,color-mix(in srgb,var(--green) 24%,var(--card)),var(--card) 70%)}
+.tilex.goal .tk{color:var(--green)}
+.tilex.goal .tv{white-space:pre-line}
+.size-card + .size-card{margin-top:12px}
+.size-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:6px}
+.sz{border-radius:14px;background:color-mix(in srgb,var(--tint) 9%,transparent);padding:10px 12px}
+.sz b{display:block;font-size:15px;letter-spacing:-.2px}
+.sz span{display:block;font-family:var(--font-round);font-weight:700;font-size:17px;color:var(--tint);margin-top:2px}
+.sz small{display:block;font-size:12px;color:var(--label2);margin-top:1px}
+.size-goal{margin-top:12px;padding-top:10px;border-top:.5px solid var(--sep);font-size:14px;color:var(--label2)}
+.size-goal b{color:var(--green)}
+.timeline{position:relative;background:var(--card);border-radius:var(--r-card);box-shadow:var(--elev);padding:6px 0}
+.tl{position:relative;display:flex;align-items:center;gap:12px;padding:10px 16px}
+.tl + .tl::before{content:"";position:absolute;left:31px;top:-10px;height:20px;border-left:2px dotted var(--sep)}
+.tl-i{width:32px;height:32px;border-radius:16px;background:var(--fill);display:grid;place-items:center;font-size:16px;flex:none;position:relative;z-index:1}
+.tl-b{flex:1;min-width:0}
+.tl-b b{display:block;font-size:15px;font-weight:600;letter-spacing:-.2px}
+.tl-b small{display:block;font-size:12px;color:var(--label2);margin-top:1px;line-height:1.3}
+.tl-d{text-align:right;flex:none}
+.tl-d b{display:block;font-family:var(--font-round);font-size:15px;color:var(--tint)}
+.tl-d small{display:block;font-size:12px;color:var(--label2)}
+.timeline:not(.all) .tl.more{display:none}
+.tl-more{display:block;width:100%;padding:12px 16px 8px;color:var(--tint);font-size:15px;font-weight:600;text-align:center;border-top:.5px solid var(--sep);margin-top:4px}
+.tl.goal .tl-i{background:color-mix(in srgb,var(--green) 22%,transparent)}
+.tl.goal .tl-d b{color:var(--green)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fact{background:var(--card);border-radius:var(--r-card);box-shadow:var(--elev);padding:14px}
+.fact b{display:block;font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--tint)}
+.fact span{display:block;font-size:13px;color:var(--label2);margin-top:3px;line-height:1.3}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -390,6 +428,7 @@ details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4
 <body>
 <div class="app" id="app">
   <section class="screen" id="s-uebersicht"></section>
+  <section class="screen" id="s-ausblick" hidden></section>
   <section class="screen" id="s-heute" hidden></section>
   <section class="screen" id="s-training" hidden></section>
   <section class="screen" id="s-fortschritt" hidden></section>
@@ -400,6 +439,8 @@ details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4
   <div class="tabbar-in" role="tablist">
     <button class="tab" role="tab" data-tab="uebersicht" aria-selected="true" id="t-uebersicht">
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="4" width="8.5" height="11" rx="2.5"/><rect x="15.5" y="4" width="8.5" height="7" rx="2.5"/><rect x="4" y="18" width="8.5" height="6" rx="2.5"/><rect x="15.5" y="14" width="8.5" height="10" rx="2.5"/></svg>Übersicht</button>
+    <button class="tab" role="tab" data-tab="ausblick" aria-selected="false" id="t-ausblick">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 23l7.5-11 4.5 6 3-4 7 9z"/><path d="M15 12V4.5l5 2-5 2"/></svg>Ausblick</button>
     <button class="tab" role="tab" data-tab="heute" aria-selected="false" id="t-heute">
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="14" cy="14" r="10"/><circle cx="14" cy="14" r="5.5"/><circle cx="14" cy="14" r="1.4" fill="currentColor" stroke="none"/></svg>Heute</button>
     <button class="tab" role="tab" data-tab="training" aria-selected="false" id="t-training">
@@ -1963,6 +2004,128 @@ function renderUebersicht(){
   $("#d-sos", el).onclick = openSOS;
   $("#d-it", el).onclick = openIfThen;
 }
+/* =================== AUSBLICK =================== */
+const MONL = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const monY = d => { const t = new Date(parseISO(d)); return MONL[t.getUTCMonth()] + " " + t.getUTCFullYear(); };
+const monS = d => { const t = new Date(parseISO(d)); return MON[t.getUTCMonth()].replace(".","") + (t.getUTCFullYear() !== new Date(parseISO(todayISO())).getUTCFullYear() ? " " + String(t.getUTCFullYear()).slice(2) : ""); };
+const SIZES = {
+  m:{hose:{label:"Hose", src:"taille", perKg:1.0, t:[[44,"S",81],[46,"S",85],[48,"M",89],[50,"M",94],[52,"L",98],[54,"L",102],[56,"XL",106],[58,"XL",110],[60,"XXL",114],[62,"XXL",118],[64,"3XL",122],[66,"3XL",127],[68,"4XL",133]]},
+     hemd:{label:"Hemd & Shirt", src:"brust", perKg:0.6, t:[["S","S",95],["M","M",103],["L","L",111],["XL","XL",119],["XXL","XXL",127],["3XL","3XL",135],["4XL","4XL",143]]}},
+  w:{hose:{label:"Hose & Rock", src:"taille", perKg:0.85, t:[[34,"XS",67],[36,"S",71],[38,"M",75],[40,"L",79],[42,"L",84],[44,"XL",89],[46,"XXL",95],[48,"XXL",101],[50,"3XL",107],[52,"3XL",113],[54,"4XL",119]]},
+     huefte:{label:"Kleid (Hüfte)", src:"huefte", perKg:0.8, t:[[34,"XS",91],[36,"S",95],[38,"M",99],[40,"L",103],[42,"L",107],[44,"XL",112],[46,"XXL",117],[48,"XXL",122],[50,"3XL",127],[52,"3XL",132],[54,"4XL",137]]}}};
+const MMA_CLASSES = [["Halbschwergewicht",93.0],["Mittelgewicht",83.9],["Weltergewicht",77.1],["Leichtgewicht",70.3]];
+function forecastRate(){
+  const p = P(), obs = currentRate();
+  const base = obs != null ? clamp(obs, p.rates[0]*0.6, p.rates[2]*1.2) : p.rates[1];
+  return {base, fast: base*1.25, slow: base*0.75, real: obs != null};
+}
+function project(rate, startKg){
+  const p = P(), today = todayISO(), d0 = today < p.startDate ? p.startDate : today;
+  let w = Math.max(weekOf(d0), 1), kg = startKg; const pts = [{d:d0, kg}];
+  for (let i = 0; i < 200 && kg > p.goal + 0.05; i++, w++){
+    if (w > 52 || isDef(w)) kg = Math.max(p.goal, kg*(1-rate));
+    pts.push({d: addDays(weekStart(w), 6), kg});
+  }
+  return pts;
+}
+const whenKg = (pts, t) => { const x = pts.find(o => o.kg <= t + 1e-9); return x ? x.d : null; };
+const kgAt = (pts, d) => { let v = pts[0].kg; for (const o of pts){ if (o.d > d) break; v = o.kg; } return v; };
+function latestMeasure(key){
+  const ks = Object.keys(S.measures).filter(k => typeof S.measures[k][key] === "number").sort();
+  if (!ks.length) return key === "taille" && P().waist0 != null ? {d:P().startDate, v:P().waist0, kg:P().kg} : null;
+  const k = ks[ks.length-1], m = S.measures[k];
+  return {d:k, v:m[key], kg: m.gewicht ?? rolling7(k) ?? trend() ?? P().kg};
+}
+function perKgFor(key, def){
+  const ks = Object.keys(S.measures).filter(k => typeof S.measures[k][key] === "number").sort();
+  const pts = ks.map(k => ({v:S.measures[k][key], kg:S.measures[k].gewicht ?? rolling7(k)})).filter(o => o.kg != null);
+  if (key === "taille" && P().waist0 != null) pts.unshift({v:P().waist0, kg:P().kg});
+  if (pts.length >= 2){ const a = pts[0], b = pts[pts.length-1]; if (a.kg - b.kg >= 3) return {k: clamp((a.v-b.v)/(a.kg-b.kg), 0.4, 1.6), own:true}; }
+  return {k:def, own:false};
+}
+function renderAusblick(){
+  const el = $("#s-ausblick"), p = P(), today = todayISO();
+  const cur = trend() ?? p.kg, fr = forecastRate();
+  const C = project(fr.base, cur), F = project(fr.fast, cur), Sl = project(fr.slow, cur);
+  const range = t => { const c = whenKg(C, t), a = whenKg(F, t), b = whenKg(Sl, t); return {c, a, b}; };
+  const when = t => { const r = range(t); if (!r.c) return "nach über 3 Jahren"; return `ca. ${monY(r.c)}`; };
+  const span = t => { const r = range(t); return r.a && r.b && monS(r.a) !== monS(r.b) ? `${monS(r.a)} – ${monS(r.b)}` : r.a ? "" : ""; };
+  const lost = p.kg - cur, m2 = (p.cm/100)**2, kt = kfaTrend();
+  // Etappen
+  const ms = [];
+  for (let v = Math.floor((cur-0.01)/5)*5; v > p.goal + 0.5; v -= 5) ms.push({kg:v, i:"🎯", t:`Unter ${v} kg`, s:"Runde Marke"});
+  [0.05,0.10,0.15,0.20,0.25,0.30].forEach(x => { const v = p.kg*(1-x); if (v > p.goal) ms.push({kg:v, i:"📉", t:`−${Math.round(x*100)} % Körpergewicht`, s: x===0.05 ? "Ab hier messbar besserer Blutdruck und Blutzucker" : x===0.10 ? "Ab hier oft deutlich weniger Bauchfett und Gelenkschmerz" : `${fmt(p.kg*x,1)} kg weniger als am Start`}); });
+  [[30,"BMI unter 30"],[27,"BMI unter 27"],[25,"BMI unter 25 – Normalgewicht"]].forEach(([b,t]) => { const v = b*m2; if (v < cur && v >= p.goal - 0.1) ms.push({kg:v, i:"⚖️", t, s:`bei ${fmt(v,1)} kg`}); });
+  const wk = perKgFor("taille", SIZES[p.tmpl].hose.perKg), lw = latestMeasure("taille");
+  if (lw){ const v = lw.kg - (lw.v - p.cm/2)/wk.k; if (lw.v > p.cm/2 && v >= p.goal - 3) ms.push({kg:Math.max(v,p.goal), i:"📏", t:"Taille unter halber Körpergröße", s:`${fmt(p.cm/2,1)} cm – wichtigster Gesundheitsmarker für Bauchfett`}); }
+  if (kt != null){ const fat = cur*kt/100; (p.tmpl==="m" ? [[25,"Körperfett unter 25 %",""],[20,"Körperfett unter 20 %","Konturen werden sichtbar"],[15,"Körperfett unter 15 %","Bauchmuskeln zeichnen sich ab"]] : [[35,"Körperfett unter 35 %",""],[30,"Körperfett unter 30 %","Taille formt sich deutlich"],[25,"Körperfett unter 25 %","Sportlich-straff"]]).forEach(([T,t,sub]) => {
+    if (kt > T){ const v = (0.8*cur - fat)/(0.8 - T/100); if (v >= p.goal - 0.1 && v < cur) ms.push({kg:v, i:"🔥", t, s: sub || "Schätzung: 80 % der Abnahme ist Fett"}); } }); }
+  if (p.tmpl === "m") MMA_CLASSES.forEach(([n,v]) => { if (v < cur && v >= p.goal) ms.push({kg:v, i:"🥊", t:`MMA-Gewichtsklasse: ${n}`, s:`bis ${fmt(v,1)} kg`}); });
+  ms.push({kg:p.goal, i:"🏁", t:`Zielgewicht ${fmt(p.goal,1)} kg`, s:"Das große Ziel", goal:true});
+  ms.sort((a,b) => b.kg - a.kg);
+  const next = ms[0], prevMark = Math.max(...[p.kg].concat(ms.filter(m => m.kg > cur).map(m => m.kg)));
+  // Größen
+  const sizeRows = [];
+  Object.values(SIZES[p.tmpl]).forEach(dim => {
+    const lm = latestMeasure(dim.src); if (!lm) return;
+    const k = perKgFor(dim.src, dim.perKg).k, vNow = lm.v - k*(lm.kg - cur);
+    const idx = dim.t.findIndex(x => vNow <= x[2]), ci = idx < 0 ? dim.t.length-1 : idx;
+    const lab = x => (typeof x[0] === "number" ? `Gr. ${x[0]} · ${x[1]}` : x[1]) + (p.tmpl === "m" && dim.src === "taille" ? ` · W${Math.round(x[2]/2.54) - 1}` : "");
+    const steps = [];
+    for (let j = ci - 1; j >= 0; j--){ const thr = cur - (vNow - dim.t[j][2])/k; if (thr < p.goal - 0.5) break; steps.push({lab:lab(dim.t[j]), kg:thr}); if (steps.length >= 4) break; }
+    const vGoal = vNow - k*(cur - p.goal), gi = dim.t.findIndex(x => vGoal <= x[2]);
+    sizeRows.push({dim, now:lab(dim.t[ci]), vNow, steps, atGoal: lab(dim.t[gi < 0 ? dim.t.length-1 : gi]), own: perKgFor(dim.src, dim.perKg).own});
+  });
+  // Diagramm
+  const goalD = whenKg(C, p.goal) || C[C.length-1].d, endD = whenKg(Sl, p.goal) || Sl[Sl.length-1].d;
+  const W = 340, H = 200, L = 32, Rr = 10, T = 14, B = 24, d0 = C[0].d, span0 = Math.max(28, diffDays(d0, endD));
+  const X = d => L + diffDays(d0, d)/span0*(W-L-Rr), lo = p.goal - 2, hi = Math.ceil(cur + 1), Y = v => T + (hi - v)/(hi - lo)*(H-T-B);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gewichtsprognose">`;
+  const st = (hi-lo) > 20 ? 5 : 2; for (let v = Math.ceil(lo/st)*st; v <= hi; v += st) svg += `<line x1="${L}" x2="${W-Rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--sep)" stroke-width=".5"/><text x="${L-6}" y="${Y(v)+3.5}" font-size="10" text-anchor="end" fill="var(--label2)">${v}</text>`;
+  if (p.vacFrom > d0 && p.vacFrom < endD) svg += `<rect x="${X(p.vacFrom)}" y="${T}" width="${Math.max(3, X(p.vacTo < endD ? p.vacTo : endD) - X(p.vacFrom))}" height="${H-T-B}" fill="var(--teal)" opacity=".14"/><text x="${X(p.vacFrom)+3}" y="${T+10}" font-size="9" fill="var(--teal)">Urlaub</text>`;
+  let lastM = -1; for (let i = 0; i <= span0; i += 7){ const d = addDays(d0, i), t = new Date(parseISO(d)), m = t.getUTCMonth(); if (m !== lastM && i > 10 && (m % (span0 > 400 ? 3 : 2) === 0)){ svg += `<text x="${X(d)}" y="${H-7}" font-size="10" fill="var(--label2)" text-anchor="middle">${MON[m].replace(".","")}${m===0 ? " " + String(t.getUTCFullYear()).slice(2) : ""}</text>`; } lastM = m; }
+  const line = pts => pts.filter(o => o.d <= endD).map(o => `${X(o.d).toFixed(1)},${Y(o.kg).toFixed(1)}`);
+  svg += `<polygon points="${line(F).concat(line(Sl).reverse()).join(" ")}" fill="var(--tint)" opacity=".13"/>`;
+  svg += `<line x1="${L}" x2="${W-Rr}" y1="${Y(p.goal)}" y2="${Y(p.goal)}" stroke="var(--green)" stroke-dasharray="4 4" stroke-width="1.2"/>`;
+  svg += `<polyline points="${line(C).join(" ")}" fill="none" stroke="var(--tint)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+  ms.filter(m => !m.goal && m.i === "🎯").forEach(m => { const d = whenKg(C, m.kg); if (d && d <= endD) svg += `<circle cx="${X(d).toFixed(1)}" cy="${Y(m.kg).toFixed(1)}" r="3.5" fill="var(--card)" stroke="var(--tint)" stroke-width="2"/>`; });
+  svg += `<circle cx="${X(d0)}" cy="${Y(cur)}" r="5" fill="var(--tint)" stroke="var(--card)" stroke-width="2"/><circle cx="${X(goalD).toFixed(1)}" cy="${Y(p.goal).toFixed(1)}" r="5" fill="var(--green)" stroke="var(--card)" stroke-width="2"/></svg>`;
+  const vacKg = p.vacFrom > today ? kgAt(C, p.vacFrom) : null;
+  const fatLost = kt != null && firstKfa() != null ? Math.max(0, p.kg*firstKfa()/100 - cur*kt/100) : Math.max(0, lost*0.8);
+  const nextDate = range(next.kg);
+  const nextProg = clamp((prevMark - cur)/(prevMark - next.kg), 0, 1);
+  el.innerHTML = `${banner()}
+    <div class="nav"><span class="sub">${fr.real ? "Nach deinem echten Tempo" : "Nach Plan – ab Woche 5 mit deinem Tempo"}</span><span class="pill">${fmt(fr.base*100,2)} % / Woche</span></div>
+    <h1 class="large-title">Ausblick</h1>
+    <div class="hero next-hero"><div class="hero-k">Nächste Etappe</div>
+      <div class="nh-t">${next.i} ${esc(next.t)}</div>
+      <div class="nh-d">${nextDate.c ? esc(monY(nextDate.c)) : "–"}</div>
+      <div class="nh-bar"><i style="width:${(nextProg*100).toFixed(0)}%"></i></div>
+      <div class="nh-s">noch ${fmt(Math.max(0, cur - next.kg),1)} kg · aktuell ${fmt(cur,1)} kg${span(next.kg) ? " · Spanne " + esc(span(next.kg)) : ""}</div></div>
+    <div class="bento">
+      <div class="tilex goal"><div class="tk">Zielgewicht</div><div class="tv num" style="font-size:22px">${esc(monY(goalD).replace(" ", "<br>").replace(/<br>/,"\n"))}</div><div class="ts">${fmt(p.goal,1)} kg · in ca. ${fmt(Math.max(1, Math.round(diffDays(today, goalD)/7)))} Wochen</div></div>
+      <div class="tilex vac"><div class="tk">Zum Urlaub</div><div class="tv num">${vacKg == null ? "–" : fmt(vacKg,1)}<small> kg</small></div><div class="ts">${vacKg == null ? "Urlaub liegt hinter dir" : "Prognose für " + esc(dateShort(p.vacFrom)) + " · " + fmtS(vacKg - cur,1) + " kg"}</div></div>
+    </div>
+    <div class="section"><div class="card chart"><div class="headline-row"><h3>Dein Weg in Zahlen</h3><span class="meta">Prognose ± Spanne</span></div>${svg}
+      <p class="note" style="margin:8px 0 0">Rechnet mit ${fr.real ? "deinem gemessenen Tempo der letzten Wochen" : "dem Plan-Tempo"} in Defizitwochen. Erhaltungs- und Urlaubswochen halten das Gewicht. Je mehr Daten, desto genauer.</p></div></div>
+    <div class="section"><div class="section-h"><span>Kleidergrößen</span></div>
+      ${sizeRows.length ? sizeRows.map(r => `<div class="card size-card"><div class="row-h" style="margin-bottom:6px"><h3>${esc(r.dim.label)}</h3><span class="meta">heute ${esc(r.now)}</span></div>
+        ${r.steps.length ? `<div class="size-steps">${r.steps.map(x => { const c = whenKg(C, x.kg); return `<div class="sz"><b>${esc(x.lab)}</b><span>${c ? esc(monY(c)) : "–"}</span><small>bei ca. ${fmt(x.kg,1)} kg</small></div>`; }).join("")}</div>` : `<p class="note">Bis zum Zielgewicht voraussichtlich keine kleinere Größe – oder du hast sie schon.</p>`}
+        <div class="size-goal">Beim Zielgewicht: <b>${esc(r.atGoal)}</b></div></div>`).join("") :
+        `<div class="card"><p class="note" style="margin:0 0 10px">Für die Größenprognose braucht die App deinen Taillenumfang${p.tmpl==="w" ? " und Hüftumfang" : " und Brustumfang"}. Einmal messen reicht für den Start – mit jeder weiteren Messung lernt die Prognose deinen Körper kennen.</p><button type="button" class="btn secondary" id="a-m">Maße eintragen</button></div>`}
+      <div class="section-f">Schätzung über Umfang pro Kilo (${sizeRows.some(r => r.own) ? "aus deinen eigenen Messungen" : "Durchschnittswert, ab 3 kg Abnahme aus deinen Messungen"}). Größen schwanken je nach Marke um eine Nummer.</div></div>
+    <div class="section"><div class="section-h"><span>Etappen</span><span class="meta" style="font-size:13px;font-weight:500;color:var(--label2)">${ms.length} vor dir</span></div>
+      <div class="timeline">${ms.map((m, idx) => { const r = range(m.kg); return `<div class="tl ${m.goal ? "goal" : ""} ${idx >= 8 && !m.goal ? "more" : ""}"><span class="tl-i">${m.i}</span><div class="tl-b"><b>${esc(m.t)}</b><small>${esc(m.s)}</small></div><div class="tl-d"><b>${r.c ? esc(monS(r.c)) : "–"}</b><small>${fmt(m.kg,1)} kg</small></div></div>`; }).join("")}${ms.length > 9 ? `<button type="button" class="tl-more" id="a-more">Alle ${ms.length} Etappen zeigen</button>` : ""}</div>
+      <div class="section-f">Monat = Prognose bei gleichem Tempo. Hältst du das Tempo, kommst du in der Spanne an. Wirst du schneller, früher.</div></div>
+    <div class="section"><div class="section-h"><span>Was du schon gewonnen hast</span></div><div class="facts">
+      <div class="fact"><b class="num">${fmt(Math.max(0,lost),1)} kg</b><span>weniger seit dem Start</span></div>
+      <div class="fact"><b class="num">${fmt(Math.round(fatLost/0.25))}</b><span>Päckchen Butter Fett verbrannt (à 250 g)</span></div>
+      <div class="fact"><b class="num">${fmt(Math.max(0,lost)*4,0)} kg</b><span>weniger Last auf den Knien bei jedem Schritt*</span></div>
+      <div class="fact"><b class="num">${fmt(Math.max(0, p.goal ? (p.kg - p.goal) : 0)*4,0)} kg</b><span>Kniebelastung weniger pro Schritt beim Ziel*</span></div></div>
+      <div class="section-f">* Faustregel aus einer Studie zu Kniearthrose: 1 kg weniger Körpergewicht ≈ 4 kg weniger Last auf dem Knie pro Schritt.</div></div>`;
+  const am = $("#a-m", el); if (am) am.onclick = openMeasure;
+  const mo = $("#a-more", el); if (mo) mo.onclick = () => { el.querySelector(".timeline").classList.add("all"); mo.remove(); };
+}
 function openOnboarding(isReset){
   if (document.querySelector(".sheet")) return;
   const pr = S.profile || {};
@@ -2059,19 +2222,20 @@ async function doExport(kind){
 /* =================== Navigation =================== */
 function setTab(t){
   S.tab = t; lsSet("trafo.tab", t);
-  ["uebersicht","heute","training","fortschritt","mehr"].forEach(x => { $("#s-"+x).hidden = x !== t; $("#t-"+x).setAttribute("aria-selected", String(x===t)); });
+  ["uebersicht","ausblick","heute","training","fortschritt","mehr"].forEach(x => { $("#s-"+x).hidden = x !== t; $("#t-"+x).setAttribute("aria-selected", String(x===t)); });
   renderAll(true); window.scrollTo(0,0);
 }
 function renderAll(){
   const t = S.tab;
   if (t === "uebersicht" && !document.querySelector("#s-uebersicht :focus")) renderUebersicht();
+  if (t === "ausblick") renderAusblick();
   if (t === "heute") renderHeute(false);
   if (t === "training") renderTraining(false);
   if (t === "fortschritt" && !document.querySelector("#s-fortschritt :focus")) renderFortschritt();
   if (t === "mehr") renderMehr();
 }
 $$(".tab").forEach(b => b.onclick = () => setTab(b.dataset.tab));
-const savedTab = lsGet("trafo.tab"); if (["uebersicht","heute","training","fortschritt","mehr"].includes(savedTab)) S.tab = savedTab;
+const savedTab = lsGet("trafo.tab"); if (["uebersicht","ausblick","heute","training","fortschritt","mehr"].includes(savedTab)) S.tab = savedTab;
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S.date > todayISO()) S.date = todayISO(); });
 
 applyPerson();
