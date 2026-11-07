@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kochbuch">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121826">
+<title>ITOGO Kochbuch</title>
+<link rel="manifest" href="koch.webmanifest">
+<link rel="apple-touch-icon" href="koch-180.png">
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#121826;color:#EEF1F7;font:17px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;padding:24px;box-sizing:border-box}
+  .c{max-width:560px} img{width:96px;height:96px;border-radius:22px} h1{font-size:34px;margin:16px 0 6px;letter-spacing:-.6px}
+  p{color:#A9B1C3} ol{padding-left:22px;color:#D5DAE5} li{margin:8px 0} b{color:#CDF55A}
+  a.btn{display:inline-block;margin-top:18px;padding:12px 20px;border-radius:14px;background:#CDF55A;color:#121826;font-weight:700;text-decoration:none}
+  .ru{margin-top:26px;padding-top:16px;border-top:1px solid #2A3244;font-size:15px}
+</style>
+<script>
+  var sa = window.navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  if (sa) location.replace("index.html?koch=1");
+</script>
+</head>
+<body>
+<div class="c">
+  <img src="koch-180.png" alt="">
+  <h1>ITOGO Kochbuch</h1>
+  <p>Eure ITOGO-Rezepte groß fürs iPad: alles auf einer Seite, Zutaten und Schritte zum Abhaken, Timer – und zu zweit kochen, ohne sich im Weg zu sein.</p>
+  <ol>
+    <li>Oben in Safari auf <b>Teilen</b> (□↑) tippen.</li>
+    <li><b>„Zum Home-Bildschirm“</b> wählen und hinzufügen.</li>
+    <li>Das neue Symbol <b>Kochbuch</b> öffnen und einmal euren ITOGO-Einrichtungslink einfügen.</li>
+  </ol>
+  <a class="btn" href="index.html?koch=1">Im Browser ausprobieren</a>
+  <div class="ru"><b>RU:</b> Нажмите «Поделиться» → «На экран „Домой“», затем откройте значок «Kochbuch» и один раз вставьте ссылку для настройки ITOGO.</div>
+</div>
+</body>
+</html>

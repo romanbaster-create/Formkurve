@@ -1,0 +1,17 @@
+{
+  "name": "ITOGO Kochbuch",
+  "short_name": "Kochbuch",
+  "description": "ITOGO-Rezepte groß fürs iPad – zum Kochen und Abhaken, auch zu zweit.",
+  "lang": "de",
+  "start_url": "./koch.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#121826",
+  "theme_color": "#121826",
+  "icons": [
+    {"src": "koch-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "koch-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "koch-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
