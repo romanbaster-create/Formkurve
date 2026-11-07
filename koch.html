@@ -21,11 +21,17 @@
 </style>
 <script>
   var sa = window.navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
-  if (sa) location.replace("index.html?koch=1");
+  if (sa) location.replace("index.html?koch=1" + (location.hash || ""));
 </script>
 </head>
 <body>
 <div class="c">
+  <div id="kbbox" hidden style="background:#1C2333;border-radius:18px;padding:18px;margin-bottom:22px">
+    <b style="font-size:19px">Verbindungscode fürs Kochbuch</b>
+    <p style="margin:6px 0 12px">1. Auf „Code kopieren“ tippen.<br>2. Das <b>Kochbuch</b> vom Home-Bildschirm öffnen.<br>3. Dort „📋 Aus Zwischenablage“ tippen – fertig.</p>
+    <a class="btn" href="#" id="kbcopy" style="margin-top:0">Code kopieren</a>
+    <p style="font-size:14px;margin:12px 0 0">RU: Нажмите «Code kopieren», откройте «Kochbuch» с экрана «Домой» и нажмите «📋 Из буфера обмена».</p>
+  </div>
   <img src="koch-180.png" alt="">
   <h1>ITOGO Kochbuch</h1>
   <p>Eure ITOGO-Rezepte groß fürs iPad: alles auf einer Seite, Zutaten und Schritte zum Abhaken, Timer – und zu zweit kochen, ohne sich im Weg zu sein.</p>
@@ -37,5 +43,12 @@
   <a class="btn" href="index.html?koch=1">Im Browser ausprobieren</a>
   <div class="ru"><b>RU:</b> Нажмите «Поделиться» → «На экран „Домой“», затем откройте значок «Kochbuch» и один раз вставьте ссылку для настройки ITOGO.</div>
 </div>
+<script>
+  if (/#kb=/.test(location.hash)){ var bx = document.getElementById("kbbox"); bx.hidden = false;
+    document.getElementById("kbcopy").onclick = function(e){ e.preventDefault(); var u = location.href, a = this;
+      var ok = function(){ a.textContent = "✓ Kopiert – jetzt das Kochbuch öffnen"; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, function(){ fb(); }); else fb();
+      function fb(){ var t = document.createElement("textarea"); t.value = u; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); ok(); } catch(_){} t.remove(); } }; }
+</script>
 </body>
 </html>
