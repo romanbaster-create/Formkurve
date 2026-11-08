@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "kind": "AI-generated recipe illustration",
+  "images": {
+    "Protein-Porridge mit Beeren": "recipe-images/protein-porridge.webp",
+    "Skyr-Bowl": "recipe-images/skyr-bowl.webp",
+    "Rührei mit Vollkornbrot": "recipe-images/ruehrei-vollkornbrot.webp",
+    "Overnight Oats mit Quark": "recipe-images/overnight-oats.webp",
+    "Protein-Pancakes": "recipe-images/protein-pancakes.webp",
+    "Syrniki (leicht)": "recipe-images/syrniki-leicht.webp",
+    "Gemüse-Omelett mit Feta": "recipe-images/gemuese-omelett-feta.webp",
+    "Spaghetti Bolognese (leicht)": "recipe-images/spaghetti-bolognese.webp",
+    "Lachs mit Ofengemüse und Kartoffeln": "recipe-images/lachs-ofengemuese.webp",
+    "Putenhack-Zucchini-Reispfanne": "recipe-images/putenhack-reispfanne.webp",
+    "Hähnchen-Curry mit Kokos (leicht)": "recipe-images/haehnchen-kokoscurry.webp",
+    "Rote-Linsen-Dal": "recipe-images/linsen-dal.webp",
+    "Hähnchen-Wraps mit Joghurtsoße": "recipe-images/haehnchen-wraps.webp",
+    "Ofen-Süßkartoffel mit Hüttenkäse": "recipe-images/suesskartoffel-huettenkaese.webp",
+    "Shakshuka": "recipe-images/shakshuka.webp",
+    "Burger-Bowl ohne Brötchen": "recipe-images/burger-bowl.webp",
+    "Pfannen-Pizza-Wrap": "recipe-images/pizza-wrap.webp",
+    "Hähnchen-Gyros-Teller mit Tzatziki": "recipe-images/haehnchen-gyros.webp",
+    "Teriyaki-Hähnchen-Bowl": "recipe-images/teriyaki-haehnchen.webp",
+    "Chili con Carne (High Protein)": "recipe-images/chili-con-carne.webp",
+    "Lasagne mit Quark statt Béchamel": "recipe-images/lasagne-quark.webp",
+    "Borschtsch (leicht)": "recipe-images/borschtsch-leicht.webp",
+    "Hähnchen-Blechgemüse mit Kartoffeln": "recipe-images/haehnchen-blech.webp",
+    "Linsensuppe mit Würstchen": "recipe-images/linsensuppe-wuerstchen.webp",
+    "Hähnchen-Gemüsesuppe": "recipe-images/haehnchen-gemuesesuppe.webp",
+    "Thunfisch-Bohnen-Salat": "recipe-images/thunfisch-bohnen.webp"
+  }
+}
