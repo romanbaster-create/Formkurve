@@ -1492,6 +1492,7 @@ body:has(.sheet.on) .ks-fab{display:none} .km-q{display:flex;gap:10px;align-item
 .cw-person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:5px 0;overflow-wrap:anywhere}
 .cw-person b{white-space:nowrap}
 .ck-plate-summary{margin:10px 0 0}
+.ck-session-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0 12px}.ck-session-actions .btn{width:auto}.ck-session-actions .link{color:var(--red)}#session-results{margin-top:12px}#session-mac{display:block;padding:12px 0}#ck-ing{scroll-margin-top:12px}
 </style>
 
 </head>
@@ -5524,17 +5525,29 @@ function openQuick(meal, d){
       const e = {n: $("#q-n", sh).value.trim() || "Schnell-Eintrag", g:100, k100:k, p100:pp, c100:0, f100:0, u:"g", m:meal, src:"quick"};
       closeSheet(true); closeSheet(true); setFood(d, (S.days[d]?.food||[]).concat([e])); return false; }});
 }
-function openOwnFood(meal, d, pre, pick){
+function openOwnFood(meal, d, pre, pick, session){
   pre = pre || {};
   const nf = (id, l, u, v) => `<label class="row" for="${id}"><span class="lbl">${l}</span><input class="field num" id="${id}" inputmode="decimal" value="${v ?? ""}"><span class="unit">${u}</span></label>`;
   openSheet({title:"Eigenes Lebensmittel", right:"Weiter", body:`<div class="section"><div class="group">
     <label class="row" for="o-n"><span class="lbl">Name</span><input class="field" style="width:62%;text-align:right" id="o-n" value="${esc(pre.n||"")}"></label>
     ${nf("o-k","Kalorien je 100 g","kcal",pre.k100)}${nf("o-p","Protein je 100 g","g",pre.p100)}${nf("o-c","Kohlenhydrate je 100 g","g",pre.c100)}${nf("o-f","Fett je 100 g","g",pre.f100)}${nf("o-por","Portion","g",pre.por || 100)}</div>
-    <div class="section-f">Werte stehen auf der Verpackung („Nährwerte pro 100 g“). Das Lebensmittel bleibt gespeichert und ist danach in der Suche.${pre.bc ? " Barcode " + esc(pre.bc) + " war nicht in Open Food Facts." : ""}</div></div>`,
+    <div class="section-f">Werte stehen auf der Verpackung („Nährwerte pro 100 g“). ${session ? "Die Zutat gilt nur für dieses Kochen." : "Das Lebensmittel bleibt gespeichert und ist danach in der Suche."}${pre.bc ? " Barcode " + esc(pre.bc) + " war nicht in Open Food Facts." : ""}</div></div>`,
+    onOpen: sh => {
+      if (session) {
+        $(".l",sh).onclick = session.back;
+        sh.previousElementSibling.onclick = session.back;
+      }
+    },
     onSave: sh => { const v = id => parseNum($("#"+id, sh).value);
       const it = {n: $("#o-n", sh).value.trim(), k100: v("o-k"), p100: v("o-p")||0, c100: v("o-c")||0, f100: v("o-f")||0, por: v("o-por")||100, pl:"1 Portion", u:"g", src:"own"};
       if (pre.bc) it.bc = pre.bc;
       if (!it.n || it.k100 == null){ toast("Name und Kalorien fehlen"); return false; }
+      if (session) {
+        if (![it.k100,it.p100,it.c100,it.f100].every(n => Number.isFinite(n) && n >= 0)){
+          toast("Bitte gültige Nährwerte eingeben."); return false;
+        }
+        closeSheet(); session.select(it); return false;
+      }
       const p = P(); writeDoc("profile","me", Object.assign({}, S.profile, {foods: [it].concat((p.foods||[]).filter(x => x.n !== it.n)).slice(0,300)}));
       closeSheet(true); openAmount(it, meal, d, null, pick); return false; }});
 }
@@ -6061,6 +6074,80 @@ function ingAdjBind(ed, r, i, done){ if (!ed) return; let m = (ingAdj(r)[i] || {
   inp.onkeydown = e => { if (e.key === "Enter") $("[data-iok]", ed).click(); };
   const rs = $("[data-irs]", ed); if (rs) rs.onclick = () => { const A = Object.assign({}, ingAdj(r)); delete A[i]; save(A); };
   $("[data-ix]", ed).onclick = () => done(); }
+function openCookIngredient(r, index, plan, meal, day, back, apply){
+  const old = plan.rr.ing[index];
+  const labels = weighLabels(r);
+  const groups = [...new Set(labels)];
+  const separate = groups.length > 1;
+  const title = old ? "Zutat für dieses Kochen ersetzen" : "Zutat für dieses Kochen hinzufügen";
+  const bindBack = (sh, action) => {
+    $(".l", sh).onclick = action;
+    sh.previousElementSibling.onclick = action;
+  };
+  const amount = item => {
+    const unit = item.u || "g";
+    const sameUnit = old && (old.u || "g") === unit;
+    const start = sameUnit ? Math.max(.1, r1(old.g * plan.f)) : 100;
+    openSheet({title, left:"Zurück", right:"Übernehmen", body:`
+      <h2 class="ck-t">${esc(item.n)}</h2>
+      <p class="note">Gib die Menge für das gesamte Gericht ein.</p>
+      <label class="am-in"><input id="session-g" class="num" inputmode="decimal" aria-label="Menge in ${esc(unit)}" value="${fmt(start, start % 1 ? 1 : 0)}"><span>${esc(unit)}</span></label>
+      ${!old ? `<label class="row"><span class="lbl">Wiegegruppe</span><select id="session-group" class="field">
+        ${groups.map((group,i) => `<option value="${i}">${esc(group)}</option>`).join("")}
+        <option value="-1" ${separate ? "selected" : ""}>Separat wiegen</option></select></label>` : ""}
+      <div class="am-mac" id="session-mac"></div>`,
+      onOpen: sh => {
+        bindBack(sh, search);
+        const input = $("#session-g", sh);
+        input.oninput = () => {
+          const v = entryVals(Object.assign({}, item, {g:Math.max(0, parseNum(input.value) || 0)}));
+          $("#session-mac", sh).textContent = `${fmt(v.k)} kcal · ${macLine(v, true)}`;
+        };
+        input.oninput();
+      },
+      onSave: sh => {
+        const g = parseNum($("#session-g", sh).value);
+        if (!Number.isFinite(g) || g <= 0){ toast("Bitte eine Menge über null eingeben."); return false; }
+        const groupIndex = Number($("#session-group", sh)?.value ?? -1);
+        let group = old ? labels[index] : groups[groupIndex];
+        if (old && separate && labels.filter(label => label === group).length === 1) group = item.n;
+        const entry = {n:item.n, g, u:unit, k100:item.k100, p100:item.p100, c100:item.c100, f100:item.f100, nx:item.nx, por:item.por, pl:item.pl, bc:item.bc, _sessionIngredient:true};
+        if (old) entry.originalN = old.originalN || old.n;
+        closeSheet();
+        apply(entry, group || item.n);
+        return false;
+      }});
+  };
+  let query = "";
+  const search = () => openSheet({title,left:"Zurück",right:"",body:`
+    <p class="note">${old ? `Ersetzt: ${esc(old.n)}. ` : ""}Gilt nur für dieses Kochen.</p>
+    <div class="fd-search"><input id="session-search" type="search" placeholder="Lebensmittel suchen …" autocomplete="off" value="${esc(query)}"></div>
+    <button type="button" class="btn secondary" id="session-scan">Barcode scannen</button>
+    <button type="button" class="link" id="session-manual">Zutat manuell eingeben</button>
+    <div class="group" id="session-results"></div>`,
+    onOpen: sh => {
+      $(".r", sh).style.visibility = "hidden";
+      bindBack(sh, back);
+      const field = $("#session-search", sh);
+      const box = $("#session-results", sh);
+      field.oninput = () => {
+        query = field.value;
+        const words = norm(query.trim()).split(/\s+/).filter(Boolean);
+        const foods = words.length ? allLocal().filter(x => words.every(word => norm(x.n).includes(word) || norm(trText(x.n)).includes(word))) : [];
+        const results = [...new Map(foods.map(x => [x.n,x])).values()].slice(0,30);
+        box.innerHTML = results.map(foodRow).join("") || `<p class="note">${words.length ? "Keine passende Zutat gefunden. Du kannst einen Barcode scannen." : "Suche nach einer Zutat, z. B. Skyr."}</p>`;
+        $$("[data-fi]",box).forEach(button => button.onclick = () => amount(results[Number(button.dataset.fi)]));
+      };
+      $("#session-scan",sh).onclick = () => openScanner(meal, day, {recipe:true,cancel:search,kit:item => {
+        if (productNutritionValid(item)) amount(item);
+        else { search(); toast("Für dieses Produkt fehlen vollständige Nährwerte."); }
+      }});
+      $("#session-manual",sh).onclick = () => openOwnFood(meal, day, {n:query.trim()}, null, {back:search, select:amount});
+      field.oninput();
+    }});
+  search();
+}
+
 function openCook(r, pre){
   if(r.hotel && !pre?.shared) return openHotel(r);
   pre = pre || {};
@@ -6091,7 +6178,7 @@ function openCook(r, pre){
       <div class="group" id="ck-pp"></div>
       <div class="section-f">Alle bekommen dasselbe Gericht im gleichen Verhältnis – nur die Menge richtet sich nach dem Kalorienziel. 2 = Teller heute + Box für morgen.</div>
       <button type="button" class="link" id="ck-eat" style="margin:6px 4px 0;font-size:14px">Haushalt & Ziele bearbeiten</button></details>
-    <div class="section"><div class="section-h"><span>Einkaufen & Zutaten</span><span class="meta-s" id="ck-fac"></span></div><div class="glass"><div id="ck-ing"></div>
+    <div class="section"><div class="section-h"><span>Einkaufen & Zutaten</span><span class="meta-s" id="ck-fac"></span></div><div class="glass"><div id="ck-ing"></div><button type="button" class="btn secondary" id="ck-add-ing">＋ Zutat hinzufügen</button>
       <button type="button" class="btn secondary" id="ck-shop" style="margin-top:12px">Einkaufsliste teilen</button><button type="button" class="link ck-jump" id="ck-portion-jump">↓ Zum Wiegen &amp; Verteilen</button></div></div>
     <details class="section ck-fold" id="ck-directions" ${session?.stepsOpen?"open":""}><summary>Zubereitung <small>${r.steps?.length||0} Schritte</small></summary><div class="section-h"><span>Anleitung</span><button type="button" class="link" id="ck-devs" style="font-size:14px">Geräte</button></div>
       <div id="ck-dt"></div><div id="ck-st"></div></details>
@@ -6115,8 +6202,44 @@ function openCook(r, pre){
       $("#ck-portion-jump", sh).onclick = scrollToPortions;
       $("#ck-groups",sh).onclick=()=>openWeighGroups(r,resume);
       if (session?.atPortions) scrollToPortions();
-      const ckPlan = () => { const p0 = cookPlan(r, people, mode, inputs), a = ingAdjApply(r, p0.f); if (a.r === r && Math.abs(a.f - p0.f) < 1e-9) return Object.assign(p0, {rr: r, f0: p0.f});
+      const ckPlan = () => {
+        const need = people.reduce((sum, person) => sum + person.c * person.k, 0);
+        const factor = r._sessionOriginal ? (need > 0 && r._sessionReference > 0 ? need / r._sessionReference : r._sessionFactor) : null;
+        const p0 = cookPlan(r, people, mode, inputs, factor), a = ingAdjApply(r, p0.f); if (a.r === r && Math.abs(a.f - p0.f) < 1e-9) return Object.assign(p0, {rr: r, f0: p0.f});
         return Object.assign(cookPlan(a.r, people, mode, inputs, a.f), {rr: a.r, f0: p0.f, adj: a}); };
+      const reopenIngredients = (rr, changed = {}) => openCook(rr, Object.assign({}, pre, {
+        _cookSession:Object.assign(snapshot(), {atIngredients:true}, changed)
+      }));
+      if (session?.atIngredients) requestAnimationFrame(() => $("#ck-ing", sh).scrollIntoView({block:"start"}));
+      const changeIngredient = (index, replacement, group) => {
+        const current = ckPlan();
+        const factor = Number.isFinite(current.f) && current.f > 0 ? current.f : 1;
+        const ing = current.rr.ing.slice();
+        const labels = weighLabels(current.rr).slice();
+        const previous = labels[index];
+        if (index == null) {
+          ing.push(Object.assign({}, replacement, {g:replacement.g / factor}));
+          labels.push(group);
+        } else if (replacement) {
+          ing[index] = Object.assign({}, replacement, {g:replacement.g / factor});
+          labels[index] = group;
+        } else {
+          if (ing.length === 1){ toast("Mindestens eine Zutat muss im Gericht bleiben. Du kannst sie ersetzen."); return; }
+          ing.splice(index,1);
+          labels.splice(index,1);
+        }
+        const original = r._sessionOriginal || r;
+        const updated = Object.assign({}, r, {
+          ing, weighGroups:labels, _cookAdj:{}, _sessionOriginal:original,
+          _sessionReference:current.need > 0 ? current.need / factor : (r._sessionReference || current.T.k), _sessionFactor:factor
+        });
+        const nextInputs = Object.assign({}, inputs);
+        [previous, group, "Gericht"].filter(Boolean).forEach(label => delete nextInputs[label]);
+        reopenIngredients(updated, {inputs:nextInputs, mode:index == null && new Set(labels).size > 1 ? "comp" : mode});
+      };
+      const pickIngredient = index => openCookIngredient(r, index, ckPlan(), wst.m, whenDay(wst),
+        () => reopenIngredients(r), (item, group) => changeIngredient(index, item, group));
+      $("#ck-add-ing", sh).onclick = () => pickIngredient(null);
       whenBind($("#ck-when", sh), wst);
       const drawPeople = () => { $("#ck-people-summary",sh).textContent=people.filter(x=>x.c).map(x=>x.n+(x.c>1?" + "+(x.c-1)+" Box":"")).join(" · ") || "Niemand ausgewählt"; $("#ck-pp", sh).innerHTML = people.map((x,i) => `<div class="row pp"><span class="lbl">${esc(x.n)}${x.me ? " (ich)" : ""}<small>${MEALS.find(y => y[0] === x.meal)[1]}: ${fmt(x.k)} kcal</small>${x.me && x.empty ? `<small class="pp-lim warn">${x.lim === "Kohlenhydrate" ? "Deine Kohlenhydrate für diesen Tag sind aufgebraucht" : x.lim === "Fett" ? "Dein Fett für diesen Tag ist aufgebraucht" : "Deine Kalorien für diesen Tag sind aufgebraucht"} – keine Portion eingeplant.</small>` : x.me && x.lim ? `<small class="pp-lim">${x.lim === "kcal" ? "Angepasst an deine restlichen Kalorien" : x.lim === "Kohlenhydrate" ? "Angepasst an deine restlichen Kohlenhydrate" : "Angepasst an dein restliches Fett"}</small>` : ""}</span>
         <span class="pp-l">${x.c >= 2 ? "+" + (x.c-1) + " Box" : x.c ? "heute" : "–"}</span><div class="stp2"><button type="button" data-pc="${i}:-1" aria-label="Weniger">−</button><b class="num">${x.c}</b><button type="button" data-pc="${i}:1" aria-label="Mehr">+</button></div></div>`).join("");
@@ -6127,10 +6250,15 @@ function openCook(r, pre){
         $("#ck-weigh-note",sh).textContent=mode==="pot"?"Fertiges Gericht ohne Topf wiegen. Bereits vermischte Zutaten lassen sich danach nicht einzeln wiegen.":"Jede Komponente separat fertig zubereitet wiegen, bevor du sie vermischst. Die Mengen pro Person stehen direkt unter der jeweiligen Komponente.";
         $("#ck-fac", sh).textContent = `×${fmt(plan.f, 2)} · ${tot} ${tot === 1 ? "Portion" : "Portionen"}`;
         { const IA = ingAdj(r), ib = $("#ck-ing", sh), labels = weighLabels(plan.rr);
-          ib.innerHTML = ingAdjNote(r, plan.adj) + plan.rr.ing.map((e, i) => { const g = roundG(e.g*plan.f), inF = fm && fm.have.some(x => x.n === e.n); return `<div class="ing${IA[i] ? " adj" : ""}"><span>${inF ? "🧊 " : ""}${esc(e.n)}${IA[i] ? ` <em class="ia-tag">angepasst</em>` : ""}<small>${e.scanned?(e.scanFallback?"Gescannt · ursprüngliche Werte":"Produktwerte · nur dieses Mal"):countHint(e,g)}</small>${comps.length>1 ? `<small class="ck-group-name">${esc(labels[i])}</small>` : ""}</span><b class="num">${fmt(g)} ${e.u||"g"}</b><button type="button" class="ia-btn" data-ia="${i}" aria-label="Menge anpassen">✎</button><button type="button" class="ia-btn scan-ing" data-ing-scan="${i}" aria-label="Produkt für ${esc(e.n)} scannen">${recipeScanIcon()}</button></div>${iaOpen === i ? ingAdjEdHTML(r, i, roundG(r.ing[i].g * plan.f0)) : ""}`; }).join("")
-            + `<p class="note iadj-hint">✎ <span>Von einer Zutat zu wenig da? Antippen und Menge eintragen – alles rechnet sich neu.</span></p>`;
+          const sessionNote = r._sessionOriginal ? `<div class="iadj-note"><div><b>Nur für dieses Kochen angepasst</b><small>Die Anleitung zeigt weiterhin die Schritte des Originalrezepts.</small></div><button type="button" class="link" id="ck-reset-ing">Zurücksetzen</button></div>` : "";
+          ib.innerHTML = sessionNote + ingAdjNote(r, plan.adj) + plan.rr.ing.map((e, i) => { const g = e._sessionIngredient ? r1(e.g*plan.f) : roundG(e.g*plan.f), inF = fm && fm.have.some(x => x.n === e.n); return `<div class="ing${IA[i] ? " adj" : ""}"><span>${inF ? "🧊 " : ""}${esc(e.n)}${IA[i] ? ` <em class="ia-tag">angepasst</em>` : ""}<small>${e.scanned?(e.scanFallback?"Gescannt · ursprüngliche Werte":"Produktwerte · nur dieses Mal"):countHint(e,g)}</small>${comps.length>1 ? `<small class="ck-group-name">${esc(labels[i])}</small>` : ""}</span><b class="num">${fmt(g, e._sessionIngredient && g % 1 ? 1 : 0)} ${e.u||"g"}</b><button type="button" class="ia-btn" data-ia="${i}" aria-label="Menge anpassen">✎</button><button type="button" class="ia-btn scan-ing" data-ing-scan="${i}" aria-label="Produkt für ${esc(e.n)} scannen">${recipeScanIcon()}</button></div>${iaOpen === i ? ingAdjEdHTML(r, i, roundG(r.ing[i].g * plan.f0)) + `<div class="ck-session-actions"><button type="button" class="btn secondary" data-ing-replace="${i}">Zutat ersetzen</button><button type="button" class="link" data-ing-remove="${i}">Zutat entfernen</button></div>` : ""}`; }).join("")
+            + `<p class="note iadj-hint">✎ <span>Tippen, um die Menge zu ändern, die Zutat zu ersetzen oder zu entfernen.</span></p>`;
           $$("[data-ia]", ib).forEach(b => b.onclick = () => { const i = Number(b.dataset.ia); iaOpen = iaOpen === i ? -1 : i; upd(); });
           $$("[data-ing-scan]",ib).forEach(b=>b.onclick=()=>{const i=Number(b.dataset.ingScan),factor=plan.f;openScanner(wst.m,whenDay(wst),{recipe:true,cancel:()=>resume(r),kit:(it,code)=>openRecipeProduct(r,i,it,code,factor,resume)});});
+          $$("[data-ing-replace]",ib).forEach(button => button.onclick = () => pickIngredient(Number(button.dataset.ingReplace)));
+          $$("[data-ing-remove]",ib).forEach(button => button.onclick = () => changeIngredient(Number(button.dataset.ingRemove), null));
+          const reset = $("#ck-reset-ing",ib);
+          if (reset) reset.onclick = () => reopenIngredients(r._sessionOriginal, {inputs:{},mode:null});
           ingAdjBind($(".iadj", ib), r, iaOpen, () => { iaOpen = -1; upd(); });
           { const ra = $("[data-iar]", ib); if (ra) ra.onclick = () => { r._cookAdj={}; iaOpen = -1; upd(); }; } }
         $("#ck-cw", sh).innerHTML = plan.res.map((c,j) => `<div class="cw-row" data-cl="${esc(c.l)}"><span class="cw-l"><b>${esc(c.l)}</b><small>${fmt(c.K)} kcal</small></span>
@@ -6186,12 +6314,15 @@ function openCook(r, pre){
       $("#ck-send", sh).onclick = async () => {
         const sr=plan.rr||r;const rr = {home:r.home,fresh:r.fresh,n:r.n, cat:r.cat, min:r.min, serv:r.serv, tags:r.tags, steps:r.steps, cmode:r.cmode, ing:sr.ing.map((e,i) => ({n:e.n, g:e.g, k100:e.k100, p100:e.p100, c100:e.c100, f100:e.f100, u:e.u, por:e.por, pl:e.pl, originalN:e.originalN, nx:e.nx, c:weighLabels(sr)[i]}))};
         const plates = {}; plan.plates.filter(Boolean).forEach(pl => { plates[pl.n.toLowerCase()] = {c:pl.c, k:Math.round(pl.k), p:Math.round(pl.p), kh:Math.round(pl.kh||0), fa:Math.round(pl.fa||0), g:Math.round(pl.g), it: pl.items.map(it => [it.l, Math.round(it.g), it.pcs])}; });
-        const url = location.origin + location.pathname + "#cook=" + b64e({r:rr, plates, by:p.person});
+        const url = location.origin + location.pathname + "#cook=" + b64e({r:rr, plates, by:p.person, sessionOnly:!!r._sessionOriginal});
         await shareLink(r.n, `${r.n} – dein Teller in ITOGO:`, url);
       };
       const used = $("#ck-used", sh); if (used) used.onclick = () => openKitUse(plan && plan.rr || r, plan ? plan.f : 1, pre.plan && pre.plan.id);
       const kpl = $("#ck-plan", sh); if (kpl) kpl.onclick = () => { const e = people.filter(x => x.c > 0).map(x => x.n); kitPut("plan", {id: kitId(), d: whenDay(wst), m: wst.m, r: r.n, e: e.length ? e : [p.person]}); toast("In den Küchen-Plan: " + whenLabel(wst)); };
-      $("#ck-edit", sh).onclick = () => openRecipeEdit(r.own ? r : Object.assign({}, r, {base:false, own:false, n: r.n}), r.own ? r.n : null);
+      $("#ck-edit", sh).onclick = () => {
+        const original = r._sessionOriginal || r;
+        openRecipeEdit(original.own ? original : Object.assign({}, original, {base:false, own:false}), original.own ? original.n : null);
+      };
       const fopts = fullOptions(r), opts = fopts || devOptions(r), mem = lsGet("formkurve.devr") || {};
       let dv = mem[r.n]; if (!opts.some(o => o[0] === dv)) dv = lsGet("formkurve.dev"); if (!opts.some(o => o[0] === dv) || (dv === "herd" && !mem[r.n])) dv = (opts.find(o => o[0] !== "herd") || opts[0] || ["herd"])[0];
       let choose = false; const done = new Set();
@@ -6212,10 +6343,10 @@ function openCook(r, pre){
         const mc = $("#meth-ch", sh); if (mc) mc.onclick = () => { choose = !choose; drawDev(); };
         $$("[data-dv]", sh).forEach(b => b.onclick = () => { dv = b.dataset.dv; const m = lsGet("formkurve.devr") || {}; m[r.n] = dv; lsSet("formkurve.devr", m); lsSet("formkurve.dev", dv); choose = false; done.clear(); drawDev(); });
         $$("[data-si]", sh).forEach(li => li.onclick = () => { const i = Number(li.dataset.si); done.has(i) ? done.delete(i) : done.add(i); li.classList.toggle("done"); if (navigator.vibrate) navigator.vibrate(8); }); };
-      const fi = $("#ck-file", sh); fi.onchange = async () => { const f = fi.files && fi.files[0]; if (!f) return; try { await savePhoto(r.n, f); toast("Foto gespeichert"); setTimeout(() => openCook(r, pre), 200); } catch(e){ toast("Foto konnte nicht gespeichert werden"); } };
+      const fi = $("#ck-file", sh); fi.onchange = async () => { const f = fi.files && fi.files[0]; if (!f) return; try { await savePhoto(r.n, f); toast("Foto gespeichert"); setTimeout(() => resume(r), 200); } catch(e){ toast("Foto konnte nicht gespeichert werden"); } };
       sh._relang = () => { drawPeople(); upd(); drawDev(); };
       drawRate(sh);
-      drawDev(); $("#ck-devs", sh).onclick = () => openDevices(() => openCook(r, pre));
+      drawDev(); $("#ck-devs", sh).onclick = () => openDevices(() => resume(r));
       drawPeople(); upd();
     }});
 }
@@ -6263,7 +6394,7 @@ function openScale(r, plan, back){
 function openSharedPlate(r, pre){
   const p = P(), mine = pre.shared[String(p.person).toLowerCase()], today = todayISO();
   openSheet({title:"Dein Teller", left:"Schließen", right:"", body:`<h2 class="ck-t">${esc(r.n)}</h2>
-    <div class="alert" style="margin:0 0 14px"><b>Von ${esc(pre.by || "Familie")} gekocht</b>${mine ? "Das ist deine Portion – einfach abwiegen und eintragen." : "Für dich war keine Portion eingeplant. Das Rezept ist trotzdem gespeichert."}</div>
+    <div class="alert" style="margin:0 0 14px"><b>Von ${esc(pre.by || "Familie")} gekocht</b>${mine ? "Das ist deine Portion – einfach abwiegen und eintragen." : pre.sessionOnly ? "Für dich war keine Portion eingeplant." : "Für dich war keine Portion eingeplant. Das Rezept ist trotzdem gespeichert."}</div>
     ${mine ? `<div class="plate2 mine" style="margin-bottom:14px">${mine.it.map(([l,g,pcs]) => `<div class="pl-i"><span>${esc(l)}</span><b class="num">${pcs != null ? fmtPcs(pcs) + " Stk" : fmt(roundG(g)) + " g"}</b></div>`).join("")}<small>${fmt(mine.k)} kcal · ${macLine({p:mine.p, c:mine.kh||0, f:mine.fa||0}, true)}${mine.c > 1 ? " · plus " + (mine.c-1) + " Box" : ""}</small></div>
       <div id="sp-when">${whenHTML(defMeal(r))}</div><div class="ck-btns"><button type="button" class="btn" id="sp-log">Meine Portion eintragen</button>${mine.c > 1 ? `<button type="button" class="btn secondary" id="sp-box">Box für morgen eintragen</button>` : ""}</div>` : ""}`,
     onOpen: sh => { $(".r", sh).style.visibility = "hidden";
@@ -6777,6 +6908,11 @@ function handleShareHash(h, force){
       h.push(Object.assign({}, old, {n:o.n,k:o.k,p:o.p,kg:o.kg,cm:o.cm,age:o.age,sex:o.sex,upd:o.d,ts:o.ts||null,remaining:Number.isFinite(o.remaining)?clamp(o.remaining,0,o.k):null,src:"app",calc:"manual",r:Object.assign({},old.r||{},o.r||{})}));
       saveProfile({household: h.concat([{n:P().person, k:0, me:true}])}); toast(Object.keys(o.r || {}).length ? `Werte und ${Object.keys(o.r).length} Bewertungen von ${o.n} übernommen` : `Werte von ${o.n} übernommen`); return; }
     const r = o.r || o;
+    if (m[1] === "cook" && o.sessionOnly && o.plates) {
+      if (!KOCH) setTab("essen");
+      setTimeout(() => openCook(r, {shared:o.plates, by:o.by, sessionOnly:true}), 300);
+      return;
+    }
     const rs = (P().recipes||[]).filter(x => x.n !== r.n); rs.unshift(r); writeDoc("profile","me", Object.assign({}, S.profile, {recipes: rs.slice(0,200)}));
     if (KOCH){ const base = allRecipes().find(x => x.n === r.n && !x.own); kochOpen(base || Object.assign({}, r, {own:true}), o.plates ? {shared:o.plates, by:o.by} : {}); toast(o.plates ? "Rezept mit Portionen übernommen" : "Rezept übernommen"); return; }
     setTab("essen"); setTimeout(() => openCook(Object.assign({}, r, {own:true}), o.plates ? {shared:o.plates, by:o.by} : {}), 300);
