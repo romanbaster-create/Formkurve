@@ -1,7 +1,7 @@
 // ITOGO – Offline-Cache. Version erhöhen, wenn sich index.html ändert.
-const CACHE = "itogo-v56-ipad-1";
+const CACHE = "itogo-v57-training";
 const DATA = "itogo-data-v1"; // Produktdatenbank (pdb-…) und Bilder-Pakete (img-…) bleiben über App-Updates erhalten
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png", "./zxing.min.js", "./koch.html", "./koch.webmanifest", "./koch-180.png", "./koch-192.png", "./koch-512.png", "./pdb-meta.json"];
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png", "./zxing.min.js", "./koch.html", "./koch.webmanifest", "./koch-180.png", "./koch-192.png", "./koch-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== DATA).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 const fromData = req => caches.open(DATA).then(c => c.match(req).then(hit => hit || fetch(req).then(r => { if (r.ok) c.put(req, r.clone()); return r; })));
