@@ -1495,6 +1495,9 @@ body:has(.sheet.on) .ks-fab{display:none} .km-q{display:flex;gap:10px;align-item
 .ck-session-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0 12px}.ck-session-actions .btn{width:auto}.ck-session-actions .link{color:var(--red)}#session-results{margin-top:12px}#session-mac{display:block;padding:12px 0}#ck-ing{scroll-margin-top:12px}
 .recipe-sort{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 12px;font-size:13px;color:var(--muted)}
 .recipe-sort select{background:var(--card,#222833);color:var(--fg,inherit);border:1px solid var(--sep);border-radius:10px;padding:8px;max-width:70%;font:inherit}
+.bud-serving{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
+.bud-serving>div{display:grid;gap:4px;padding:8px;border:1px solid var(--sep);border-radius:10px}
+.bud-serving small{overflow-wrap:anywhere}.bud-r>b{white-space:nowrap}
 </style>
 
 </head>
@@ -5723,7 +5726,7 @@ function renderFood(el, d){
       <div class="fg-s"><small>Ernährungstagebuch</small><span><span class="num">${fmt(t.k)}</span> <span>von</span> <span class="num">${fmt(g.k)}</span> <span>kcal</span></span><em>${fut ? "geplant" : has ? (left >= 0 ? "im Plan" : "über dem Ziel") : "noch nichts eingetragen"}</em></div></div>
     <div class="fmcs">${mc(t.p, g.p, "#FF453A", "⚡", "Protein")}${mc(t.c, g.c, "#FF9F0A", "🍃", "Kohlenhydrate")}${mc(t.f, g.f, "#FFD60A", "💧", "Fett")}</div>
     <div class="meals">${MEALS.map(([m, l, ic]) => { const mm = t.m[m], es = (o.food||[]).map((e,i) => [e,i]).filter(([e]) => e.m === m);
-      const bfOk = m === "b" && mm.p >= bfGoal(), mt = Math.round(g.k * (MEAL_SHARE[m] || .25) / 10) * 10, mq = mt > 0 ? mm.k / mt : 0, mcl = mq > 1.15 ? "over" : mq > 1 ? "near" : mq >= .7 ? "ok" : "";
+      const bfOk = m === "b" && mm.p >= bfGoal(), mt = mealKcalGoal(g.k,m), mq = mt > 0 ? mm.k / mt : 0, mcl = mq > 1.15 ? "over" : mq > 1 ? "near" : mq >= .7 ? "ok" : "";
       return `<div class="meal ${m === "b" ? (bfOk ? "bf-ok" : "bf") : ""}"><div class="meal-h"><span class="mi">${ic}</span><span class="ml"><b>${l}${bfOk ? ` <span class="kst ok">✓ Protein</span>` : ""}</b><small>${es.length ? macLine(mm) : m === "b" ? "Ziel: ab " + bfGoal() + " g Protein, wenig Zucker" : "noch nichts"}</small><span class="mpb ${mcl}"><span class="mpb-b"><i style="width:${(Math.min(mq, 1) * 100).toFixed(1)}%"></i></span><span class="mpb-t num">${fmt(mm.k)} / ${fmt(mt)} kcal</span></span></span>${es.length > 1 ? `<button type="button" class="ms" data-sv="${m}" aria-label="Als Gericht speichern">☆</button>` : ""}<button type="button" class="madd" data-add="${m}" aria-label="${l} hinzufügen">+</button></div>
         ${es.length ? `<div class="mes">${es.map(([e,i]) => `<button type="button" class="me${e.src === "ff" || FF_NAMES.has(e.n) ? " ff" : ""}" data-ed="${i}"><span>${esc(e.n)}${e.src === "quick" ? "" : `<small>${fmt(e.g, e.g % 1 ? 1 : 0)} ${e.u||"g"}</small>`}</span><b class="num">${fmt(entryVals(e).k)}</b></button>`).join("")}</div>` : ""}</div>`; }).join("")}</div>
 
@@ -6030,19 +6033,26 @@ function fridgeMatch(r){
   return {have, miss, urgent, cov: items.length ? have.length / items.length : 0};
 }
 const MEAL_SHARE = {b:.25, l:.35, d:.30, s:.10};
+const mealKcalGoal = (daily,meal) => Math.round(daily*(MEAL_SHARE[meal] ?? .25)/10)*10;
+function mealBudget(day,meal){
+  const totals = foodTotals(S.days[day] || {});
+  const goals = macroGoals(Math.max(1,weekOf(day)));
+  const target = mealKcalGoal(goals.k,meal);
+  const used = totals.m[meal]?.k || 0;
+  return {target,used,left:Math.max(0,Math.min(target-used,goals.k-totals.k))};
+}
 function cookPeople(r, wst){
   const p = P(), m = (wst && wst.m) || (CAT[r.cat] || CAT.h)[2], sh = MEAL_SHARE[m] || .3, d = wst ? whenDay(wst) : todayISO(), w = Math.max(1, weekOf(d));
-  const mg = macroGoals(w), kMeal = mg.k*sh, T = recTotals(r), t = foodTotals(S.days[d] || {});
+  const mg = macroGoals(w), budget = mealBudget(d,m), kMeal = budget.target, T = recTotals(r);
   const recipePortion = r.proteinMeal && wst?.recipePortion !== false;
-  let k = recipePortion ? T.k / r.serv : kMeal, lim = null;
-  const cand = recipePortion ? [] : [["kcal", mg.k - t.k]];
-  cand.forEach(([n, v]) => { if (v < k){ k = v; lim = n; } });
+  let k = recipePortion ? T.k / r.serv : budget.left;
+  const lim = !recipePortion && k < kMeal ? "kcal" : null;
   const empty = k <= 0; k = Math.max(k, 0);
   const sc = kMeal > 0 ? k / kMeal : 0, me = {n:p.person, k, p:recipePortion ? T.p/r.serv : mg.p*sh*sc, kh:recipePortion ? T.c/r.serv : mg.c*sh*sc, fa:recipePortion ? T.f/r.serv : mg.f*sh*sc, me:true, c:k>0?1:0, lim, empty, meal:m};
   return [me].concat(household().map(x => { const kk = x.src==="app" && x.upd===d && Number.isFinite(x.remaining) ? Math.min(x.k*sh,x.remaining) : x.k*sh, pp = (x.p || estimateNeeds(x).p)*sh, fa = kk*0.28/9; return {n:x.n, k:kk, p:pp, fa, kh: Math.max(0, (kk - pp*4 - fa*9)/4), kid:x.kid, c: r.cat === "h" && !r.proteinMeal && x.on !== false ? 1 : 0, meal:m}; }));
 }
 function cookPlan(r, people, mode, inputs, fF){
-  const T = recTotals(r), need = people.reduce((a,x) => a + x.c*x.k, 0), f = fF != null ? fF : need > 0 ? need / T.k : 1;
+  const T = recTotals(r), need = people.reduce((a,x) => a + x.c*x.k, 0), f = fF != null ? fF : T.k > 0 ? need / T.k : 1;
   const comps = mode === "pot" ? [{l:"Gericht", idx:r.ing.map((_,i) => i), m:"w", n:0}] : recComps(r);
   const res = comps.map(c => {
     const K = c.idx.reduce((a,i) => a + entryVals(r.ing[i]).k, 0)*f, Pp = c.idx.reduce((a,i) => a + entryVals(r.ing[i]).p, 0)*f, raw = c.idx.reduce((a,i) => a + r.ing[i].g, 0)*f, Cc = c.idx.reduce((a,i) => a + entryVals(r.ing[i]).c, 0)*f, Ff = c.idx.reduce((a,i) => a + entryVals(r.ing[i]).f, 0)*f;
@@ -6185,7 +6195,7 @@ function openCook(r, pre){
   r=JSON.parse(JSON.stringify(r));r._cookAdj=JSON.parse(JSON.stringify(r._cookAdj||ingAdj(r)));const session=pre._cookSession;
   try { document.activeElement && document.activeElement.blur(); } catch(e){}
   const p = P(), cat = CAT[r.cat] || CAT.h, T = recTotals(r), today = todayISO();
-  const wst = {o:0, m:defMeal(r)};
+  const wst = {o:0, m:defMeal(r), recipePortion:pre.plan ? false : undefined};
   if(session?.wst)Object.assign(wst,session.wst);
   if (pre.plan){ const off = kitDiff(pre.plan.d); if (off >= 0 && off <= 2) wst.o = off; wst.m = pre.plan.m; }
   const people = cookPeople(r, wst), comps = recComps(r);
@@ -6204,8 +6214,8 @@ function openCook(r, pre){
     ${homeRecipeHTML(r)}${freshRecipeHTML(r)}
     ${ckMoreHTML(r, cat)}
     ${fm && fm.have.length ? `<div class="fr-hit"><b>🧊 ${fm.have.length} von ${fm.have.length + fm.miss.length} Zutaten im Kühlschrank</b>${fm.miss.length ? "Fehlt: " + esc(fm.miss.map(e => e.n).join(", ")) : "Alles da."}</div>` : ""}
-    <div id="ck-when">${whenHTML(wst.m)}${r.proteinMeal
-      ? `<label class="row"><span class="lbl">Volle Rezeptportion für mich<small>${fmt(T.p/r.serv)} g Eiweiß · ${fmt(T.k/r.serv)} kcal</small></span><input id="ck-protein-serving" class="switch" type="checkbox" ${wst.recipePortion !== false ? "checked" : ""}></label><p class="when-n">Ausschalten, um deine Portion an das Kalorienbudget der Mahlzeit anzupassen. Weitere Personen kannst du unten hinzufügen.</p>`
+    <div id="ck-when">${whenHTML(wst.m,wst.o)}${r.proteinMeal
+      ? `<label class="row"><span class="lbl">Volle Rezeptportion für mich<small>${fmt(T.p/r.serv)} g Eiweiß · ${fmt(T.k/r.serv)} kcal</small></span><input id="ck-protein-serving" class="switch" type="checkbox" ${wst.recipePortion !== false ? "checked" : ""}></label><p class="when-n">Beim Wechsel der Mahlzeit passt ITOGO die Menge ans Budget an. Hier kannst du wieder die volle Portion wählen.</p>`
       : '<p class="when-n">Danach richten sich die Portionen: jede Person bekommt ihr Ziel für diese Mahlzeit – du zusätzlich höchstens das, was dir an diesem Tag noch bleibt.</p>'}</div>
     <details class="ck-eaters"><summary><span>Wer isst mit?<small id="ck-people-summary"></small></span></summary><div class="section-h"><span>Portionen anpassen</span><span class="ck-q"><button type="button" data-q="all">Alle 1×</button><button type="button" data-q="me">Nur ich</button></span></div>
       <div class="group" id="ck-pp"></div>
@@ -6237,8 +6247,8 @@ function openCook(r, pre){
       if (session?.atPortions) scrollToPortions();
       const ckPlan = () => {
         const need = people.reduce((sum, person) => sum + person.c * person.k, 0);
-        const factor = r._sessionOriginal ? (need > 0 && r._sessionReference > 0 ? need / r._sessionReference : r._sessionFactor) : null;
-        const p0 = cookPlan(r, people, mode, inputs, factor), a = ingAdjApply(r, p0.f); if (a.r === r && Math.abs(a.f - p0.f) < 1e-9) return Object.assign(p0, {rr: r, f0: p0.f});
+        const factor = r._sessionOriginal ? (need === 0 ? 0 : r._sessionReference > 0 ? need / r._sessionReference : r._sessionFactor) : null;
+        const p0 = cookPlan(r, people, mode, inputs, factor); if (!p0.f) return Object.assign(p0,{rr:r,f0:0}); const a = ingAdjApply(r, p0.f); if (a.r === r && Math.abs(a.f - p0.f) < 1e-9) return Object.assign(p0, {rr: r, f0: p0.f});
         return Object.assign(cookPlan(a.r, people, mode, inputs, a.f), {rr: a.r, f0: p0.f, adj: a}); };
       const reopenIngredients = (rr, changed = {}) => openCook(rr, Object.assign({}, pre, {
         _cookSession:Object.assign(snapshot(), {atIngredients:true}, changed)
@@ -6310,7 +6320,20 @@ function openCook(r, pre){
         $("#ck-box", sh).hidden = !(people[0].c >= 2);
         if (typeof drawDev === "function") try { drawDev(); } catch(e){}
       };
-      wst.cb = () => { const np = cookPeople(r, wst); people.forEach((x, i) => { const c = x.c; Object.assign(x, np[i], {c}); }); drawPeople(); upd(); };
+      wst.cb = change => {
+        if (change === "meal") {
+          wst.recipePortion = false;
+          if (servingToggle) servingToggle.checked = false;
+        }
+        const previous = plan?.f;
+        const np = cookPeople(r,wst);
+        people.forEach((x,i) => {
+          const c = x.me && x.empty && !x.c ? np[i].c : x.c;
+          Object.assign(x,np[i],{c});
+        });
+        if (previous != null && Math.abs(ckPlan().f - previous) > 1e-8) inputs = {};
+        drawPeople(); upd();
+      };
       const upd2 = () => {
         plan = ckPlan();
         const plates = plan.plates.filter(Boolean);
@@ -6328,7 +6351,11 @@ function openCook(r, pre){
         $("#ck-pl", sh).innerHTML = plates.length ? `<details class="ck-fold ck-plate-summary"><summary>Alle Teller im Überblick</summary><div class="plates2">${plates.map(pl => `<div class="plate2 ${pl.me ? "mine" : ""}"><div class="pl-h"><b>${esc(pl.n)}</b><span>${pl.c > 1 ? pl.c + "× (" + (pl.c-1) + " Box)" : ""}</span></div>
           ${pl.items.map((it,j) => `<div class="pl-i"><span>${esc(it.l)}</span><b class="num">${servingAmount(it,plan.res[j].m === "w" && !plan.res[j].Wset)}</b></div>`).join("")}
           <small>${fmt(pl.k)} kcal · ${macLine({p:pl.p, c:pl.kh, f:pl.fa})} je Portion</small></div>`).join("")}</div></details>` : "";
-        $("#ck-budget", sh).innerHTML = plan.plates[0] ? `<details class="ck-fold ck-plate-summary"><summary>Tagesbudget</summary>${budgetHTML({k:plan.plates[0].k,p:plan.plates[0].p,c:plan.plates[0].kh,f:plan.plates[0].fa},whenDay(wst))}</details>` : "";
+        const budgetBox = $("#ck-budget",sh), plate = plan.plates[0];
+        const isOpen = $("details",budgetBox)?.open ?? true;
+        $("#ck-log",sh).disabled = $("#ck-box",sh).disabled = !plate || !(plate.g > 0);
+        const add = plate ? {k:plate.k,p:plate.p,c:plate.kh,f:plate.fa} : {k:0,p:0,c:0,f:0};
+        budgetBox.innerHTML = `<details class="ck-fold ck-plate-summary" ${isOpen ? "open" : ""}><summary>Mahlzeit &amp; Tagesbudget</summary>${mealBudgetHTML(add,wst)}</details>`;
 
       };
       $$("#ck-mode button", sh).forEach(b => b.onclick = () => { mode = b.dataset.v; $$("#ck-mode button", sh).forEach(x => x.setAttribute("aria-pressed", String(x===b))); upd(); });
@@ -6340,7 +6367,7 @@ function openCook(r, pre){
         const saved = Object.assign(snapshot(), {atPortions:true});
         openScale(plan.rr || r, plan, () => openCook(r, Object.assign({}, pre, {_cookSession:saved})));
       };
-      const logMine = (d, meal, label) => { const pl = plan.plates[0]; if (!pl){ toast("Du bist nicht eingeplant"); return; }
+      const logMine = (d, meal, label) => { const pl = plan.plates[0]; if (!pl || !(pl.g > 0)){ toast("Du bist nicht eingeplant"); return; }
         const g = roundG(pl.g || 1), e = {n: r.n, g, k100: r1(pl.k/g*100), p100: r1(pl.p/g*100), c100: r1((pl.kh||0)/g*100), f100: r1((pl.fa||0)/g*100), u:"g", m: meal, src:"recipe", por:g, pl:"1 Portion", nx: nxRec100(plan.rr||r)};
         const x = S.days[d] || (S.days[d] = {}); x.food = (x.food||[]).concat([e]);
         if (x.food.length){ const t = foodTotals(x); x.kcal = Math.round(t.k); x.p = Math.round(t.p); x.carb = Math.round(t.c); x.fat = Math.round(t.f); }
@@ -6435,11 +6462,11 @@ function openSharedPlate(r, pre){
   openSheet({title:"Dein Teller", left:"Schließen", right:"", body:`<h2 class="ck-t">${esc(r.n)}</h2>
     <div class="alert" style="margin:0 0 14px"><b>Von ${esc(pre.by || "Familie")} gekocht</b>${mine ? "Das ist deine Portion – einfach abwiegen und eintragen." : pre.sessionOnly ? "Für dich war keine Portion eingeplant." : "Für dich war keine Portion eingeplant. Das Rezept ist trotzdem gespeichert."}</div>
     ${mine ? `<div class="plate2 mine" style="margin-bottom:14px">${mine.it.map(([l,g,pcs]) => `<div class="pl-i"><span>${esc(l)}</span><b class="num">${pcs != null ? fmtPcs(pcs) + " Stk" : fmt(roundG(g)) + " g"}</b></div>`).join("")}<small>${fmt(mine.k)} kcal · ${macLine({p:mine.p, c:mine.kh||0, f:mine.fa||0}, true)}${mine.c > 1 ? " · plus " + (mine.c-1) + " Box" : ""}</small></div>
-      <div id="sp-when">${whenHTML(defMeal(r))}</div><div class="ck-btns"><button type="button" class="btn" id="sp-log">Meine Portion eintragen</button>${mine.c > 1 ? `<button type="button" class="btn secondary" id="sp-box">Box für morgen eintragen</button>` : ""}</div>` : ""}`,
+      <div id="sp-when">${whenHTML(defMeal(r))}</div><div id="sp-budget"></div><div class="ck-btns"><button type="button" class="btn" id="sp-log">Meine Portion eintragen</button>${mine.c > 1 ? `<button type="button" class="btn secondary" id="sp-box">Box für morgen eintragen</button>` : ""}</div>` : ""}`,
     onOpen: sh => { $(".r", sh).style.visibility = "hidden";
       const log = (d, m, t) => { const g = Math.max(1, mine.g), e = {n:r.n, g, k100:r1(mine.k/g*100), p100:r1(mine.p/g*100), c100:r1((mine.kh||0)/g*100), f100:r1((mine.fa||0)/g*100), u:"g", m, src:"recipe", por:g, pl:"1 Portion"};
         const x = S.days[d] || (S.days[d] = {}); x.food = (x.food||[]).concat([e]); const t2 = foodTotals(x); x.kcal = Math.round(t2.k); x.p = Math.round(t2.p); x.carb = Math.round(t2.c); x.fat = Math.round(t2.f); writeDoc("days", d, Object.assign({}, S.days[d], {date:d})); toast(t); builtDate = null; renderAll(); };
-      const wst = {o:0, m:defMeal(r)}; const ww = $("#sp-when", sh); if (ww) whenBind(ww, wst); const a = $("#sp-log", sh); if (a) a.onclick = () => log(whenDay(wst), wst.m, "Eingetragen – " + whenLabel(wst));
+      const wst = {o:0, m:defMeal(r)}; const ww = $("#sp-when", sh); if (ww) { wst.cb = () => { $("#sp-budget",sh).innerHTML = mealBudgetHTML({k:mine.k,p:mine.p,c:mine.kh||0,f:mine.fa||0},wst); }; whenBind(ww,wst); wst.cb(); } const a = $("#sp-log", sh); if (a) a.onclick = () => log(whenDay(wst), wst.m, "Eingetragen – " + whenLabel(wst));
       const b = $("#sp-box", sh); if (b) b.onclick = () => log(addDays(today,1), "l", "Box für morgen eingetragen (Mittag)"); }});
 }
 /* ---------- Kühlschrank ---------- */
@@ -6485,7 +6512,7 @@ function qkFind(q){ q = norm(q).trim(); if (q.length < 2) return []; const qs = 
     .concat(pdbSearch(q, 4, K.stores).map(x => Object.assign(x, {n: x.brand && !norm(x.n).includes(norm(x.brand)) ? `${x.n} (${x.brand})` : x.n}))); }
 function qkPeople(wst){
   const p = P(), m = wst.m, sh = MEAL_SHARE[m] || .3, d = whenDay(wst), mg = macroGoals(Math.max(1, weekOf(d))), t = foodTotals(S.days[d] || {});
-  let k = mg.k * sh; const left = mg.k - t.k; const lim = left < k; k = Math.max(150, Math.min(k, left));
+  const target = mealKcalGoal(mg.k,m); const k = mealBudget(d,m).left; const lim = k < target;
   const sc = k / (mg.k * sh);
   return [{n: p.person, k, p: mg.p * sh * sc, me: true, on: true, lim}].concat(household().map(x => ({n: x.n, k: x.k * sh, p: (x.p || estimateNeeds(x).p) * sh, kid: x.kid, on: x.on !== false}))); }
 function qkSolve(ings, ppl){
@@ -6547,7 +6574,7 @@ function openQuickRec(pre){
     <div id="qk-res">${resHTML()}</div>
     <div class="qk-btns">${KOCH ? `<button type="button" class="btn" id="qk-kb">📖 Im Kochbuch öffnen</button>` : ""}<button type="button" class="btn ${KOCH ? "secondary" : ""}" id="qk-log">✓ Meine Portion eintragen</button><button type="button" class="btn secondary" id="qk-save">💾 Als Rezept speichern</button></div>`,
     onOpen: sh => {
-      const redraw = () => { $("#qk-ppl", sh).innerHTML = pplHTML(); $("#qk-ings", sh).innerHTML = ingHTML(); $("#qk-res", sh).innerHTML = resHTML(); bind(); const ok = ings.length && ppl.some(x => x.on); $("#qk-log", sh).disabled = !ok || !ppl[0].on; $("#qk-save", sh).disabled = !ok; };
+      const redraw = () => { $("#qk-ppl", sh).innerHTML = pplHTML(); $("#qk-ings", sh).innerHTML = ingHTML(); $("#qk-res", sh).innerHTML = resHTML(); bind(); const ok = ings.length && ppl.some(x => x.on && x.k > 0); $("#qk-log", sh).disabled = !ok || !ppl[0].on || !(ppl[0].k>0); $("#qk-save", sh).disabled = !ok; };
       const addIng = x => { if (ings.some(e => e.n === x.n)){ toast("Schon dabei"); return; } const e = {n: x.n, k100: +x.k100, p100: +(x.p100 || 0), c100: +(x.c100 || 0), f100: +(x.f100 || 0), u: x.u || "g"}; e.role = qkRole(e); ings.push(e); $("#qk-q", sh).value = ""; $("#qk-s", sh).innerHTML = ""; redraw(); };
       const bind = () => {
         $$("[data-qp]", sh).forEach(b => b.onclick = () => { const x = ppl[Number(b.dataset.qp)]; x.on = !x.on; redraw(); });
@@ -6625,9 +6652,9 @@ IMG_URL.set("c:hotel",HOTEL_IMAGES.category);
 HOTEL_RECIPES.forEach(r=>IMG_URL.set("r:"+r.n,HOTEL_IMAGES[r.hotel.id]));
 function openHotel(r){
  const wst={o:0,m:"b"};let factor=1;const T=recTotals(r);
- openSheet({title:"Hotel-Frühstück",left:"Schließen",right:"",body:`<img class="hotel-photo" src="${HOTEL_IMAGES[r.hotel.id]}" alt="Beispielbild des Frühstücks"><h2 class="ck-t">${esc(r.n.replace(/^Hotel: /,""))}</h2><p class="note">KI-Beispielbild · Mengen am Buffet grob abschätzen</p><details class="hotel-help" open><summary><b>So stellst du deinen Teller zusammen</b></summary><ul>${r.hotel.visual.map(v=>`<li>${esc(v)}</li>`).join("")}</ul><small>${esc(r.hotel.tip)}</small></details><div class="hotel-portion">${[[.5,"½ Beispiel"],[1,"1 Beispiel"],[1.5,"1½ Beispiele"]].map(([v,l])=>`<button type="button" data-hp="${v}" aria-pressed="${v===1}">${l}</button>`).join("")}</div><p class="note">Die Auswahl vervielfacht alle oben beschriebenen Mengen.</p><div class="glass"><b id="hotel-kcal"></b><p class="note" id="hotel-mac"></p></div><p class="note">Schätzwerte: Handgröße, Löffelfüllung und Zubereitung variieren. Deine morgendliche Auswahl setzt auf Eiweiß, Fett und Gemüse, ohne Brot, Müsli, süße Aufstriche oder Saft. Kleine Mengen Kohlenhydrate aus Milchprodukten und Gemüse werden mitgezählt. Bratfett ist bei Rührei und Spiegelei bereits geschätzt. Wasser, ungesüßter Tee oder Kaffee passen dazu; Milch im Kaffee extra erfassen.</p><div id="hotel-when">${whenHTML("b")}</div><button type="button" class="btn" id="hotel-log">Frühstück eintragen</button><details class="ck-more"><summary>Deine Frühstücksstrategie</summary><p class="note">Morgens Eiweiß und Fett, dazu Gemüse oder ungesüßte Milchprodukte. Brot, Haferflocken und andere stärkehaltige Beilagen planst du erst ab mittags ein.</p><p class="note">Food Sequencing meint die Reihenfolge innerhalb einer Mahlzeit: Gemüse und Eiweiß vor einer Kohlenhydratbeilage. Das kann die Blutzuckerreaktion nach dem Essen abmildern; es garantiert keinen bestimmten Blutzuckerwert und bedeutet nicht automatisch, Kohlenhydrate bis mittags wegzulassen.</p><p class="note"><a href="https://pubmed.ncbi.nlm.nih.gov/28989726/" target="_blank" rel="noopener">Studie zur Reihenfolge bei Menschen mit Typ-2-Diabetes</a></p></details><details class="ck-more"><summary>Rechengrundlage & Orientierung</summary><p class="note">${r.ing.map(e=>esc(e.n)+": ca. "+fmt(e.g)+" g").join(" · ")}. Die Berechnung nutzt diese Beispielmengen. Das Handmaß ist eine Orientierung, keine feste Umrechnung in Gramm.</p><p class="note"><a href="https://www.bzfe.de/essen-und-gesundheit/ernaehrungspyramide/wieviel-esse-ich-wovon" target="_blank" rel="noopener">BZfE: Hand, Scheibe, Glas und Löffel als Portionsmaß</a></p></details>`,onOpen:sh=>{
+ openSheet({title:"Hotel-Frühstück",left:"Schließen",right:"",body:`<img class="hotel-photo" src="${HOTEL_IMAGES[r.hotel.id]}" alt="Beispielbild des Frühstücks"><h2 class="ck-t">${esc(r.n.replace(/^Hotel: /,""))}</h2><p class="note">KI-Beispielbild · Mengen am Buffet grob abschätzen</p><details class="hotel-help" open><summary><b>So stellst du deinen Teller zusammen</b></summary><ul>${r.hotel.visual.map(v=>`<li>${esc(v)}</li>`).join("")}</ul><small>${esc(r.hotel.tip)}</small></details><div class="hotel-portion">${[[.5,"½ Beispiel"],[1,"1 Beispiel"],[1.5,"1½ Beispiele"]].map(([v,l])=>`<button type="button" data-hp="${v}" aria-pressed="${v===1}">${l}</button>`).join("")}</div><p class="note">Die Auswahl vervielfacht alle oben beschriebenen Mengen.</p><div class="glass"><b id="hotel-kcal"></b><p class="note" id="hotel-mac"></p></div><p class="note">Schätzwerte: Handgröße, Löffelfüllung und Zubereitung variieren. Deine morgendliche Auswahl setzt auf Eiweiß, Fett und Gemüse, ohne Brot, Müsli, süße Aufstriche oder Saft. Kleine Mengen Kohlenhydrate aus Milchprodukten und Gemüse werden mitgezählt. Bratfett ist bei Rührei und Spiegelei bereits geschätzt. Wasser, ungesüßter Tee oder Kaffee passen dazu; Milch im Kaffee extra erfassen.</p><div id="hotel-when">${whenHTML("b")}</div><div id="hotel-budget"></div><button type="button" class="btn" id="hotel-log">Frühstück eintragen</button><details class="ck-more"><summary>Deine Frühstücksstrategie</summary><p class="note">Morgens Eiweiß und Fett, dazu Gemüse oder ungesüßte Milchprodukte. Brot, Haferflocken und andere stärkehaltige Beilagen planst du erst ab mittags ein.</p><p class="note">Food Sequencing meint die Reihenfolge innerhalb einer Mahlzeit: Gemüse und Eiweiß vor einer Kohlenhydratbeilage. Das kann die Blutzuckerreaktion nach dem Essen abmildern; es garantiert keinen bestimmten Blutzuckerwert und bedeutet nicht automatisch, Kohlenhydrate bis mittags wegzulassen.</p><p class="note"><a href="https://pubmed.ncbi.nlm.nih.gov/28989726/" target="_blank" rel="noopener">Studie zur Reihenfolge bei Menschen mit Typ-2-Diabetes</a></p></details><details class="ck-more"><summary>Rechengrundlage & Orientierung</summary><p class="note">${r.ing.map(e=>esc(e.n)+": ca. "+fmt(e.g)+" g").join(" · ")}. Die Berechnung nutzt diese Beispielmengen. Das Handmaß ist eine Orientierung, keine feste Umrechnung in Gramm.</p><p class="note"><a href="https://www.bzfe.de/essen-und-gesundheit/ernaehrungspyramide/wieviel-esse-ich-wovon" target="_blank" rel="noopener">BZfE: Hand, Scheibe, Glas und Löffel als Portionsmaß</a></p></details>`,onOpen:sh=>{
  $(".r",sh).style.visibility="hidden";whenBind($("#hotel-when",sh),wst);
- const draw=()=>{$("#hotel-kcal",sh).textContent="≈ "+fmt(T.k*factor)+" kcal";$("#hotel-mac",sh).textContent=macLine({p:T.p*factor,c:T.c*factor,f:T.f*factor},true);};draw();
+ const draw=()=>{$("#hotel-kcal",sh).textContent="≈ "+fmt(T.k*factor)+" kcal";const add={k:T.k*factor,p:T.p*factor,c:T.c*factor,f:T.f*factor};$("#hotel-mac",sh).textContent=macLine(add,true);$("#hotel-budget",sh).innerHTML=mealBudgetHTML(add,wst);$("#hotel-log",sh).disabled=!(factor>0);};wst.cb=()=>{factor=T.k>0?mealBudget(whenDay(wst),wst.m).left/T.k:1;$$("[data-hp]",sh).forEach(x=>x.setAttribute("aria-pressed","false"));draw();};draw();
  $$("[data-hp]",sh).forEach(b=>b.onclick=()=>{factor=Number(b.dataset.hp);$$("[data-hp]",sh).forEach(x=>x.setAttribute("aria-pressed",String(x===b)));draw();});
  $("#hotel-log",sh).onclick=()=>{const d=whenDay(wst),g=T.g*factor,e={n:r.n+" (geschätzt)",g,k100:T.k/T.g*100,p100:T.p/T.g*100,c100:T.c/T.g*100,f100:T.f/T.g*100,u:"g",m:wst.m,src:"recipe",por:T.g,pl:"1 Buffet-Beispiel"},o=S.days[d]||(S.days[d]={});o.food=(o.food||[]).concat(e);const t=foodTotals(o);Object.assign(o,{kcal:Math.round(t.k),p:Math.round(t.p),carb:Math.round(t.c),fat:Math.round(t.f)});writeDoc("days",d,Object.assign({},o,{date:d}));closeSheet();builtDate=null;renderAll();toast("Frühstück als Schätzung eingetragen");};
  }});
@@ -6667,21 +6694,34 @@ const REC_SUB = [["alle","Alle"],["high protein","💪 High Protein"],["schnell"
 const FF_SUB = [["ff","Alle"],["ff:M","McDonald’s"],["ff:B","Burger King"],["ff:K","KFC"],["ff:S","Subway"],["ff:D","Döner"]];
 let recCat = null, recLim = 20;
 const WHEN_D = [[0,"Heute"],[1,"Morgen"],[2,"Übermorgen"]];
-const whenHTML = meal => `<div class="when"><div class="when-h">Wann isst du das?</div><div class="seg" data-wd>${WHEN_D.map(([o,l]) => `<button type="button" data-o="${o}" aria-pressed="${o===0}">${l}</button>`).join("")}</div><div class="seg" data-wm style="margin-top:6px">${MEALS.map(([m,l]) => `<button type="button" data-m="${m}" aria-pressed="${m===meal}">${esc(l)}</button>`).join("")}</div></div>`;
+const whenHTML = (meal,offset=0) => `<div class="when"><div class="when-h">Wann isst du das?</div><div class="seg" data-wd>${WHEN_D.map(([o,l]) => `<button type="button" data-o="${o}" aria-pressed="${o===offset}">${l}</button>`).join("")}</div><div class="seg" data-wm style="margin-top:6px">${MEALS.map(([m,l]) => `<button type="button" data-m="${m}" aria-pressed="${m===meal}">${esc(l)}</button>`).join("")}</div></div>`;
 function whenBind(root, st){
-  $$("[data-wd] button", root).forEach(b => b.onclick = () => { st.o = Number(b.dataset.o); $$("[data-wd] button", root).forEach(x => x.setAttribute("aria-pressed", String(x === b))); if (st.cb) st.cb(); });
-  $$("[data-wm] button", root).forEach(b => b.onclick = () => { st.m = b.dataset.m; $$("[data-wm] button", root).forEach(x => x.setAttribute("aria-pressed", String(x === b))); if (st.cb) st.cb(); }); }
+  $$("[data-wd] button", root).forEach(b => b.onclick = () => { const offset=Number(b.dataset.o); if(st.o===offset)return; st.o=offset; $$("[data-wd] button", root).forEach(x => x.setAttribute("aria-pressed", String(x === b))); if (st.cb) st.cb("day"); });
+  $$("[data-wm] button", root).forEach(b => b.onclick = () => { if(st.m===b.dataset.m)return; st.m=b.dataset.m; $$("[data-wm] button", root).forEach(x => x.setAttribute("aria-pressed", String(x === b))); if (st.cb) st.cb("meal"); }); }
 const whenDay = st => addDays(todayISO(), st.o || 0);
 const whenLabel = st => `${WHEN_D[st.o || 0][1]}, ${MEALS.find(x => x[0] === st.m)[1]}`;
 const defMeal = r => { if (r?.proteinMeal) return r.proteinMeal; const hr = new Date().getHours(); return r && r.cat === "f" ? "b" : r && r.cat === "s" ? "s" : r && r.cat === "h" ? (hr < 15 ? "l" : "d") : hr < 11 ? "b" : hr < 15 ? "l" : hr < 21 ? "d" : "s"; };
 const macLine = (t, g) => `P ${fmt(t.p)}${g ? " g" : ""} · KH ${fmt(t.c)}${g ? " g" : ""} · F ${fmt(t.f)}${g ? " g" : ""}`;
-function budgetHTML(add, d){
+function mealBudgetHTML(add,st){
+  const d = whenDay(st), meal = MEALS.find(([key])=>key===st.m)?.[1] || "Mahlzeit";
+  const {target,used} = mealBudget(d,st.m);
+  const after = target-used-add.k;
+  const percent = target ? Math.round(add.k/target*100) : null;
+  const remain = after >= 0 ? `${fmt(after)} kcal übrig` : `${fmt(-after)} kcal über dem Mahlzeitenziel`;
+  return `<div class="bud" data-meal-budget>
+    <div class="bud-h">Deine Portion · ${esc(whenLabel(st))}</div>
+    <div class="bud-serving">${[["Kalorien",add.k,"kcal"],["Eiweiß",add.p,"g"],["Kohlenhydrate",add.c,"g"],["Fett",add.f,"g"]].map(([label,value,unit])=>`<div><small>${label}</small><b class="num">${fmt(value)} ${unit}</b></div>`).join("")}</div>
+    <div class="bud-h">Budget für ${esc(meal)}</div>
+    <div class="bud-r"><span>Diese Portion vom Mahlzeitenziel</span><b class="num">${fmt(add.k)} / ${fmt(target)} kcal</b><small>${percent==null ? "" : `${percent} % · `}${fmt(used)} kcal bereits eingetragen · danach ${remain}</small></div>
+  </div>${budgetHTML(add,d,true)}`;
+}
+function budgetHTML(add, d, restOnly=false){
   d = d || todayISO(); const o = S.days[d] || {}, t = foodTotals(o), g = macroGoals(Math.max(1, weekOf(d)));
   const rows = [["k","Kalorien",g.k,t.k,add.k,"kcal"],["p","Protein",g.p,t.p,add.p,"g"],["c","Kohlenhydrate",g.c,t.c,add.c,"g"],["f","Fett",g.f,t.f,add.f,"g"]];
-  return `<div class="bud"><div class="bud-h">${d === todayISO() ? "Passt das heute noch?" : d === addDays(todayISO(),1) ? "Passt das morgen noch?" : d === addDays(todayISO(),2) ? "Passt das übermorgen noch?" : "Passt das an diesem Tag?"}</div>${rows.map(([k,l,goal,have,a,u]) => { const after = goal - have - a;
+  return `<div class="bud"><div class="bud-h">${restOnly ? "Rest des Tagesbudgets nach dieser Portion" : d === todayISO() ? "Passt das heute noch?" : d === addDays(todayISO(),1) ? "Passt das morgen noch?" : d === addDays(todayISO(),2) ? "Passt das übermorgen noch?" : "Passt das an diesem Tag?"}</div>${rows.map(([k,l,goal,have,a,u]) => { const after = goal - have - a;
     const cls = k === "p" ? (after <= 0 ? "ok" : "") : after < -goal*0.03 ? "over" : after < goal*0.1 ? "warn" : "ok";
     const txt = k === "p" ? (after <= 0 ? "Ziel erreicht" : `danach noch ${fmt(after)} ${u}`) : after >= 0 ? `danach noch ${fmt(after)} ${u}` : `${fmt(-after)} ${u} drüber`;
-    return `<div class="bud-r ${cls}"><span>${l}</span><b class="num">+${fmt(a)} ${u}</b><small>${txt}</small></div>`; }).join("")}</div>`; }
+    return `<div class="bud-r ${cls}"><span>${l}</span>${restOnly ? "" : `<b class="num">+${fmt(a)} ${u}</b>`}<small>${txt}</small></div>`; }).join("")}</div>`; }
 function ffTiles(filter, q){
   const okCh = ch => filter == null || filter === "ff" || filter === "ff:" + ch;
   const words = q ? norm(q).split(/\s+/).filter(Boolean).map(w => w.length > 3 ? w.replace(/s$/, "") : w) : [];
@@ -6715,7 +6755,7 @@ function openFF(t){
         const items = [...basket.entries()].filter(([,n]) => n > 0).map(([id,n]) => [FFI.get(id), n]).filter(([x]) => x);
         $("#ff-b", sh).innerHTML = items.map(([x,n]) => `<div class="row pp"><span class="lbl">${esc(x.n)}<small class="num">${fmt(x.k*n)} kcal · ${macLine({p:x.p*n, c:x.c*n, f:x.f*n})}</small>${x.st ? `<small class="ff-st">${FF_ST[x.st]}</small>` : ""}</span><div class="stp2"><button type="button" data-fb="${x.id}:-1" aria-label="Weniger">−</button><b class="num">${fmtPcs(n)}</b><button type="button" data-fb="${x.id}:1" aria-label="Mehr">+</button></div></div>`).join("") || `<p class="note" style="padding:12px 14px;margin:0">Noch nichts ausgewählt.</p>`;
         const T = items.reduce((a,[x,n]) => ({k:a.k + x.k*n, p:a.p + x.p*n, c:a.c + x.c*n, f:a.f + x.f*n}), {k:0,p:0,c:0,f:0});
-        $("#ff-tot", sh).innerHTML = `<div class="ff-sum"><b class="num">${fmt(T.k)} kcal</b><span class="num">${macLine(T, true)}</span></div>` + budgetHTML(T, whenDay(wst));
+        $("#ff-tot", sh).innerHTML = `<div class="ff-sum"><b class="num">${fmt(T.k)} kcal</b><span class="num">${macLine(T, true)}</span></div>` + mealBudgetHTML(T, wst);
         $$("[data-fs]", sh).forEach(b => b.classList.toggle("on", (basket.get(b.dataset.fs) || 0) > 0));
         $$("[data-fb]", sh).forEach(b => b.onclick = () => { const [id, sg] = b.dataset.fb.split(":"); const x = FFI.get(id); basket.set(id, Math.max(0, Math.round(((basket.get(id) || 0) + Number(sg)*stepOf(x))*10)/10)); draw(); });
         $("#ff-log", sh).disabled = !items.length; cur = {items, T}; };
@@ -6858,7 +6898,7 @@ function sortRecipes(list){
   return list.map(r=>({r,n:score(r)})).sort((a,b)=>(a.n-b.n)||byName(a.r,b.r)).map(x=>x.r);
 }
 function recipeCardPhoto(r){
-  return PHOTO.get(r.n) || (!r.own ? imgGet("r:" + r.n) : "");
+  return PHOTO.get(r.n) || imgGet("r:" + r.n);
 }
 const recCardHTML = (r, i) => { const T = recTotals(r), nC = (P().cooked||{})[r.n], av = avgRating(r), photo = recipeCardPhoto(r); return `<button type="button" class="rc c-${r.cat}${photo ? " rc-photo" : ""}" data-r="${i}">${photo ? `<img class="rc-photo-image" src="${esc(photo)}" alt="" aria-hidden="true" loading="lazy" decoding="async" onload="(this.decode?this.decode():Promise.resolve()).then(()=>{if(this.parentElement)this.parentElement.classList.add('rc-photo-ready')}).catch(()=>{})" onerror="this.parentElement.classList.remove('rc-photo-ready');this.remove()">` : ""}${nC ? `<span class="rc-c">${nC}×</span>` : ""}<span class="rc-e">${recEmoji(r)}</span><b>${esc(r.n)}</b><small class="num">${fmt(T.k/r.serv)} kcal</small><span class="rc-mac num">${macLine({p:T.p/r.serv, c:T.c/r.serv, f:T.f/r.serv})}</span><span class="rc-m">${r.min} min${r.waitMin ? " + über Nacht" : ""}${r.own ? " · eigenes" : ""}${skinOf(r).glow ? " · ✨" : ""}${gutOf(r).glow ? " · 🌿" : ""}${av ? ` · <span class="rc-st">★ ${fmt(av.a, 1)}</span> (${av.n})` : ""}</span></button>`; };
 function drawRecipes(el){ recMatch._gaps = null;
@@ -8313,7 +8353,7 @@ function kochLib(root){
 }
 function kochOpen(r, pre){
   if (!r) return; pre = pre || {};
-  const wst = {o:0, m: defMeal(r)};
+  const wst = {o:0, m: defMeal(r), recipePortion:pre.plan ? false : undefined};
   if (pre.plan){ const off = kitDiff(pre.plan.d); if (off >= 0 && off <= 2) wst.o = off; wst.m = pre.plan.m; }
   const people = cookPeople(r, wst);
   if (pre.plan && pre.plan.e && pre.plan.e.length) people.forEach(x => { x.c = pre.plan.e.includes(x.n) ? 1 : 0; });
@@ -8390,7 +8430,7 @@ function kochNamePick(l){
     onOpen: sh => $$("[data-nm]", sh).forEach(b => b.onclick = () => { const a = lsGet("formkurve.kbnames") || []; a[l] = b.dataset.nm === KB_NAMES_DEF[l] ? null : b.dataset.nm; lsSet("formkurve.kbnames", a); closeSheet(true); kochKeepScroll($("#koch"), () => kochRender()); })});
 }
 const kbNSeg = n => `<div class="seg kb-mode" role="group" aria-label="Köche">${[1,2,3].map(k => `<button type="button" data-n="${k}" aria-pressed="${n === k}">${k === 1 ? "👤" : "👥"} <b class="num">${k}</b><span>${k === 1 ? "Koch" : "Köche"}</span></button>`).join("")}</div>`;
-function kochF(){ if (kb.fixedF) return kb.fixedF; const T = recTotals(kb.r), need = kb.people.reduce((a,x) => a + x.c*x.k, 0); return need > 0 && T.k > 0 ? need / T.k : 1; }
+function kochF(){ if (kb.fixedF) return kb.fixedF; const T = recTotals(kb.r), need = kb.people.reduce((a,x) => a + x.c*x.k, 0); return T.k > 0 ? need / T.k : 1; }
 function kochSteps(){ const r = kb.r, full = kb.full ? fullSteps(r, kb.dv) : null;
   const st = full ? full.steps : (r.dev ? unifiedSteps(r, kb.dv).map(x => Object.assign({sec:"c"}, x)) : (r.steps||[]).map(t => ({sec:"x", d: kbCls(t), t})));
   return {st, min: full ? full.min : (kb.dv === "herd" || !r.dev || !r.dev[kb.dv] ? r.min : r.dev[kb.dv][0])}; }
@@ -8548,7 +8588,7 @@ function kochIaBind(root){
 }
 function kochBindRec(root, r, st){
   $$("[data-ia]",root).forEach(pencil=>{const i=Number(pencil.dataset.ia);if(pencil.parentElement.querySelector(".scan-ing"))return;const b=document.createElement("button");b.type="button";b.className="ia-btn scan-ing";b.setAttribute("aria-label","Produkt für "+kb.r.ing[i].n+" scannen");b.innerHTML=recipeScanIcon();pencil.after(b);b.onclick=e=>{e.stopPropagation();const rr=JSON.parse(JSON.stringify(kb.r)),back=updated=>{kb.r=updated;kochRender();};openScanner("d",todayISO(),{recipe:true,cancel:()=>back(rr),kit:(it,code)=>openRecipeProduct(rr,i,it,code,kochF(),back)});};});
-  const target=$(".cb-ing,.kb-il",root);if(target&&!$("#kb-exact",root)){const b=document.createElement("button");b.id="kb-exact";b.type="button";b.className="btn secondary";b.textContent="Genau abwiegen & Produkte scannen";b.onclick=()=>openCook(kb.r);target.after(b);}
+  const target=$(".cb-ing,.kb-il",root);if(target&&!$("#kb-exact",root)){const b=document.createElement("button");b.id="kb-exact";b.type="button";b.className="btn secondary";b.textContent="Genau abwiegen & Produkte scannen";b.onclick=()=>openCook(kb.r,{_cookSession:{wst:kb.wst,counts:kb.people.map(x=>x.c)}});target.after(b);}
 
   kochRailBind(root); kochMarkNext(root); kochTimerDraw(); kochStyleBind(root);
   $("#kb-back", root).onclick = () => { kochTimersKeep(); kb.view = "lib"; kochWake(false); kochRender(); };
@@ -8572,12 +8612,12 @@ function kochMarkNext(root){
 }
 function kochKeepScroll(root, fn){ const pos = $$(".kb-lane,.kb-ing,.cb-page", root).map(x => x.scrollTop); fn(); $$(".kb-lane,.kb-ing,.cb-page", $("#koch")).forEach((x, i) => { if (pos[i] != null) x.scrollTop = pos[i]; }); }
 function kochWho(){
-  const r = kb.r, wst = {o: kb.wst.o, m: kb.wst.m};
+  const r = kb.r, wst = {o: kb.wst.o, m: kb.wst.m, recipePortion:kb.wst.recipePortion};
   openSheet({title:"Für wen kochst du?", right:"Fertig", body:`${whenHTML(wst.m)}<div class="section"><div class="section-h"><span>Wer isst mit?</span></div><div class="group" id="kw-p"></div></div><p class="note" style="margin:8px 4px">Die Mengen richten sich nach dem Mahlzeit-Ziel jeder Person – wie in ITOGO.</p><button type="button" class="btn plain" id="kw-hh">👥 Personen bearbeiten</button>`,
     onOpen: sh => { $$("[data-wd] button", sh).forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.o) === wst.o)));
       const draw = () => { $("#kw-p", sh).innerHTML = kb.people.map((x, i) => `<div class="row pp"><span class="lbl">${esc(x.n)}<small class="num">${fmt(x.k)} kcal</small></span><div class="stp2"><button type="button" data-kp="${i}:-1" aria-label="Weniger">−</button><b class="num">${x.c}</b><button type="button" data-kp="${i}:1" aria-label="Mehr">+</button></div></div>`).join("");
         $$("[data-kp]", sh).forEach(b => b.onclick = () => { const [i, d] = b.dataset.kp.split(":").map(Number); kb.people[i].c = Math.max(0, Math.min(4, kb.people[i].c + d)); kb.fixedF = null; draw(); }); };
-      wst.cb = () => { const np = cookPeople(r, wst); kb.people.forEach((x, i) => { const c = x.c; Object.assign(x, np[i], {c}); }); kb.fixedF = null; draw(); };
+      wst.cb = change => { if (change === "meal") wst.recipePortion = false; const np = cookPeople(r,wst); kb.people.forEach((x,i) => { const c=x.me&&x.empty&&!x.c?np[i].c:x.c; Object.assign(x,np[i],{c}); }); kb.fixedF=null; draw(); };
       whenBind(sh, wst); draw(); $("#kw-hh", sh).onclick = () => { closeSheet(true); setTimeout(openKbHouse, 350); }; },
     onSave: () => { kb.wst = wst; setTimeout(() => kochKeepScroll($("#koch"), () => kochRender()), 30); }});
 }
