@@ -216,32 +216,25 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 .week-day h2 span{color:var(--label2);font-weight:500;margin-left:4px}
 .week-day h2 .week-today{background:var(--fill);color:var(--tint);padding:3px 6px;border-radius:7px;font-size:10px;font-weight:750}
 .week-empty{margin:0;padding:6px 3px;color:var(--label2);font-size:12px}
-.week-slot{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;gap:8px;min-height:160px;margin:0 0 9px;padding:11px;border-radius:16px;border:1px solid var(--sep);background:linear-gradient(150deg,color-mix(in srgb,var(--tint) 18%,var(--card)),var(--card) 70%);color:var(--label)}
-.week-slot.cardio{background:linear-gradient(150deg,color-mix(in srgb,var(--teal) 20%,var(--card)),var(--card) 75%)}
-.week-slot.sport{background:linear-gradient(150deg,color-mix(in srgb,var(--orange) 20%,var(--card)),var(--card) 75%)}
+.week-slot{display:grid;grid-template-columns:clamp(58px,20vw,85px) minmax(0,1fr);grid-template-rows:auto auto auto;gap:3px 9px;align-items:center;overflow:hidden;margin:0 0 7px;padding:6px 8px 6px 6px;border-radius:12px;border:1px solid var(--sep);background:var(--card);color:var(--label)}
 .week-slot.is-option{border-style:dashed}
-.week-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;z-index:-2;display:none}
-.week-cover[src]{display:block}
-.week-slot:has(.week-cover[src]){color:#fff}
-.week-slot:has(.week-cover[src])::before{position:absolute;inset:0;z-index:-1;content:"";background:linear-gradient(180deg,rgba(7,10,18,.25),rgba(7,10,18,.58) 42%,rgba(7,10,18,.98) 100%)}
-.week-slot-top{display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:space-between;font-size:11px;font-weight:750}
-.week-slot-top span{padding:4px 7px;border-radius:7px;background:var(--fill);font-variant-numeric:tabular-nums}
-.week-slot:has(.week-cover[src]) .week-slot-top span{background:#101522d9}
-.week-slot-top span.logged{color:#79e8a9}
-.week-slot-info{margin-top:auto}
-.week-slot-info strong,.week-slot-info small{display:block}
-.week-slot-info strong{font-size:18px;line-height:1.15;letter-spacing:-.2px;margin-top:2px;overflow-wrap:anywhere}
-.week-slot-info small,.week-slot-meta{font-size:11px;line-height:1.32;margin-top:3px;color:var(--label2);overflow-wrap:anywhere}
-.week-slot:has(.week-cover[src]) .week-slot-info small,.week-slot:has(.week-cover[src]) .week-slot-meta{color:#e2e8f0;text-shadow:0 1px 3px #05070b}
-.week-slot-action{display:flex;justify-content:flex-end;gap:7px}
-.week-open{min-height:44px;border-radius:9px;background:#141b28;color:#f4f7fb;border:1px solid #9ca8bb69;padding:4px 12px;font-size:12px;font-weight:750;white-space:nowrap}
+.week-cover{grid-column:1;grid-row:1/4;width:100%;aspect-ratio:1.22;object-fit:cover;object-position:center;border-radius:7px;background:var(--fill);display:block}
+.week-cover:not([src]){visibility:hidden}
+.week-slot-top{grid-column:2;display:flex;flex-wrap:wrap;gap:3px 6px;justify-content:space-between;align-items:center;font-size:10px;font-weight:750;font-variant-numeric:tabular-nums;color:var(--label2)}
+.week-slot-top span.logged{color:var(--green)}
+.week-slot-info{grid-column:2;min-width:0}
+.week-slot-info strong{display:block;font-size:15px;line-height:1.13;overflow-wrap:anywhere}
+.week-slot-info small,.week-slot-meta{display:block;font-size:10px;line-height:1.2;color:var(--label2);overflow-wrap:anywhere}
+.week-slot-info small{margin-top:2px}
+.week-slot-meta{margin:2px 0 0}
+.week-slot-action{grid-column:2;display:flex;justify-content:flex-end;gap:5px}
+.week-open{min-height:44px;border-radius:8px;background:var(--fill);color:var(--label);border:1px solid var(--sep);padding:3px 9px;font-size:11px;font-weight:750;white-space:nowrap}
 .week-open.week-start{background:#e4efff;color:#102647;border-color:#e4efff}
 .week-open svg{width:5px;height:9px}
 .week-back{min-height:44px;margin:0 0 4px}
 .week-sources{min-height:44px;padding:0 5px}
-.week-credits{margin:0 5px;font-size:11px}.week-credits a{color:var(--tint)}
 .train-date-group input[type=date]{width:auto;min-width:118px}
-@media(min-width:600px){.week-slot{padding:12px 14px;min-height:174px}.week-slot-info small{font-size:12px}.week-open{min-width:86px}}
+@media(min-width:640px){.week-slot{grid-template-columns:92px minmax(0,1fr) auto;grid-template-rows:auto auto;gap:4px 12px;padding:7px 10px 7px 7px}.week-cover{grid-row:1/3}.week-slot-action{grid-column:3;grid-row:1/3}.week-slot-info strong{font-size:16px}.week-slot-top,.week-slot-info small,.week-slot-meta{font-size:11px}}
 .train-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:4px 0 14px}
 .train-dash-head .large-title{margin:3px 0 0}
 .train-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--tint)}
@@ -4901,7 +4894,7 @@ function openTrainingBasis(){
     </div>`, onOpen: sh => { $(".r", sh).style.visibility = "hidden"; }});
 }
 const TRAIN_ART = {"Bankdrücken Langhantel":"t:1","Brustpresse Maschine":"t:2","Schrägbankdrücken Kurzhantel":"t:3","Flachbankdrücken Kurzhantel":"t:4","Liegestütz":"t:5","Liegestütz erhöht":"t:6","Pike Push-up":"t:7","Stuhl-Dips":"t:8","Schulterdrücken Kurzhantel":"t:9","Schulterpresse Maschine":"t:10","Latzug":"t:11","Latzug eng":"t:12","Latzug breit":"t:13","Klimmzug assistiert":"t:14","Klimmzug":"t:15","Latzug mit Band":"t:16","Kabelrudern eng":"t:17","Brustgestütztes Kurzhantelrudern":"t:18","Rudermaschine":"t:19","Langhantelrudern vorgebeugt":"t:20","Rucksack-Rudern":"t:21","Kurzhantelrudern einarmig":"t:22","Rudern mit Band":"t:23","Schulterdrücken mit Band":"t:24","Seitheben Kurzhantel":"t:25","Seitheben Kabel":"t:26","Seitheben mit Band":"t:27","Face Pull":"t:28","Reverse Fly Kurzhantel":"t:29","Bizepscurl (Supersatz)":"t:30","Hammercurl (Supersatz)":"t:31","Bizepscurl Kabel":"t:32","Trizepsdrücken Kabel":"t:33","Trizepsdrücken über Kopf (Supersatz)":"t:34","Trizepsstrecken mit Band":"t:35","Beinpresse":"t:36","Kniebeuge Langhantel":"t:37","Goblet Squat":"t:38","Goblet Squat auf Box":"t:39","Kniebeuge zum Stuhl":"t:40","Bulgarian Split Squat":"t:41","Bulgarian Split Squat am Bett":"t:42","Ausfallschritt rückwärts KH":"t:43","Ausfallschritt rückwärts":"t:44","Rumänisches Kreuzheben":"t:45","Rumänisches Kreuzheben KH":"t:46","Rumänisches Kreuzheben mit Band":"t:47","Hyperextension Gesäß-Fokus":"t:48","Einbeiniges Hüftbeugen":"t:49","Hip Thrust":"t:50","Glute Bridge":"t:51","Glute Bridge mit Kurzhantel":"t:52","Kabel-Kickback":"t:53","Beinbeuger sitzend":"t:54","Beinbeuger liegend":"t:55","Beinbeuger mit Handtuch":"t:56","Abduktoren-Maschine":"t:57","Beinheben seitlich stehend":"t:58","Seitliches Beinheben im Liegen":"t:59","Wadenheben stehend":"t:60","Wadenheben mit Kurzhantel":"t:61","Wadenheben einbeinig":"t:62","Dead Bug":"t:63","Unterarmstütz":"t:64","Vierfüßlerstand diagonal":"t:65","Kabel-Crunch kniend":"t:66","Hängendes Beinheben":"t:67","Reverse Crunch":"t:68","Pallof Press":"t:69","Pallof Press mit Band":"t:70","Trizepsdrücken Kabel (Supersatz)":"t:33"};
-const TRAIN_ART_PACK = {"f":"img-fad7e70de4.bin","i":[["t:1",0,11016,"image/webp"],["t:2",11016,13338,"image/webp"],["t:3",24354,10096,"image/webp"],["t:4",34450,9036,"image/webp"],["t:5",43486,6914,"image/webp"],["t:6",50400,9494,"image/webp"],["t:7",59894,8234,"image/webp"],["t:8",68128,9022,"image/webp"],["t:9",77150,9018,"image/webp"],["t:10",86168,12628,"image/webp"],["t:11",98796,9582,"image/webp"],["t:12",108378,9130,"image/webp"],["t:13",117508,10264,"image/webp"],["t:14",127772,9530,"image/webp"],["t:15",137302,8090,"image/webp"],["t:16",145392,6904,"image/webp"],["t:17",152296,14346,"image/webp"],["t:18",166642,10436,"image/webp"],["t:19",177078,15412,"image/webp"],["t:20",192490,9790,"image/webp"],["t:21",202280,9872,"image/webp"],["t:22",212152,10868,"image/webp"],["t:23",223020,8042,"image/webp"],["t:24",231062,7208,"image/webp"],["t:25",238270,6876,"image/webp"],["t:26",245146,12972,"image/webp"],["t:27",258118,8036,"image/webp"],["t:28",266154,9792,"image/webp"],["t:29",275946,8010,"image/webp"],["t:30",283956,7476,"image/webp"],["t:31",291432,7328,"image/webp"],["t:32",298760,10564,"image/webp"],["t:33",309324,9360,"image/webp"],["t:34",318684,6858,"image/webp"],["t:35",325542,8532,"image/webp"],["t:36",334074,16170,"image/webp"],["t:37",350244,8764,"image/webp"],["t:38",359008,6448,"image/webp"],["t:39",365456,8368,"image/webp"],["t:40",373824,8356,"image/webp"],["t:41",382180,7768,"image/webp"],["t:42",389948,7828,"image/webp"],["t:43",397776,6442,"image/webp"],["t:44",404218,5922,"image/webp"],["t:45",410140,4854,"image/webp"],["t:46",414994,3968,"image/webp"],["t:47",418962,6002,"image/webp"],["t:48",424964,8696,"image/webp"],["t:49",433660,6154,"image/webp"],["t:50",439814,9790,"image/webp"],["t:51",449604,5740,"image/webp"],["t:52",455344,6154,"image/webp"],["t:53",461498,10286,"image/webp"],["t:54",471784,11670,"image/webp"],["t:55",483454,9700,"image/webp"],["t:56",493154,6500,"image/webp"],["t:57",499654,11502,"image/webp"],["t:58",511156,8498,"image/webp"],["t:59",519654,7620,"image/webp"],["t:60",527274,6442,"image/webp"],["t:61",533716,4676,"image/webp"],["t:62",538392,5942,"image/webp"],["t:63",544334,7138,"image/webp"],["t:64",551472,6492,"image/webp"],["t:65",557964,7286,"image/webp"],["t:66",565250,10084,"image/webp"],["t:67",575334,8096,"image/webp"],["t:68",583430,5884,"image/webp"],["t:69",589314,7742,"image/webp"],["t:70",597056,5606,"image/webp"],["cover:strength",602662,21440,"image/webp"],["cover:cardio",624102,22674,"image/webp"],["cover:mma",646776,41084,"image/webp"],["cover:kick",687860,21894,"image/webp"]]};
+const TRAIN_ART_PACK = {"f":"img-5d2d6c2cb8.bin","i":[["t:1",0,11016,"image/webp"],["t:2",11016,13338,"image/webp"],["t:3",24354,10096,"image/webp"],["t:4",34450,9036,"image/webp"],["t:5",43486,6914,"image/webp"],["t:6",50400,9494,"image/webp"],["t:7",59894,8234,"image/webp"],["t:8",68128,9022,"image/webp"],["t:9",77150,9018,"image/webp"],["t:10",86168,12628,"image/webp"],["t:11",98796,9582,"image/webp"],["t:12",108378,9130,"image/webp"],["t:13",117508,10264,"image/webp"],["t:14",127772,9530,"image/webp"],["t:15",137302,8090,"image/webp"],["t:16",145392,6904,"image/webp"],["t:17",152296,14346,"image/webp"],["t:18",166642,10436,"image/webp"],["t:19",177078,15412,"image/webp"],["t:20",192490,9790,"image/webp"],["t:21",202280,9872,"image/webp"],["t:22",212152,10868,"image/webp"],["t:23",223020,8042,"image/webp"],["t:24",231062,7208,"image/webp"],["t:25",238270,6876,"image/webp"],["t:26",245146,12972,"image/webp"],["t:27",258118,8036,"image/webp"],["t:28",266154,9792,"image/webp"],["t:29",275946,8010,"image/webp"],["t:30",283956,7476,"image/webp"],["t:31",291432,7328,"image/webp"],["t:32",298760,10564,"image/webp"],["t:33",309324,9360,"image/webp"],["t:34",318684,6858,"image/webp"],["t:35",325542,8532,"image/webp"],["t:36",334074,16170,"image/webp"],["t:37",350244,8764,"image/webp"],["t:38",359008,6448,"image/webp"],["t:39",365456,8368,"image/webp"],["t:40",373824,8356,"image/webp"],["t:41",382180,7768,"image/webp"],["t:42",389948,7828,"image/webp"],["t:43",397776,6442,"image/webp"],["t:44",404218,5922,"image/webp"],["t:45",410140,4854,"image/webp"],["t:46",414994,3968,"image/webp"],["t:47",418962,6002,"image/webp"],["t:48",424964,8696,"image/webp"],["t:49",433660,6154,"image/webp"],["t:50",439814,9790,"image/webp"],["t:51",449604,5740,"image/webp"],["t:52",455344,6154,"image/webp"],["t:53",461498,10286,"image/webp"],["t:54",471784,11670,"image/webp"],["t:55",483454,9700,"image/webp"],["t:56",493154,6500,"image/webp"],["t:57",499654,11502,"image/webp"],["t:58",511156,8498,"image/webp"],["t:59",519654,7620,"image/webp"],["t:60",527274,6442,"image/webp"],["t:61",533716,4676,"image/webp"],["t:62",538392,5942,"image/webp"],["t:63",544334,7138,"image/webp"],["t:64",551472,6492,"image/webp"],["t:65",557964,7286,"image/webp"],["t:66",565250,10084,"image/webp"],["t:67",575334,8096,"image/webp"],["t:68",583430,5884,"image/webp"],["t:69",589314,7742,"image/webp"],["t:70",597056,5606,"image/webp"],["cover:strength",602662,9884,"image/webp"],["cover:sport",612546,18714,"image/webp"],["cover:cardio",631260,6772,"image/webp"]]};
 function trainingIllustration(name, label, open){
   const choices = name === "Klimmzug assistiert / Latzug" ? ["Klimmzug assistiert","Latzug"] : [name];
   const illustrated = choices.filter(choice => TRAIN_ART[choice]);
@@ -5119,7 +5112,7 @@ function trainingWeekRow(day,row,index,today){
   const status = row.kind==="kick" && alt && row.status==="Alternative" ? "Optional" : row.status==="Geplant" && day.date<today ? "Offen" : row.status;
   const canOpen = !row.legacy && !(row.type==="sport" && row.status==="Erfasst" && row.index<0);
   const action = row.status==="Begonnen" ? "Fortsetzen" : row.status==="Erfasst" ? "Bearbeiten" : "Starten";
-  const cover = "cover:"+(row.type==="sport" ? row.kind==="kick"?"kick":row.kind==="mma"||row.label==="MMA"?"mma":"kick" : row.type);
+  const cover = "cover:" + row.type;
   const image = IMG_URL.get(cover);
   const mins = row.actualMin||row.min||row.plannedDuration;
   const attrs = `data-week-entry="${index}" data-week-day="${day.date}"`;
@@ -5127,8 +5120,8 @@ function trainingWeekRow(day,row,index,today){
     <img class="week-cover" alt="" aria-hidden="true" loading="lazy" data-train-art="${cover}" ${image?`src="${esc(image)}"`:""}>
     <div class="week-slot-top"><span>${esc(row.t ? activityTime(row) : "Flexibel")}${mins?" · "+esc(mins)+" Min.":""}</span><span class="${status==="Erfasst"?"logged":""}">${status}</span></div>
     <div class="week-slot-info"><div class="week-slot-meta">${kind} · ${esc(row.location)}</div>
-      <strong>${esc(row.label)}</strong>${row.context?`<small>${esc(row.context)}</small>`:""}
-      ${row.note?`<small>${esc(row.note)}</small>`:""}
+      <strong>${esc(row.label)}</strong>
+      ${row.context?`<small>${esc(row.context)}</small>`:""}
       ${row.entryDate && row.entryDate!==day.date?`<small>${row.status==="Erfasst"?"Erfasst am":"Begonnen am"} ${esc(dateShort(row.entryDate))}</small>`:""}
     </div>
     <div class="week-slot-action">
@@ -5161,7 +5154,7 @@ function trainingDashboard(){
       ${day.rows.length?day.rows.map((row,i)=>trainingWeekRow(day,row,i,today)).join(""):
         `<p class="week-empty">${day.holiday?"Urlaub":day.away?"Dienstreise · Zeit für zügiges Gehen oder eine kurze Reise-Einheit":"Freier Tag"}</p>`}
     </section>`).join("")}</div>
-    <button type="button" class="pause week-sources" data-week-nav="sources">Plan & Quellen</button><p class="note week-credits">MMA-Foto: Lee Brimelow, <a href="https://commons.wikimedia.org/wiki/File:UFC_74_Respect_Bout.jpg" target="_blank" rel="noopener">UFC 74</a>, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>, Ausschnitt.</p>`;
+    <button type="button" class="pause week-sources" data-week-nav="sources">Plan & Quellen</button>`;
 }
 let strengthOpen = false, strengthOrigin = null, strengthWeekDate = null;
 function openStrengthEntry(date,unit,plannedDate = null){
