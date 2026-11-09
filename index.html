@@ -205,6 +205,10 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 .amp.g i{background:var(--green)} .amp.y i{background:var(--yellow)} .amp.r i{background:var(--red)} .amp.u i{background:var(--teal)}
 
 /* Training */
+.train-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.train-action-row .btn{font-size:12px;min-height:44px;padding:6px}
+.train-activity small{line-height:1.35}
+.act-edit{text-align:left;width:100%;justify-content:space-between}
 .train-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:4px 0 14px}
 .train-dash-head .large-title{margin:3px 0 0}
 .train-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--tint)}
@@ -3863,6 +3867,73 @@ const COMPACT_PLANS = {
     D:{min:"20–30", short:"15–20", main:[["Ausfallschritt rückwärts",3],["Liegestütz erhöht",3],["Rucksack-Rudern",2],["Glute Bridge",2]]}
   }
 };
+const FAMILY_TRAINING = {
+  combat:{
+    label:"Abnehmen · Kraft + Mixed Martial Arts", cardio:40,
+    cardioPlan:"Di 17:10–17:30 · moderates Cardio vor MMA. Zweite Einheit 20 Min. an einem leichteren Tag, z. B. Freitag nach Kraft oder draußen.",
+    A:{name:"Ganzkörper A",min:"30–40",short:"20–25",main:[["Goblet Squat",3],["Flachbankdrücken Kurzhantel",3],["Kurzhantelrudern einarmig",3],["Rumänisches Kreuzheben KH",2]]},
+    B:{name:"Ganzkörper B",min:"25–35",short:"20–25",main:[["Ausfallschritt rückwärts KH",2],["Schrägbankdrücken Kurzhantel",3],["Brustgestütztes Kurzhantelrudern",3],["Glute Bridge mit Kurzhantel",2]]}
+  },
+  glutes:{
+    label:"Abnehmen · Gesäß und Beine", cardio:60,
+    cardioPlan:"2–3 moderate Einheiten pro Woche, z. B. 3 × 20 Min. Gehen, Airbike oder Laufband. Nach Kraft oder an anderen Tagen.",
+    A:{name:"Ganzkörper · Gesäß A",min:"35–45",short:"20–25",main:[["Hip Thrust",3],["Beinpresse",3],["Brustpresse Maschine",2],["Kabelrudern eng",2],["Beinbeuger sitzend",2]]},
+    B:{name:"Ganzkörper · Gesäß B",min:"35–45",short:"20–25",main:[["Rumänisches Kreuzheben KH",3],["Ausfallschritt rückwärts KH",3],["Schulterpresse Maschine",2],["Latzug",2],["Abduktoren-Maschine",2]]}
+  },
+  maintain:{
+    label:"Gewicht halten · Ganzkörper und Kondition", cardio:60,
+    cardioPlan:"2 × 30 Min. moderates Cardio pro Woche als Einstieg. Im Alltag kommt zügiges Gehen dazu.",
+    A:{name:"Ganzkörper A",min:"25–35",short:"20–25",main:[["Beinpresse",3],["Brustpresse Maschine",3],["Kabelrudern eng",3],["Rumänisches Kreuzheben KH",2]]},
+    B:{name:"Ganzkörper B",min:"25–35",short:"20–25",main:[["Goblet Squat",3],["Schulterpresse Maschine",2],["Latzug",3],["Hip Thrust",2]]}
+  }
+};
+const ROMAN_SCHEDULE = [
+  {wd:2,t:"18:00",end:"19:30",u:"S",kind:"mma",min:90},
+  {wd:4,t:"19:30",end:"21:00",u:"S",kind:"mma",min:90},
+  {wd:5,t:"15:35",end:"16:10",u:"A",min:35},
+  {wd:0,t:"12:05",end:"12:40",u:"B",min:35},
+  {wd:0,t:"13:15",end:"14:15",u:"S",kind:"kick",min:60,optional:true}
+];
+const KIDS_STUDIO = [
+  [2,"17:00–18:00","Tochter · Kickboxen","17:10–17:30 moderates Gehen oder Airbike. Danach erholen und um 18:00 ins MMA."],
+  [5,"15:30–16:15","Sohn · Kickboxen","15:35–16:10 Ganzkörper A. Nach hartem Donnerstagssparring mit der Kurzversion starten oder verschieben."],
+  [5,"17:15–18:15","Tochter · Kickboxen","Ersatzfenster für Ganzkörper A, falls der frühe Termin ausfällt. Falls Kraft schon erledigt ist: bei Bedarf 20 Min. moderates Cardio."],
+  [0,"10:00–10:45","Sohn · Kickboxen","Ausweichfenster für Ganzkörper B oder ein Spaziergang. Einen Kraftblock auswählen."],
+  [0,"12:00–13:00","Tochter · MMA","12:05–12:40 Ganzkörper B. Bei anschließend intensivem Kickboxen B kürzen, verschieben oder Kickboxen technisch locker halten."]
+];
+const FOCUS_LABELS = {combat:"MMA, Kraft und Abnehmen",glutes:"Abnehmen · Gesäß und Beine",maintain:"Gewicht halten und fitter werden",standard:"Bisheriger Trainingsplan"};
+function focusFor(pr){
+  if (Object.hasOwn(FOCUS_LABELS,pr.trainingFocus)) return pr.trainingFocus;
+  const name = String(pr.name || "").trim().toLowerCase();
+  if (/^(roman|роман)\b|^роман(?:\s|$)/.test(name)) return "combat";
+  if (/^alina\b|^алина(?:\s|$)/.test(name)) return "glutes";
+  if (/^kateryna\b|^катерина\s+величко(?:\s|$)/.test(name)) return "maintain";
+  return "standard";
+}
+function profileTrainingSchedule(pr, tmpl, focus){
+  const stored = Array.isArray(pr.schedule) ? pr.schedule : null;
+  if (focus !== "combat") return stored || DEFAULT_SCHED[tmpl];
+  if (!stored) return ROMAN_SCHEDULE;
+  if (pr.trainingScheduleVersion === 1) return stored;
+  const oldDefaults = DEFAULT_SCHED.m;
+  const unchanged = row => oldDefaults.some(x => x.u === row.u && x.wd === row.wd && x.t === row.t);
+  const custom = stored.filter(row => !unchanged(row));
+  return custom.concat(ROMAN_SCHEDULE.filter(row => !custom.some(x =>
+    row.u === "S" ? x.u === "S" && x.wd === row.wd : x.u === row.u)));
+}
+function strengthPlan(p, unit, session){
+  const family = session ? FAMILY_TRAINING[session.trainingFocus] : FAMILY_TRAINING[p.trainFocus];
+  return family?.[unit] || COMPACT_PLANS[p.tmpl][unit];
+}
+function strengthName(p, unit, session){
+  return strengthPlan(p,unit,session)?.name || UNITS[p.tmpl][unit]?.name || unit;
+}
+const activityName = x => x.u === "S" && x.kind === "kick" ? "Kickboxen" : unitName(x.u);
+function activityTime(x){
+  if (!x.end || !x.t || !x.min) return x.t;
+  const [h,m] = x.t.split(":").map(Number), end = h*60+m+x.min;
+  return x.t + "–" + pad(Math.floor(end/60)%24) + ":" + pad(end%60);
+}
 function compactExercises(plan){
   return plan.main.map(([name, sets], index) => {
     const ex = TRAIN_EXERCISES.get(name).ex.slice();
@@ -4070,13 +4141,14 @@ const P = () => {
   const floor = Math.max(tmpl === "w" ? 1200 : 1500, g.kcalMin ?? base.kcalMin);
   const usePersonalDeficit = personalDeficitProfile(pr.name) && !g.manualCalories;
   const kcalDef = usePersonalDeficit ? Math.max(floor, kcalMaint - 500) : (g.kcalDef ?? base.kcal.Defizit);
-  const sched = Array.isArray(pr.schedule) ? pr.schedule : DEFAULT_SCHED[tmpl];
+  const trainFocus = focusFor(pr), sched = profileTrainingSchedule(pr,tmpl,trainFocus);
   const days = Object.assign({}, base.days);
   ["A","B","C"].forEach(u => { const sl = sched.find(x => x.u === u); if (sl) days[u] = sl.wd; });
   return Object.assign({}, base, {
-    kcal:{Einstieg: usePersonalDeficit ? kcalDef : (g.kcalStart ?? base.kcal.Einstieg), Defizit: kcalDef, Erhaltung: kcalMaint, Urlaub: kcalMaint},
+    kcal:{Einstieg: trainFocus==="maintain" ? kcalMaint : usePersonalDeficit ? kcalDef : (g.kcalStart ?? base.kcal.Einstieg), Defizit: trainFocus==="maintain" ? kcalMaint : kcalDef, Erhaltung: kcalMaint, Urlaub: kcalMaint},
     kcalMin: g.kcalMin ?? base.kcalMin, protein: g.protein ?? base.protein,
     steps0: g.steps0 ?? base.steps0, stepsEnd: g.stepsEnd ?? base.stepsEnd, wp0: g.wp0 ?? base.wp0, wpEnd: g.wpEnd ?? base.wpEnd, sleep: g.sleep ?? base.sleep,
+    trainFocus, sport:trainFocus === "combat" ? 2 : trainFocus === "standard" ? base.sport : 0, sportLabel:trainFocus === "combat" ? "MMA" : trainFocus === "standard" ? base.sportLabel : "Zusatzsport",
     schedule: sched, days, trips: Array.isArray(pr.trips) ? pr.trips : [], remind: pr.remind ?? 30,
     weighAt: pr.weighAt ?? "06:45", weighOn: pr.weighOn ?? true, checkinOn: pr.checkinOn ?? true,
     partner: pr.partner || "dein Partner",
@@ -4101,6 +4173,7 @@ function phase(w){
   if (w <= 0) return "Vorbereitung";
   const p = P(), ws = weekStart(w), we = addDays(ws,6);
   if (we >= p.vacFrom && ws <= p.vacTo) return "Urlaub";
+  if (p.trainFocus === "maintain") return "Erhaltung";
   if (w <= 2) return "Einstieg";
   if (MAINT.has(w)) return "Erhaltung";
   return "Defizit";
@@ -4116,10 +4189,10 @@ function tphase(w){
   return "Aufbau";
 }
 const inTrip = d => P().trips.some(t => t.from && t.to && d >= t.from && d <= t.to);
-const unitName = u => u === "S" ? P().sportLabel : UNITS[P().tmpl][u]?.name || u;
+const unitName = u => u === "S" ? P().sportLabel : strengthName(P(),u);
 const kcalGoal = w => { const ph = phase(w); const k = P().kcal; return ph==="Vorbereitung"||ph==="Einstieg" ? k.Einstieg : ph==="Defizit" ? k.Defizit : k.Erhaltung; };
 const stepGoal = w => { const p = P(); return Math.min(p.stepsEnd, p.steps0 + p.stepInc*(Math.max(w,1)-1)); };
-const wpGoal = w => { const p = P(); return Math.min(p.wpEnd, p.wp0 + p.wpInc*(Math.max(w,1)-1)); };
+const wpGoal = w => { const p = P(); return FAMILY_TRAINING[p.trainFocus]?.cardio || Math.min(p.wpEnd, p.wp0 + p.wpInc*(Math.max(w,1)-1)); };
 const isDef = w => { const ph = phase(w); return ph==="Einstieg" || ph==="Defizit"; };
 const defWeeks = w => { let n=0; for (let i=1;i<=w;i++) if (isDef(i)) n++; return n; };
 const scenario = (rate, w) => { const p=P(); return Math.max(p.goal, p.kg*Math.pow(1-rate, defWeeks(w))); };
@@ -4153,9 +4226,9 @@ function weekStats(w){
   const tracked = ds.filter(d=>typeof d.kcal==="number" && d.kcal>0).length;
   const inK = ds.filter(d=>typeof d.kcal==="number" && d.kcal>=kg*0.9 && d.kcal<=kg*1.1).length;
   const prot = ds.filter(d=>typeof d.p==="number" && d.p>=p.protein*0.9).length;
-  const kraft = ds.filter(d=>d.kraft).length, sport = ds.filter(d=>d.sport).length;
+  const kraft = ds.filter(d=>d.kraft).length, sport = ds.reduce((n,d)=>n+sportCount(d),0);
   const st = ds.map(d=>d.steps).filter(x=>typeof x==="number"); const stAvg = st.length ? st.reduce((a,b)=>a+b,0)/st.length : null;
-  const wp = ds.reduce((a,d)=>a+(typeof d.wp==="number"?d.wp:0)+(typeof d.cardio==="number"?d.cardio:0),0);
+  const wp = ds.reduce((a,d)=>a+cardioMinutes(d),0);
   const sl = ds.map(d=>d.sleep).filter(x=>typeof x==="number"); const slAvg = sl.length ? sl.reduce((a,b)=>a+b,0)/sl.length : null;
   const enDays = ds.filter(d=>typeof d.en==="number").length;
   const alc = ds.filter(d=>d.alc).length;
@@ -4268,7 +4341,7 @@ const FIELDS = () => {
     {g:"Bewegung", items:[
       {k:"wp", label:"Walking Pad", unit:"min", type:"stepper", step:10},
       {k:"kraft", label:"Krafttraining", type:"switch", sub:"wird beim Speichern eines Trainings gesetzt"},
-      {k:"sport", label:p.sportLabel, type:"switch"},
+      {k:"sport", label:p.sportLabel, type:"switch", sub:"Schnelleintrag · das Detailprotokoll findest du im Trainingsbereich"},
       {k:"sportMin", label:p.sportLabel + " – Dauer", unit:"min", dec:0, mode:"numeric", ph:"0", dep:"sport"},
       {k:"rpe", label:"Intensität", type:"slider", dep:"sport"},
       ...(p.tmpl==="m" ? [{k:"rounds", label:"Sparring-Runden", unit:"", dec:0, mode:"numeric", ph:"0", dep:"sport"}] : []),
@@ -4367,7 +4440,7 @@ function plannedOn(d){
   if (trip) return sl.some(x => x.u !== "S") ? [{t: sl.find(x => x.u !== "S").t, u:"D"}] : [];
   return sl;
 }
-const isDone = (d, u) => u === "S" ? !!S.days[d]?.sport : hasSessionWork(sessionOf(d,u)) || (u !== "D" && hasSessionWork(sessionOf(d,"D")));
+const isDone = (d, u, kind) => u === "S" ? !!sportCount(S.days[d],kind) : hasSessionWork(sessionOf(d,u)) || (u !== "D" && hasSessionWork(sessionOf(d,"D")));
 function dayChecks(d){
   const p = P(), w = weekOf(d), o = S.days[d] || {}, kg = kcalGoal(w), sg = stepGoal(w);
   if (w < 1 || phase(w) === "Urlaub") return null;
@@ -4376,7 +4449,7 @@ function dayChecks(d){
     {k:"kcal", l:"Kalorien im Rahmen", s:`bis ${fmt(kg*1.05)} kcal`, ok: o.kcal > 0 && o.kcal <= kg*1.05},
     {k:"p", l:"Protein", s:`ab ${fmt(p.protein*0.9)} g`, ok: o.p >= p.protein*0.9},
     {k:"steps", l:"Schritte", s:`${fmt(sg)}`, ok: o.steps >= sg}];
-  plannedOn(d).forEach(x => c.push({k:"tr", l: unitName(x.u), s: x.t ? x.t + " Uhr" : "", ok: isDone(d, x.u)}));
+  plannedOn(d).filter(x => !x.optional).forEach(x => c.push({k:"tr", l:activityName(x), s:activityTime(x), ok:isDone(d,x.u,x.kind)}));
   if ((o.food||[]).length){ const bf = (o.food||[]).filter(e => e.m === "b").reduce((a,e) => a + entryVals(e).p, 0), g = bfGoal(); c.push({k:"bf", l:"Protein-Frühstück", s:`ab ${g} g`, ok: bf >= g}); }
   lifeChecks(d).forEach(x => c.push(x));
   return c;
@@ -4404,7 +4477,7 @@ function achCtx(){
   const ss = p.mods.smoke ? smokeStats() : null, ci = Object.entries(S.checkins || {}).sort((a,b) => Number(a[0]) - Number(b[0])).map(x => x[1]);
   const belts = ci.filter(c => c.belt).map(c => c.belt);
   return {ds, won:won.length, best:st.best, comeback, greenWeeks:ws.length, lost: tr != null ? p.kg - tr : 0, kfaDrop: (firstKfa() != null && kfaTrend() != null) ? firstKfa() - kfaTrend() : 0,
-    sessions:Object.keys(S.sessions).filter(k => k >= p.startDate && hasSessionWork(S.sessions[k])).length, sport: ds.filter(d => S.days[d].sport).length, crave: ds.reduce((a,d) => a + (S.days[d].crave||0), 0),
+    sessions:Object.keys(S.sessions).filter(k => k >= p.startDate && hasSessionWork(S.sessions[k])).length, sport: ds.reduce((n,d) => n+sportCount(S.days[d]),0), crave: ds.reduce((a,d) => a + (S.days[d].crave||0), 0),
     books:(p.books||[]).filter(b => b.st === "d").length, learnH: ds.reduce((a,d) => a + (S.days[d].learn||0), 0)/60, smokeDays: ss && !ss.pre ? ss.days : 0,
     cooked:Object.values(p.cooked||{}).reduce((a,b) => a+b, 0), boxes:p.boxes||0, fridge:p.fridgeCooks||0, bf: ds.filter(d => bfProtein(d) >= bfGoal()).length,
     fit: ci.some(c => c.fit === 2), belt: belts.length >= 2 && belts[belts.length-1] > belts[0], cycles: p.mods.cycle ? cycleRuns().starts.length : 0,
@@ -4492,7 +4565,7 @@ function lifeAxes(){
   const O = d => S.days[d] || {};
   const ax = [
     ["Ernährung", share(d => { const o = O(d), k = kcalGoal(weekOf(d)); return o.kcal > 0 && o.kcal <= k*1.05 && o.p >= p.protein*0.9; })],
-    ["Bewegung", share(d => (O(d).steps||0) >= stepGoal(weekOf(d)) || O(d).kraft || O(d).sport)],
+    ["Bewegung", share(d => (O(d).steps||0) >= stepGoal(weekOf(d)) || O(d).kraft || sportCount(O(d)))],
     ["Erholung", ds.length ? clamp(avg(ds.map(d => O(d).sleep).filter(x => typeof x === "number")) / p.sleep || 0, 0, 1) : 0]];
   if (p.mods.read) ax.push(["Geist", share(d => (O(d).read||0) >= p.readGoal)]);
   if (p.mods.learn) ax.push(["Karriere", share(d => (O(d).learn||0) >= p.learnGoal)]);
@@ -4594,8 +4667,8 @@ function planToday(d){
   if (!trip && !sl.length) return "";
   const rows = trip ? [{t:"", u:"D"}] : sl;
   return `<div class="section"><div class="section-h">${trip ? esc(TRIP_LABEL[p.tmpl]) : "Heute geplant"}</div><div class="group">${rows.map(x => {
-    const done = x.u === "S" ? !!S.days[d]?.sport : hasSessionWork(sessionOf(d,x.u));
-    return `<button type="button" class="row plan-today" data-u="${x.u}"><span class="t">${esc(x.t || "–")}</span><span class="lbl">${esc(unitName(x.u))}${x.u==="D" ? `<small>ohne Geräte · ca. ${COMPACT_PLANS[p.tmpl].D.min} min</small>` : ""}</span>${done ? `<span class="kst ok">✓ erledigt</span>` : ICON.chev}</button>`; }).join("")}</div></div>`;
+    const done = isDone(d,x.u,x.kind);
+    return `<button type="button" class="row plan-today" data-u="${x.u}" data-kind="${esc(x.kind||"")}"><span class="t">${esc(x.t || "–")}</span><span class="lbl">${esc(activityName(x))}${x.end ? `<small>${esc(activityTime(x))}${x.optional?" · optional":""}</small>` : ""}${x.u==="D" ? `<small>ohne Geräte · ca. ${COMPACT_PLANS[p.tmpl].D.min} min</small>` : ""}</span>${done ? `<span class="kst ok">✓ erledigt</span>` : ICON.chev}</button>`; }).join("")}</div></div>`;
 }
 function fieldRow(f){
   const h = fieldRow0(f);
@@ -4627,7 +4700,7 @@ function bindHeute(el){
   $("#d-prev", el).onclick = () => { S.date = addDays(S.date,-1); renderAll(); };
   $("#d-next", el).onclick = () => { if (S.date < todayISO()){ S.date = addDays(S.date,1); renderAll(); } };
   const ci = $("#go-checkin", el); if (ci) ci.onclick = () => openCheckin(weekOf(S.date));
-  $$(".plan-today", el).forEach(b => b.onclick = () => { if (b.dataset.u === "S"){ const sw = $("#f-sport", el); if (sw) sw.scrollIntoView({behavior:"smooth", block:"center"}); return; } S.unit = b.dataset.u; setTab("training"); });
+  $$(".plan-today", el).forEach(b => b.onclick = () => { if (b.dataset.u === "S"){ openActivityLog("sport",b.dataset.kind); return; } S.unit = b.dataset.u; setTab("training"); });
   $$("input.field, textarea.field", el).forEach(inp => {
     const k = inp.dataset.k;
     inp.addEventListener("input", () => {
@@ -4665,7 +4738,7 @@ function fillHeute(el){
   $$("[data-segk]", el).forEach(g => $$("button", g).forEach(b => b.setAttribute("aria-pressed", String(o[g.dataset.segk] === b.dataset.v))));
   $$("[data-chipk]", el).forEach(g => $$("button", g).forEach(b => b.setAttribute("aria-pressed", String((o[g.dataset.chipk]||[]).includes(b.dataset.v)))));
   $$("[data-dep]", el).forEach(r => { r.hidden = !o[r.dataset.dep]; });
-  const wg = $("#f-wp-goal", el); if (wg){ const wk = weekDates(Math.max(w,1)).reduce((a,d)=>a+(S.days[d]?.wp||0),0); wg.textContent = `Woche: ${fmt(wk)} von ${fmt(wpGoal(w))} min`; }
+  const wg = $("#f-wp-goal", el); if (wg){ const wk = weekDates(w).reduce((a,d)=>a+cardioMinutes(S.days[d]),0); wg.textContent = `Cardio diese Woche: ${fmt(wk)} von ${fmt(wpGoal(w))} min`; }
   $$("input[type=range]", el).forEach(r => {
     if (r === act) return; const v = o[r.dataset.k], lab = $("#" + r.id + "-v", el);
     if (v == null){ r.value = 5; r.classList.add("unset"); r.style.setProperty("--p","0%"); lab.textContent = "–"; lab.classList.remove("set"); }
@@ -4736,7 +4809,7 @@ function trainingSlots(list, session, compact, tp, week){
     const previous = entries.filter(([name, value]) => name !== ex[0] && (value.slot || name) === slot && recordedSets(value));
     const logged = recordedSets(entry) + previous.reduce((sum, [,value]) => sum + recordedSets(value), 0);
     let planned = compact ? base[1] : setsFor(base, index, tp, week);
-    if (compact && session.short) planned = index < 3 ? 2 : 0;
+    if (compact && session.short) planned = index < (FAMILY_TRAINING[session.trainingFocus]?.[session.unit] ? 4 : 3) ? Math.min(2,planned) : 0;
     if (compact && (tp === "Technik" || tp === "Deload")) planned = Math.min(2, planned);
     if (!planned && !logged && !hasExerciseWork(entry)) return [];
     const usedElsewhere = logged - recordedSets(entry);
@@ -4805,7 +4878,7 @@ function openTrainingSwap(item, list, ses){
 function openTrainingBasis(){
   openSheet({title:"So ist der kompakte Plan aufgebaut", left:"Schließen", right:"", body:`
     <div class="section train-picker">
-      <p>Vier Übungen pro Einheit, zehn Arbeitssätze in der Standardversion. Die Kurzversion konzentriert sich auf die ersten drei Übungen mit je zwei Arbeitssätzen. Die Zeitangaben sind Richtwerte inklusive kurzem, übungsspezifischem Aufwärmen.</p>
+      <p>Die Standardversion enthält je nach Plan vier bis fünf Übungen. In der Kurzversion bleiben die ersten drei bis vier Übungen mit bis zu zwei Arbeitssätzen. Die Zeitangaben sind Richtwerte inklusive kurzem, übungsspezifischem Aufwärmen.</p>
       <p>Die ersten beiden Übungen erhalten mehr Pause. Wähle zu Beginn ein Gewicht, mit dem etwa zwei bis drei saubere Wiederholungen übrig wären. Wenn du bei allen vorgesehenen Sätzen am oberen Ende der Spanne bist, schlägt die App bei geeigneten Übungen die nächste Gewichtssteigerung vor.</p>
       <p>Mehrgelenkübungen decken mehrere Muskeln gleichzeitig ab. Das kompakte Volumen ist für knappe Zeit ausgelegt. Für maximalen Muskelaufbau kann zusätzliches Wochenvolumen sinnvoll sein.</p>
       <div class="group">
@@ -4835,9 +4908,104 @@ function strengthUnitFinished(date, unit){
   const session = sessionOf(date,unit);
   if (!session) return false;
   const p = P(), week = weekOf(date), compact = session.plan === COMPACT_VERSION;
-  const list = compact ? compactExercises(COMPACT_PLANS[p.tmpl][unit]) : EX[p.tmpl][unit];
+  const list = compact ? compactExercises(strengthPlan(p,unit,session)) : EX[p.tmpl][unit];
   const slots = trainingSlots(list,session,compact,tphase(week),week).filter(item => item.planned);
   return slots.length > 0 && slots.every(item => item.entry.done || item.logged >= item.planned);
+}
+const ACTIVITY_TYPES = {mma:"MMA",kick:"Kickboxen",other:"Zusatzsport",incline:"Laufband mit Steigung",walk:"Zügig gehen",bike:"Airbike / Fahrrad",cardio:"Anderes Cardio"};
+const activityEntries = (day, key) => Array.isArray(day?.[key]) ? day[key] : [];
+function sportCount(day, kind){
+  const count = activityEntries(day,"sportLog").filter(x => !kind || x.type === kind).length;
+  return count || (day?.sport && (!kind || kind === "mma") ? 1 : 0);
+}
+function cardioMinutes(day){
+  return (Number(day?.wp)||0) + (Number(day?.cardio)||0) + activityEntries(day,"cardioLog").reduce((sum,x) => sum + (Number(x.min)||0),0);
+}
+function openActivityLog(category, selected, atDate = S.date){
+  const combat = category === "sport", key = combat ? "sportLog" : "cardioLog";
+  const title = combat ? "Kampfsport & Zusatzsport" : "Cardio erfassen";
+  const types = combat ? ["mma","kick","other"] : ["incline","walk","bike","cardio"];
+  const values = () => activityEntries(S.days[atDate],key);
+  const past = values();
+  const planned = combat && plannedOn(atDate).find(x => x.u === "S" && (!selected || x.kind === selected));
+  const defaultType = types.includes(selected) ? selected : planned?.kind || (combat && P().trainFocus !== "combat" ? "other" : types[0]);
+  const saveRows = rows => {
+    writeDoc("days",atDate,{...S.days[atDate],date:atDate,[key]:rows});
+    persistLocal(true);
+    builtDate = null;
+    if (S.tab === "training") updateTrainingDashboard();
+    else renderAll();
+  };
+  const field = (id,label,value,min,max,step=1) => `<label class="row" for="act-${id}"><span class="lbl">${label}</span><input class="field num" id="act-${id}" type="number" min="${min}" max="${max}" step="${step}" inputmode="${step===1?"numeric":"decimal"}" value="${esc(value??"")}" placeholder="–"></label>`;
+  let editing = -1;
+  openSheet({title,right:"Speichern",body:`
+    <p class="note">${esc(dateLong(atDate))} · ${combat ? "Gesamtdauer erfassen. Details sind freiwillig." : "Zeit und Belastung erfassen. Beim Laufband ist die Steigung in Prozent."} Belastung: 1 sehr leicht, 10 maximal.</p>
+    <div class="group">
+      <label class="row" for="act-type"><span class="lbl">Aktivität</span><select class="field" id="act-type">${types.map(t=>`<option value="${t}" ${t===defaultType?"selected":""}>${ACTIVITY_TYPES[t]}</option>`).join("")}</select></label>
+      ${field("min","Dauer in Minuten",planned?.min || (defaultType==="mma" && P().trainFocus==="combat" ? 90 : ""),1,300)}
+      ${field("rpe","Belastung 1–10","",1,10)}
+    </div>
+    <details class="section"><summary>${combat?"Aufwärmen, Technik & Sparring":"Gerätedaten"}</summary><div class="group">
+      ${combat ? field("warm","Aufwärmen · Min.","",0,300)+field("tech","Technik · Min.","",0,300)+field("spar","Sparring · Min.","",0,300)+field("rounds","Sparring-Runden","",0,99) :
+        field("grade","Steigung · %","",0,50,.1)+field("speed","Tempo · km/h","",0,30,.1)}
+      <label class="row" for="act-note"><span class="lbl">${combat?"Technik-Lernpunkt":"Notiz"}</span><input class="field" id="act-note" maxlength="160" style="width:55%" placeholder="${combat?"z. B. Deckung nach Jab":"optional"}"></label>
+    </div></details>
+    ${past.length ? `<div class="section"><div class="section-h">An diesem Tag erfasst</div><div class="group">${past.map((x,i)=>`<button type="button" class="row act-edit" data-act-edit="${i}"><span class="lbl">${esc(ACTIVITY_TYPES[x.type]||x.type)} · ${x.min} Min.${x.rpe?" · RPE "+x.rpe:""}${x.note?`<small>${esc(x.note)}</small>`:""}</span>${ICON.chev}</button>`).join("")}</div></div>`:""}
+    <button type="button" class="btn secondary" id="act-delete" hidden>Eintrag löschen</button>`,
+    onOpen: sh => {
+      if (combat && P().trainFocus === "combat") $("#act-type",sh).onchange = () => {
+        const min = $("#act-min",sh);
+        if (!min.value || (editing<0 && Number(min.value) === planned?.min)){
+          min.value = {mma:90,kick:60}[$("#act-type",sh).value] || "";
+        }
+      };
+      $$("[data-act-edit]",sh).forEach(button => button.onclick = () => {
+        editing = Number(button.dataset.actEdit);
+        const row = past[editing];
+        for (const f of ["type","min","rpe","warm","tech","spar","rounds","grade","speed","note"]){
+          const el = $("#act-"+f,sh); if(el) el.value = row[f] ?? "";
+        }
+        $("details",sh).open = true;
+        $("#act-delete",sh).hidden = false;
+      });
+      $("#act-delete",sh).onclick = () => {
+        saveRows(values().filter((_,i)=>i!==editing));
+        closeSheet(); toast("Eintrag gelöscht");
+      };
+    },
+    onSave: sh => {
+      const min = Number($("#act-min",sh).value), keys = combat ? ["rpe","warm","tech","spar","rounds"] : ["rpe","grade","speed"];
+      const row = {type:$("#act-type",sh).value,min,note:$("#act-note",sh).value.trim()};
+      if (!Number.isInteger(min) || min<1 || min>300){ toast("Bitte 1–300 Minuten eingeben"); return false; }
+      for (const k of keys){
+        const input = $("#act-"+k,sh);
+        if (input.value && !input.checkValidity()){ toast("Bitte die Zahlen prüfen"); return false; }
+        if (input.value) row[k]=Number(input.value);
+      }
+      if ((row.warm||0)+(row.tech||0)+(row.spar||0)>min){ toast("Die Teilzeiten überschreiten die Gesamtdauer"); return false; }
+      const rows = values().slice();
+      if(editing<0) rows.push(row); else rows[editing]=row;
+      saveRows(rows); toast("Einheit gespeichert");
+    }});
+}
+function openFamilyTrainingPlan(){
+  const p = P(), family = FAMILY_TRAINING[p.trainFocus];
+  openSheet({title:"Wochenplan & Wartezeiten",left:"Schließen",right:"",body:`
+    <p class="note">${esc(family?.label||"Training nach Wochenplan")}</p>
+    ${family ? `<div class="card"><b>Cardio · ${family.cardio} Min. als Einstieg</b><p class="note">${esc(family.cardioPlan)}</p>
+    <p class="note">Moderates Tempo: Sprechen ist möglich. Laufband bei Bedarf mit etwa 3–6 % starten und Steigung oder Dauer schrittweise erhöhen. 15 % sind rund 8,5°.</p></div>`:""}
+    ${p.trainFocus === "combat" ? `<div class="section"><div class="section-h">Eigener Kampfsport</div><div class="group">
+    ${p.schedule.filter(x=>x.u==="S").map(x=>`<div class="row"><span class="lbl">${esc(WD[x.wd])} · ${esc(activityName(x))}${x.optional?" (optional)":""}<small>${esc(activityTime(x))}</small></span></div>`).join("")}</div></div>
+    <div class="section"><div class="section-h">${inTrip(S.date)?"Dienstreise · Studiofenster vor Ort":"Studiofenster während des Kindertrainings"}</div><div class="group">
+    ${KIDS_STUDIO.map(([wd,time,name,plan])=>`<div class="row"><span class="lbl">${esc(WD[wd])} · ${esc(time)} · ${esc(name)}<small>${esc(plan)}</small></span></div>`).join("")}</div>
+    <p class="note">Auf Dienstreise: kurze Reise-Einheit und zügiges Gehen als Ersatz.</p></div>`:""}
+    <div class="section"><div class="section-h">Studien & Richtlinien</div><div class="group">
+      <a class="row" href="https://doi.org/10.1001/jamanetworkopen.2024.52185" target="_blank" rel="noopener">Ausdauertraining und Körperfett · JAMA (2024)</a>
+      <a class="row" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/" target="_blank" rel="noopener">Krafttraining · ACSM (2026)</a>
+      <a class="row" href="https://doi.org/10.1136/bmjsem-2024-002363" target="_blank" rel="noopener">Krafttraining beim Abnehmen · BMJ (2025)</a>
+      <a class="row" href="https://pubmed.ncbi.nlm.nih.gov/12183501/" target="_blank" rel="noopener">Energieaufwand beim Bergaufgehen · Minetti et al.</a>
+      <a class="row" href="https://doi.org/10.3389/fphys.2025.1542334" target="_blank" rel="noopener">Gesäßmuskelaufbau · Systematische Übersicht (2025)</a>
+    </div></div>`,onOpen:sh=>{$(".r",sh).style.visibility="hidden";}});
 }
 function trainingDashboard(){
   const p = P(), today = todayISO();
@@ -4849,22 +5017,23 @@ function trainingDashboard(){
     const sets = exercises.flat().reduce((n,e) => n + recordedSets(e), 0);
     const manual = !exercises.some(list => list.length) && S.days[date]?.kraft;
     const plan = date >= p.vacFrom && date <= p.vacTo ? [] : plannedOn(date).filter(item => item.u === "S" || UNIT_KEYS.includes(item.u));
-    return {date, strength:strength || (manual ? 1 : 0), sets, sport:!!S.days[date]?.sport, plan};
+    return {date, strength:strength || (manual ? 1 : 0), sets, sport:sportCount(S.days[date]), mma:sportCount(S.days[date],"mma"), cardio:cardioMinutes(S.days[date]), plan};
   });
   const strength = days.reduce((n,d) => n+d.strength, 0), sets = days.reduce((n,d) => n+d.sets, 0);
-  const sport = days.filter(d => d.sport).length;
+  const sport = days.reduce((n,d)=>n+(p.trainFocus==="combat"?d.mma:d.sport),0);
+  const cardio = days.reduce((n,d)=>n+d.cardio,0), family = FAMILY_TRAINING[p.trainFocus];
   const selected = days.find(d => d.date === S.date);
   const resumed = UNIT_KEYS.find(u => {
     const session = sessionOf(S.date,u);
     return session?.plan === COMPACT_VERSION && Object.values(session.ex).some(hasExerciseWork) && !strengthUnitFinished(S.date,u);
   });
   const due = resumed ? selected.plan.find(x => x.u === resumed) || {u:resumed} :
-    selected.plan.find(x => x.u === "S" ? !selected.sport : !strengthUnitFinished(S.date,x.u) && !strengthUnitFinished(S.date,"D"));
+    selected.plan.find(x => !x.optional && (x.u === "S" ? !sportCount(S.days[S.date],x.kind) : !strengthUnitFinished(S.date,x.u) && !strengthUnitFinished(S.date,"D")));
   const inProgress = !!resumed;
   const next = S.date === today && !due ? nextTraining() : null;
   const planned = due || next;
-  const headline = planned ? unitName(planned.u) : selected.strength || selected.sport ? "Aktivität erfasst" : "Freier Trainingstag";
-  const when = planned ? [next ? dateLong(next.d) : S.date === today ? "Heute" : dateLong(S.date), planned.t ? planned.t + " Uhr" : ""].filter(Boolean).join(" · ") :
+  const headline = planned ? activityName(planned) : selected.strength || selected.sport ? "Aktivität erfasst" : "Freier Trainingstag";
+  const when = planned ? [next ? dateLong(next.d) : S.date === today ? "Heute" : dateLong(S.date), activityTime(planned) ? activityTime(planned) + " Uhr" : ""].filter(Boolean).join(" · ") :
     S.date === today ? "Heute" : dateLong(S.date);
   const action = inProgress ? "Einheit fortsetzen" : due ? (due.u === "S" ? "Sport erfassen" : "Einheit öffnen") : "Einheiten ansehen";
   return `<div class="train-dash-head"><div><div class="train-eyebrow">WOCHENÜBERSICHT</div><h1 class="large-title">Training</h1></div>
@@ -4879,16 +5048,20 @@ function trainingDashboard(){
       <div class="train-calendar">
         <div class="train-calendar-head"><span>${esc(dateShort(dates[0]))} – ${esc(dateShort(dates[6]))}</span><small>Wochenverlauf</small></div>
         <div class="train-days" aria-label="Trainingstage dieser Woche">${days.map(d => {
-          const status = d.strength || d.sport ? "logged" : d.plan.length ? "planned" : "free";
-          const statusText = status === "logged" ? "Erfasst" : status === "planned" ? d.plan.map(x => unitName(x.u)).join(", ") : "Frei";
+          const status = d.strength || d.sport || d.cardio ? "logged" : d.plan.length ? "planned" : "free";
+          const statusText = status === "logged" ? "Erfasst" : status === "planned" ? d.plan.map(activityName).join(", ") : "Frei";
           return `<button type="button" data-dash-date="${d.date}" class="train-day ${status}" aria-label="${esc(dateLong(d.date) + " · " + statusText)}" aria-pressed="${S.date === d.date}" ${d.date > today ? "disabled" : ""}><span>${esc(WDs[dow(d.date)])}</span><b>${Number(d.date.slice(-2))}</b><i aria-hidden="true"></i></button>`;
         }).join("")}</div>
         <div class="train-calendar-key"><span><i></i>Geplant</span><span><i></i>Erfasst</span></div>
       </div>
     </div>
     <div class="train-next-card"><div><div class="train-eyebrow">${inProgress ? "EINHEIT BEGONNEN" : due ? "GEPLANTE EINHEIT" : next ? "ALS NÄCHSTES" : "TAGESSTATUS"}</div><strong>${esc(headline)}</strong><small>${esc(when)}</small></div>
-      <button type="button" class="btn train-dash-action" data-dash-unit="${due?.u || ""}">${action} ${ICON.chev}</button>
-    </div>`;
+      <button type="button" class="btn train-dash-action" data-dash-unit="${due?.u || ""}" data-dash-kind="${esc(due?.kind || "")}">${action} ${ICON.chev}</button>
+    </div>
+    <div class="train-next-card train-activity"><div><div class="train-eyebrow">CARDIO DIESE WOCHE</div><strong>${cardio}${family ? " / " + family.cardio : ""} Min.</strong><small>${family ? esc(family.cardioPlan) : "Gehen, Rad oder Laufband"}</small></div>
+      <button type="button" class="btn train-dash-action" data-activity="cardio">Cardio erfassen</button></div>
+    <div class="train-action-row"><button type="button" class="btn secondary" data-activity="sport">${p.trainFocus==="combat"?"MMA / Kickboxen erfassen":"Sport erfassen"}</button>
+      <button type="button" class="btn secondary" data-activity="plan">${p.trainFocus==="combat"?"Wartezeiten & Wochenplan":"Wochenplan & Quellen"}</button></div>`;
 }
 function updateTrainingDashboard(){
   const dash = $("#train-dashboard");
@@ -4904,10 +5077,11 @@ function renderTraining(force){
   const openArt = new Set(sameSession ? $$("details.train-illustration[open]", el).map(d => d.closest("article")?.dataset.name) : []);
   const cardioOpen = sameSession && $("#train-cardio-details", el)?.open;
   builtTrain = key;
-  const U = UNITS[p.tmpl], unit = U[S.unit], cardio = CARDIO[p.tmpl][S.unit];
+  const U = UNITS[p.tmpl], unit = U[S.unit];
+  const cardio = FAMILY_TRAINING[p.trainFocus] ? {min:20,t:"Moderates Gehen oder Airbike",d:"Als geplanter Wochenblock oder nach Kraft. Sprechen ist möglich. Minuten einmal hier oder unter „Cardio erfassen“ eintragen."} : CARDIO[p.tmpl][S.unit];
   const saved = sessionOf(S.date, S.unit);
   const compact = !saved || saved.plan === COMPACT_VERSION;
-  const plan = COMPACT_PLANS[p.tmpl][S.unit];
+  const plan = strengthPlan(p,S.unit,saved);
   const ses = saved || {ex:{}}, cd = ses.cardio || {};
   const list = compact ? compactExercises(plan) : EX[p.tmpl][S.unit];
   const slots = trainingSlots(list, ses, compact, tp, w);
@@ -4915,10 +5089,10 @@ function renderTraining(force){
   let html = `${banner()}
     <section id="train-dashboard" aria-label="Wochenübersicht Training">${trainingDashboard()}</section>
     <div class="train-section-heading" id="train-session" tabindex="-1">
-      <h2>Einheit · ${esc(unit.name)}</h2>
+      <h2>Einheit · ${esc(strengthName(p,S.unit,saved))}</h2>
       <div class="nav-btns"><button class="icon-btn" id="t-prev" aria-label="Vorheriger Tag">${ICON.left}</button><span class="pill">${esc(dateShort(S.date))}</span><button class="icon-btn" id="t-next" aria-label="Nächster Tag" ${S.date>=today?"disabled":""}>${ICON.right}</button></div>
     </div>
-    <div class="seg" role="group" aria-label="Einheit wählen">${UNIT_KEYS.map(u => `<button type="button" data-u="${u}" aria-pressed="${S.unit===u}">${esc(U[u].name)}${U[u].opt && !U[u].bw ? " ⁺" : ""}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="Einheit wählen">${UNIT_KEYS.map(u => `<button type="button" data-u="${u}" aria-pressed="${S.unit===u}">${esc(strengthName(p,u))}${U[u].opt && !U[u].bw ? " ⁺" : ""}</button>`).join("")}</div>
     ${compact ? `<div class="train-mode"><div class="seg" role="group" aria-label="Trainingsdauer wählen">
       <button type="button" data-short="0" aria-pressed="${!ses.short}">Standard · ${plan.min} Min.</button>
       <button type="button" data-short="1" aria-pressed="${!!ses.short}">Kurz · ${plan.short} Min.</button></div></div>` : ""}
@@ -4951,7 +5125,7 @@ function renderTraining(force){
     </article>`;
   });
   html += `<details class="train-cardio" id="train-cardio-details" ${cardioOpen || cd.done || cd.min!=null ? "open" : ""}>
-    <summary>Optionales Cardio · ${cardio.min} Min.</summary><article class="ex cardio" id="cardio">
+    <summary>Cardio zu dieser Einheit · ${cardio.min} Min.</summary><article class="ex cardio" id="cardio">
       <div class="ex-h"><span class="ex-n">♥</span><div class="ex-t"><b>Cardio</b><span>${esc(cardio.t)}</span></div>
         <button type="button" class="check" id="cd-done" aria-pressed="${!!cd.done}" aria-label="Cardio erledigt">${ICON.check}</button></div>
       <p class="note" style="margin:0">${esc(cardio.d)}</p>
@@ -4970,7 +5144,9 @@ function renderTraining(force){
       current?.focus({preventScroll:true});
       return;
     }
-    if (button.dataset.dashUnit === "S"){ setTab("heute"); return; }
+    if (button.dataset.activity === "plan"){ openFamilyTrainingPlan(); return; }
+    if (button.dataset.activity){ openActivityLog(button.dataset.activity); return; }
+    if (button.dataset.dashUnit === "S"){ openActivityLog("sport",button.dataset.dashKind); return; }
     if (button.dataset.dashUnit && button.dataset.dashUnit !== S.unit){
       S.unit = button.dataset.dashUnit;
       renderTraining(true);
@@ -5043,7 +5219,7 @@ function renderTraining(force){
 }
 function ensureSession(){
   const k = S.date + "_" + S.unit;
-  return S.sessions[k] || (S.sessions[k] = {date:S.date, unit:S.unit, plan:COMPACT_VERSION, ex:{}});
+  return S.sessions[k] || (S.sessions[k] = {date:S.date, unit:S.unit, plan:COMPACT_VERSION, trainingFocus:P().trainFocus, ex:{}});
 }
 function saveSession(immediate){
   const k = S.date + "_" + S.unit, date = S.date, session = S.sessions[k];
@@ -5298,6 +5474,7 @@ function openProfile(intro){
       <label class="row" for="pr-cm"><span class="lbl">Körpergröße</span><input class="field num" id="pr-cm" inputmode="decimal" value="${esc(fmt(p.cm,1))}"><span class="unit">cm</span></label>
       <label class="row" for="pr-age"><span class="lbl">Alter<small>für Bedarf & Familien-Update</small></span><input class="field num" id="pr-age" inputmode="numeric" value="${S.profile?.age || ""}"><span class="unit">J.</span></label>
       <label class="row" for="pr-kg"><span class="lbl">Startgewicht</span><input class="field num" id="pr-kg" inputmode="decimal" value="${esc(fmt(p.kg,2))}"><span class="unit">kg</span></label>
+      <label class="row" for="pr-focus"><span class="lbl">Trainingsziel</span><select id="pr-focus" class="field" style="max-width:54%"><option value="">Nach Profilname</option>${Object.entries(FOCUS_LABELS).map(([id,label])=>`<option value="${id}" ${S.profile?.trainingFocus===id?"selected":""}>${esc(label)}</option>`).join("")}</select></label>
       <label class="row" for="pr-goal"><span class="lbl">Wunschgewicht</span><input class="field num" id="pr-goal" inputmode="decimal" value="${esc(fmt(p.goal,1))}"><span class="unit">kg</span></label>
       <label class="row" for="pr-pa"><span class="lbl">Name Partner/in<small>für die Sprüche</small></span><input class="field" style="width:140px;text-align:right" id="pr-pa" value="${esc(S.profile?.partner || "")}" placeholder="optional"></label>
       <label class="row" for="pr-cl"><span class="lbl">Kleidungsziel</span><input class="field" style="width:190px;text-align:right" id="pr-cl" value="${esc(p.clothes)}"></label>
@@ -5310,10 +5487,10 @@ function openProfile(intro){
     onSave: sh => {
       const o = Object.assign({}, S.profile || {tmpl:p.tmpl, name:p.person});
       o.startDate = $("#pr-sd", sh).value || DEFAULTS.startDate; o.startWeight = parseNum($("#pr-kg", sh).value) ?? p.kg;
-      o.goal = parseNum($("#pr-goal", sh).value) ?? p.goal; o.cm = parseNum($("#pr-cm", sh).value) ?? p.cm; o.age = parseNum($("#pr-age", sh).value) || o.age; delete o.needsBody;
+      o.trainingFocus = $("#pr-focus",sh).value || undefined; o.goal = parseNum($("#pr-goal", sh).value) ?? p.goal; o.cm = parseNum($("#pr-cm", sh).value) ?? p.cm; o.age = parseNum($("#pr-age", sh).value) || o.age; delete o.needsBody;
       o.startWaist = parseNum($("#pr-wa", sh).value); o.partner = $("#pr-pa", sh).value.trim() || undefined; o.clothes = $("#pr-cl", sh).value.trim() || undefined; o.vacFrom = $("#pr-vf", sh).value || DEFAULTS.vacFrom; o.vacTo = $("#pr-vt", sh).value || DEFAULTS.vacTo;
       if (o.vacTo < o.vacFrom){ toast("Urlaubsende liegt vor dem Beginn"); return false; }
-      writeDoc("profile","me", o); renderAll(); toast("Gesichert");
+      writeDoc("profile","me", o); builtDate=null; builtTrain=null; S.unit=null; renderAll(); toast("Gesichert");
     }});
 }
 function saveProfile(patch){ const p = P(); const o = Object.assign({}, S.profile || {tmpl:p.tmpl, name:p.person}, patch); writeDoc("profile","me", o); S.unit = null; builtDate = null; renderAll(); }
@@ -5362,15 +5539,20 @@ function openGoals(){
 const WD_ORDER = [1,2,3,4,5,6,0];
 function openSchedule(){
   const p = P(); let list = p.schedule.map(x => Object.assign({}, x));
-  const opts = () => UNIT_KEYS.map(u => [u, UNITS[p.tmpl][u].name]).concat([["S", p.sportLabel]]);
+  const opts = () => UNIT_KEYS.map(u => [u, strengthName(p,u)]).concat(p.trainFocus==="combat" ? [["S","MMA"],["kick","Kickboxen · optional"]] : [["S",p.sportLabel]]);
   const draw = sh => {
     $("#sc-list", sh).innerHTML = list.length ? list.map((x,i) => `<div class="sched" data-i="${i}">
       <select data-f="wd" aria-label="Wochentag">${WD_ORDER.map(d => `<option value="${d}" ${d===x.wd?"selected":""}>${WDs[d]}</option>`).join("")}</select>
       <input type="time" data-f="t" value="${esc(x.t)}" aria-label="Uhrzeit">
-      <select data-f="u" aria-label="Training">${opts().map(([u,n]) => `<option value="${u}" ${u===x.u?"selected":""}>${esc(n)}</option>`).join("")}</select>
+      <select data-f="u" aria-label="Training">${opts().map(([u,n]) => `<option value="${u}" ${u===(x.kind==="kick"?"kick":x.u)?"selected":""}>${esc(n)}</option>`).join("")}</select>
       <button type="button" class="del" aria-label="Entfernen">−</button></div>`).join("") : `<div class="row"><span class="lbl" style="color:var(--label2)">Noch keine festen Tage</span></div>`;
     $$(".sched", sh).forEach(r => { const i = Number(r.dataset.i);
-      $$("[data-f]", r).forEach(f => f.onchange = () => { list[i][f.dataset.f] = f.dataset.f === "wd" ? Number(f.value) : f.value; });
+      $$("[data-f]", r).forEach(f => f.onchange = () => {
+        if (f.dataset.f === "u"){
+          const kick = f.value === "kick", mma = f.value === "S" && p.trainFocus==="combat";
+          Object.assign(list[i],{u:kick?"S":f.value,kind:kick?"kick":mma?"mma":undefined,min:kick?60:mma?90:undefined,end:kick||mma?true:undefined,optional:kick});
+        } else list[i][f.dataset.f] = f.dataset.f === "wd" ? Number(f.value) : f.value;
+      });
       $(".del", r).onclick = () => { list.splice(i,1); draw(sh); }; });
   };
   openSheet({title:"Trainingstage", right:"Sichern", body:`
@@ -5385,7 +5567,7 @@ function openSchedule(){
     onOpen: sh => { draw(sh); $("#sc-add", sh).onclick = () => { list.push({wd:1, t:"18:00", u:"A"}); draw(sh); }; },
     onSave: sh => {
       list.sort((a,b) => WD_ORDER.indexOf(a.wd) - WD_ORDER.indexOf(b.wd) || a.t.localeCompare(b.t));
-      saveProfile({schedule:list, remind:Number($("#sc-rem", sh).value), weighOn:$("#sc-wo", sh).checked, weighAt:$("#sc-wa", sh).value || "06:45", checkinOn:$("#sc-ci", sh).checked});
+      saveProfile({schedule:list, trainingScheduleVersion:1, remind:Number($("#sc-rem", sh).value), weighOn:$("#sc-wo", sh).checked, weighAt:$("#sc-wa", sh).value || "06:45", checkinOn:$("#sc-ci", sh).checked});
       toast("Gesichert");
     }});
 }
@@ -5424,14 +5606,14 @@ function doICS(){
     if (alarm != null) L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:" + ics(title), "TRIGGER:-PT" + alarm + "M","END:VALARM");
     L.push("END:VEVENT");
   };
-  const exText = u => u === "S" ? "" : compactExercises(COMPACT_PLANS[p.tmpl][u]).map(e => `• ${e[0]} ${e[1]}×${e[2]}–${e[3]}${e[9] ? " " + e[9] : ""}`).join("\n") + `\n\nOptionales Cardio: ${CARDIO[p.tmpl][u].t}, ${CARDIO[p.tmpl][u].min} min`;
+  const exText = u => u === "S" ? "" : compactExercises(strengthPlan(p,u)).map(e => `• ${e[0]} ${e[1]}×${e[2]}–${e[3]}${e[9] ? " " + e[9] : ""}`).join("\n") + `\n\nCardio: ${FAMILY_TRAINING[p.trainFocus] ? "siehe Wochenplan" : CARDIO[p.tmpl][u].t + ", " + CARDIO[p.tmpl][u].min + " min"}`;
   for (let d = from; d <= end; d = addDays(d,1)){
     if (d >= p.vacFrom && d <= p.vacTo) continue;
     const trip = inTrip(d);
-    p.schedule.filter(x => x.wd === dow(d)).forEach(x => {
-      let u = x.u; if (trip && u !== "S") u = "D";
-      const mins = u === "S" ? 90 : Number(COMPACT_PLANS[p.tmpl][u].min.split("–").at(-1));
-      ev(d, x.t, mins, (u === "S" ? "🥊 " : "🏋️ ") + unitName(u) + " · ITOGO", exText(u), p.remind);
+    (trip ? plannedOn(d) : p.schedule.filter(x => x.wd === dow(d))).forEach(x => {
+      const u = x.u;
+      const mins = x.min || (u === "S" ? 90 : Number(strengthPlan(p,u).min.split("–").at(-1)));
+      ev(d, x.t, mins, (u === "S" ? "🥊 " : "🏋️ ") + activityName(x) + (x.optional?" · optional":"") + " · ITOGO", exText(u), x.optional?null:p.remind);
     });
   }
   if (p.mods.cycle){ const c = cycleData(); c.preds.slice(0,3).forEach(d => ev(d, "08:00", 15, "🩸 Periode erwartet (Prognose)", "In ITOGO unter Leben bestätigen, wenn sie begonnen hat.", 0)); }
@@ -5486,7 +5668,7 @@ function sparkSVG(key){
 function nextTraining(){
   const p = P(), today = todayISO(), now = new Date(), hm = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
   for (let i = 0; i < 14; i++){ const d = addDays(today, i); if (d >= p.vacFrom && d <= p.vacTo) continue;
-    for (const x of plannedOn(d)){ if (isDone(d, x.u)) continue; if (i === 0 && x.t && x.t < hm) continue; return {d, ...x, i}; } }
+    for (const x of plannedOn(d)){ if (x.optional || isDone(d,x.u,x.kind)) continue; if (i === 0 && x.t && x.t < hm) continue; return {d, ...x, i}; } }
   return null;
 }
 function renderUebersicht(){
@@ -5494,7 +5676,7 @@ function renderUebersicht(){
   const hr = new Date().getHours(), greet = hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend";
   const checks = dayChecks(today), done = checks ? checks.filter(c => c.ok).length : 0, tot = checks ? checks.length : 0;
   const st = streaks(), miss = missState(), tr = trend(), kt = kfaTrend();
-  const start = p.kg, goal = p.goal, cur = tr ?? start, prog = clamp((start - cur)/(start - goal), 0, 1);
+  const start = p.kg, goal = p.goal, cur = tr ?? start, prog = start === goal ? 0 : clamp((start - cur)/(start - goal), 0, 1);
   const daysToVac = diffDays(today, p.vacFrom), nt = nextTraining();
   const wk = Math.max(1, Math.min(52, w)), wd = weekDates(wk), ws = w >= 1 ? weekStats(wk) : null;
   const lastCi = S.checkins[String(wk-1)] || S.checkins[String(wk)];
@@ -5527,22 +5709,22 @@ function renderUebersicht(){
     ${(lsGet("formkurve.famSentAt") !== today) && household().length ? `<button type="button" class="health-btn" id="d-fam"><span class="hb-i" style="background:linear-gradient(135deg,var(--green),var(--teal))">⇪</span><span><b>Familien-Update senden</b><small>Deine Werte für die Portionen und deine Rezept-Bewertungen – täglich aktualisieren</small></span>${ICON.chev}</button>` : ""}
     <div class="bento">
       <div class="tilex streak"><div class="tk">Serie</div><div class="tv num">${fmt(st.cur)}<small> ${st.cur === 1 ? "Tag" : "Tage"}</small></div><div class="ts">Rekord ${fmt(st.best)} · gewonnene Tage am Stück</div></div>
-      <div class="tilex vac"><div class="tk">Urlaub</div><div class="tv num">${daysToVac > 0 ? fmt(daysToVac) : "jetzt"}<small>${daysToVac > 0 ? " Tage" : ""}</small></div><div class="ts">${daysToVac > 0 ? "noch " + fmt(Math.max(0, cur - goal), 1) + " kg bis zum Ziel" : esc(dateShort(p.vacFrom)) + " – " + esc(dateShort(p.vacTo))}</div></div>
+      <div class="tilex vac"><div class="tk">Urlaub</div><div class="tv num">${daysToVac > 0 ? fmt(daysToVac) : "jetzt"}<small>${daysToVac > 0 ? " Tage" : ""}</small></div><div class="ts">${daysToVac > 0 ? p.trainFocus === "maintain" ? "Gewicht halten" : "noch " + fmt(Math.max(0, cur - goal), 1) + " kg bis zum Ziel" : esc(dateShort(p.vacFrom)) + " – " + esc(dateShort(p.vacTo))}</div></div>
       <div class="tilex wt"><div class="tk">Gewicht</div><div class="tv num">${tr == null ? "–" : fmt(tr,1)}<small> kg</small></div><div class="ts">${tr == null ? "noch keine Messung" : fmtS(tr - start, 1) + " kg seit Start"}</div>${sparkSVG("w")}</div>
       <div class="tilex kfa"><div class="tk">Körperfett</div><div class="tv num">${kt == null ? "–" : fmt(kt,1)}<small> %</small></div><div class="ts">${kt == null ? "Waage-Wert eintragen" : fmtS(kt - firstKfa(), 1) + " Pkt. seit erster Messung"}</div>${sparkSVG("kfa")}</div>
       ${p.mods.smoke && ssm ? `<button type="button" class="tilex smk" data-go="leben"><div class="tk">Rauchfrei</div>${ssm.pre ? `<div class="tv num">${ssm.daysLeft != null ? fmt(ssm.daysLeft) + "<small> Tage</small>" : "–"}</div><div class="ts">${ssm.daysLeft != null ? "bis zum Rauchstopp" : "Rauchstopp-Tag festlegen"}</div>` : `<div class="tv num">${fmt(ssm.saved)}<small> €</small></div><div class="ts">${fmt(ssm.days)} Tage rauchfrei · ${fmt(ssm.not)} nicht geraucht</div>`}</button>` : ""}
       ${p.mods.cycle ? (() => { const c = cycleData(), ph = c.phase ? PHASES[c.phase] : null; return `<button type="button" class="tilex cyc wide" data-go="leben"><div class="tk" style="color:${ph ? ph.c : "var(--label2)"}">Zyklus${ph ? " · " + ph.n : ""}</div><div class="tv num">${c.cd != null ? "Tag " + c.cd : "–"}</div><div class="ts">${c.overdue ? "Periode seit " + c.overdue + " Tagen erwartet" : c.nextP ? "Nächste Periode in " + diffDays(today, c.nextP) + " Tagen · " + dateShort(c.nextP) : "Letzte Periode eintragen"}</div></button>`; })() : ""}
       ${p.mods.read ? `<button type="button" class="tilex rd" data-go="leben"><div class="tk">Lesen</div><div class="tv num">${fmt((S.days[today]||{}).read||0)}<small> / ${p.readGoal} S.</small></div><div class="ts">${curB ? esc(curB.t) + (curB.pages ? " · " + Math.round((curB.page||0)/curB.pages*100) + " %" : "") : "Buch eintragen"}</div></button>` : ""}
       ${p.mods.learn ? `<button type="button" class="tilex ln ${[p.mods.smoke, p.mods.read, p.mods.learn].filter(Boolean).length % 2 ? "wide" : ""}" data-go="leben"><div class="tk">Lernen</div><div class="tv num">${fmt((S.days[today]||{}).learn||0)}<small> / ${p.learnGoal} min</small></div><div class="ts">Fokus-Timer starten</div></button>` : ""}
-      <button type="button" class="tilex next wide" id="d-next">${nt ? `<div class="tk">Nächstes Training</div><div class="nt"><span class="num">${esc(nt.t || "")}</span><b>${esc(unitName(nt.u))}</b></div><div class="ts">${nt.i === 0 ? "Heute" : nt.i === 1 ? "Morgen" : esc(WD[dow(nt.d)]) + ", " + esc(dateShort(nt.d))}${nt.u === "D" ? " · ohne Geräte" : ""}</div>` : `<div class="tk">Nächstes Training</div><div class="ts">Feste Trainingstage unter Mehr eintragen</div>`}</button>
+      <button type="button" class="tilex next wide" id="d-next">${nt ? `<div class="tk">Nächstes Training</div><div class="nt"><span class="num">${esc(nt.t || "")}</span><b>${esc(activityName(nt))}</b></div><div class="ts">${nt.i === 0 ? "Heute" : nt.i === 1 ? "Morgen" : esc(WD[dow(nt.d)]) + ", " + esc(dateShort(nt.d))}${nt.u === "D" ? " · ohne Geräte" : ""}</div>` : `<div class="tk">Nächstes Training</div><div class="ts">Feste Trainingstage unter Mehr eintragen</div>`}</button>
     </div>
     ${w >= 1 ? `<div class="dash-card"><div class="row-h"><h3>Diese Woche</h3><span class="amp ${ws.amp}"><i></i><span class="num">${ws.has ? ws.total + " Punkte" : "–"}</span></span></div>
       <div class="weekbar">${wd.map(d => { const r = dayResult(d); return `<div class="wb ${r} ${d === today ? "today" : ""}"><span>${WDs[dow(d)]}</span><i>${r === "won" ? ICON.check : r === "lost" ? "✕" : ""}</i></div>`; }).join("")}</div>
       ${lastCi?.aenderung ? `<div class="promise"><span>Dein Versprechen</span>${esc(lastCi.aenderung)}</div>` : ""}</div>` : ""}
-    <div class="dash-card"><div class="row-h"><h3>Weg zum Ziel</h3><span class="meta num">${fmt(prog*100)} %</span></div>
+    ${p.trainFocus==="maintain" ? `<div class="dash-card"><div class="row-h"><h3>Gewicht halten</h3></div><p class="note">Gewichtstrend, Ganzkörperkraft und Kondition im Blick.</p></div>` : `<div class="dash-card"><div class="row-h"><h3>Weg zum Ziel</h3><span class="meta num">${fmt(prog*100)} %</span></div>
       <div class="goalbar"><i style="width:${(prog*100).toFixed(1)}%"></i></div>
       <div class="goal-l"><span>${fmt(start,1)} kg</span><span>${fmt(goal,1)} kg</span></div>
-      <div class="clothes"><span>${p.tmpl === "m" ? "👔" : "👗"}</span><div><b>Kleidungsziel</b>${esc(p.clothes)}${lastCi?.fit != null ? `<small>Letzter Test: ${["passt noch nicht","knapp","passt"][lastCi.fit]}${lastCi.belt ? " · Gürtelloch " + esc(String(lastCi.belt)) : ""}</small>` : ""}</div></div></div>
+      <div class="clothes"><span>${p.tmpl === "m" ? "👔" : "👗"}</span><div><b>Kleidungsziel</b>${esc(p.clothes)}${lastCi?.fit != null ? `<small>Letzter Test: ${["passt noch nicht","knapp","passt"][lastCi.fit]}${lastCi.belt ? " · Gürtelloch " + esc(String(lastCi.belt)) : ""}</small>` : ""}</div></div></div>` }
     <button type="button" class="sos" id="d-sos"><span class="sos-i">!</span><span><b>Heißhunger-SOS</b><small>10 Minuten, die dich retten</small></span>${ICON.chev}</button>
     <div class="section"><div class="section-h"><span>Erkenntnisse</span></div>
       ${ins.length ? `<div class="group">${ins.slice(0,5).map(x => `<div class="row ins"><span class="ii">${x.i}</span><span class="lbl">${esc(x.t)}<small>${esc(x.s)}</small></span></div>`).join("")}</div>`
@@ -5550,7 +5732,7 @@ function renderUebersicht(){
     <div class="section"><div class="section-h"><span>Wenn-Dann-Pläne</span><button type="button" class="link" id="d-it" style="font-size:13px;text-transform:none">Bearbeiten</button></div>
       <div class="group">${p.ifthen.map(x => `<div class="row it"><span class="lbl"><b>Wenn</b> ${esc(x[0])},<br><b>dann</b> ${esc(x[1])}.</span></div>`).join("")}</div></div>`;
   const go = $("#d-go", el); if (go) go.onclick = () => { S.date = today; setTab("heute"); };
-  $("#d-next", el).onclick = () => { if (nt && nt.u !== "S"){ S.date = nt.i === 0 ? today : S.date; S.unit = nt.u; setTab("training"); } else openSchedule(); };
+  $("#d-next", el).onclick = () => { if (nt?.u === "S" && nt.i === 0){ openActivityLog("sport",nt.kind,today); } else if (nt && nt.u !== "S"){ S.date = nt.i === 0 ? today : S.date; S.unit = nt.u; setTab("training"); } else openSchedule(); };
   $("#d-sos", el).onclick = openSOS;
   $("#d-mehr", el).onclick = () => setTab("mehr");
   $("#d-lv", el).onclick = openAchievements;
@@ -7598,6 +7780,10 @@ function alinaFoodInspiration(context){
 
 function renderAusblick(){
   const el = $("#s-ausblick"), p = P(), today = todayISO();
+  if (p.trainFocus === "maintain"){
+    el.innerHTML = `${banner()}<h1 class="large-title">Gewicht halten</h1><div class="card"><b>Aktueller Gewichtstrend</b><p>${trend()==null?"Noch keine Gewichtsmessung":fmt(trend(),1)+" kg im 7-Tage-Schnitt"}</p><p class="note">Erhaltung: Der Trend darf im Alltag schwanken. Fortschritt siehst du auch daran, dass du mehr Wiederholungen schaffst oder bei gleichem Tempo weniger außer Atem bist.</p></div>`;
+    return;
+  }
   const cur = trend() ?? p.kg, fr = forecastRate();
   const C = project(fr.base, cur), F = project(fr.fast, cur), Sl = project(fr.slow, cur);
   const range = t => { const c = whenKg(C, t), a = whenKg(F, t), b = whenKg(Sl, t); return {c, a, b}; };
@@ -7759,10 +7945,10 @@ async function doExport(kind){
     const end = todayISO();
     for (let d = p.startDate; d <= end; d = addDays(d,1)){
       const o = S.days[d] || {};
-      rows.push([dateNum(d), num(o.w,2), num(o.kcal,0), num(o.p,0), num(o.steps,0), num(o.wp,0), o.kraft!=null?String(o.kraft):"", o.sport!=null?String(o.sport):"", o.alc!=null?String(o.alc):"",
+      rows.push([dateNum(d), num(o.w,2), num(o.kcal,0), num(o.p,0), num(o.steps,0), num(o.wp,0), o.kraft!=null?String(o.kraft):"", sportCount(o) ? "1" : o.sport!=null?String(o.sport):"", o.alc!=null?String(o.alc):"",
         num(o.sleep,1), num(o.sq,0), num(o.en,0), num(o.hu,0), num(o.st,0), num(o.sys,0), num(o.dia,0), p.extra.type==="switch" ? (o[p.extra.k]!=null?String(o[p.extra.k]):"") : num(o[p.extra.k],0), o.note||"", num(o.kfa,1),
         o.typ ? Object.fromEntries(DAYTYPES[p.tmpl])[o.typ] : "", num(o.water,2), o.lastMeal||"", o.kids!=null?String(o.kids):"", o.slip!=null?String(o.slip):"",
-        (o.trig||[]).map(t => Object.fromEntries(TRIGGERS)[t]).join(", "), num(o.crave,0), num(o.sportMin,0), num(o.rpe,0), num(o.rounds,0),
+        (o.trig||[]).map(t => Object.fromEntries(TRIGGERS)[t]).join(", "), num(o.crave,0), num(activityEntries(o,"sportLog").length ? activityEntries(o,"sportLog").reduce((n,x)=>n+x.min,0) : o.sportMin,0), num(o.rpe,0), num(activityEntries(o,"sportLog").some(x=>x.rounds!=null) ? activityEntries(o,"sportLog").reduce((n,x)=>n+(x.rounds||0),0) : o.rounds,0),
         ({won:"1", lost:"0"})[dayResult(d)] ?? "", num(o.read,0), num(o.learn,0), o.smoke != null ? String(o.smoke) : "", num(o.social,0),
         (o.top3||[]).filter(x => x.t).length ? (o.top3||[]).filter(x => x.t && x.d).length + "/" + (o.top3||[]).filter(x => x.t).length : ""]);
     }
