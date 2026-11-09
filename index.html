@@ -216,23 +216,32 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 .week-day h2 span{color:var(--label2);font-weight:500;margin-left:4px}
 .week-day h2 .week-today{background:var(--fill);color:var(--tint);padding:3px 6px;border-radius:7px;font-size:10px;font-weight:750}
 .week-empty{margin:0;padding:6px 3px;color:var(--label2);font-size:12px}
-.week-slot{display:grid;grid-template-columns:minmax(62px,auto) minmax(0,1fr) auto;align-items:start;gap:8px;background:var(--card);border:1px solid var(--sep);border-left:3px solid var(--tint);border-radius:10px;padding:8px 7px;margin:0 0 5px}
-.week-slot.cardio{border-left-color:var(--teal)}
-.week-slot.sport{border-left-color:var(--orange)}
-.week-slot.is-option{background:color-mix(in srgb,var(--card) 65%,transparent)}
-.week-slot-time b,.week-slot-time small,.week-slot-info strong,.week-slot-info small{display:block}
-.week-slot-time b{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.week-slot-time small,.week-slot-info small{font-size:11px;color:var(--label2);line-height:1.3;margin-top:3px;overflow-wrap:anywhere}
-.week-slot-meta{font-size:10px;color:var(--label2)}
-.week-slot-info strong{font-size:14px;line-height:1.25;margin-top:2px;overflow-wrap:anywhere}
-.week-slot-action{display:grid;justify-items:end;gap:2px}
-.week-slot-action>span{font-size:10px;color:var(--label2);white-space:nowrap}
-.week-slot-action>span.logged{color:var(--green)}
-.week-open{min-height:36px;border-radius:8px;background:var(--fill);padding:3px 6px;font-size:11px;font-weight:700;color:var(--tint);white-space:nowrap}
+.week-slot{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;gap:8px;min-height:160px;margin:0 0 9px;padding:11px;border-radius:16px;border:1px solid var(--sep);background:linear-gradient(150deg,color-mix(in srgb,var(--tint) 18%,var(--card)),var(--card) 70%);color:var(--label)}
+.week-slot.cardio{background:linear-gradient(150deg,color-mix(in srgb,var(--teal) 20%,var(--card)),var(--card) 75%)}
+.week-slot.sport{background:linear-gradient(150deg,color-mix(in srgb,var(--orange) 20%,var(--card)),var(--card) 75%)}
+.week-slot.is-option{border-style:dashed}
+.week-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;z-index:-2;display:none}
+.week-cover[src]{display:block}
+.week-slot:has(.week-cover[src]){color:#fff}
+.week-slot:has(.week-cover[src])::before{position:absolute;inset:0;z-index:-1;content:"";background:linear-gradient(180deg,rgba(7,10,18,.25),rgba(7,10,18,.58) 42%,rgba(7,10,18,.98) 100%)}
+.week-slot-top{display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:space-between;font-size:11px;font-weight:750}
+.week-slot-top span{padding:4px 7px;border-radius:7px;background:var(--fill);font-variant-numeric:tabular-nums}
+.week-slot:has(.week-cover[src]) .week-slot-top span{background:#101522d9}
+.week-slot-top span.logged{color:#79e8a9}
+.week-slot-info{margin-top:auto}
+.week-slot-info strong,.week-slot-info small{display:block}
+.week-slot-info strong{font-size:18px;line-height:1.15;letter-spacing:-.2px;margin-top:2px;overflow-wrap:anywhere}
+.week-slot-info small,.week-slot-meta{font-size:11px;line-height:1.32;margin-top:3px;color:var(--label2);overflow-wrap:anywhere}
+.week-slot:has(.week-cover[src]) .week-slot-info small,.week-slot:has(.week-cover[src]) .week-slot-meta{color:#e2e8f0;text-shadow:0 1px 3px #05070b}
+.week-slot-action{display:flex;justify-content:flex-end;gap:7px}
+.week-open{min-height:44px;border-radius:9px;background:#141b28;color:#f4f7fb;border:1px solid #9ca8bb69;padding:4px 12px;font-size:12px;font-weight:750;white-space:nowrap}
+.week-open.week-start{background:#e4efff;color:#102647;border-color:#e4efff}
 .week-open svg{width:5px;height:9px}
 .week-back{min-height:44px;margin:0 0 4px}
 .week-sources{min-height:44px;padding:0 5px}
-@media(min-width:600px){.week-slot{gap:14px;padding:10px 12px}.week-slot-time b{font-size:12px}.week-slot-info small{font-size:12px}.week-open{min-width:74px}}
+.week-credits{margin:0 5px;font-size:11px}.week-credits a{color:var(--tint)}
+.train-date-group input[type=date]{width:auto;min-width:118px}
+@media(min-width:600px){.week-slot{padding:12px 14px;min-height:174px}.week-slot-info small{font-size:12px}.week-open{min-width:86px}}
 .train-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:4px 0 14px}
 .train-dash-head .large-title{margin:3px 0 0}
 .train-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--tint)}
@@ -3870,8 +3879,8 @@ const FAMILY_TRAINING = {
   combat:{
     label:"Abnehmen · Kraft + Mixed Martial Arts", cardio:40,
     cardioPlan:"Di 17:10–17:30 · moderates Cardio vor MMA. Zweite Einheit 20 Min. an einem leichteren Tag, z. B. Freitag nach Kraft oder draußen.",
-    A:{name:"Ganzkörper A",min:"30–40",short:"20–25",main:[["Goblet Squat",3],["Flachbankdrücken Kurzhantel",3],["Kurzhantelrudern einarmig",3],["Rumänisches Kreuzheben KH",2]]},
-    B:{name:"Ganzkörper B",min:"25–35",short:"20–25",main:[["Ausfallschritt rückwärts KH",2],["Schrägbankdrücken Kurzhantel",3],["Brustgestütztes Kurzhantelrudern",3],["Glute Bridge mit Kurzhantel",2]]}
+    A:{name:"Krafttraining A",min:"30–40",short:"20–25",main:[["Goblet Squat",3],["Flachbankdrücken Kurzhantel",3],["Kurzhantelrudern einarmig",3],["Rumänisches Kreuzheben KH",2]]},
+    B:{name:"Krafttraining B",min:"25–35",short:"20–25",main:[["Ausfallschritt rückwärts KH",2],["Schrägbankdrücken Kurzhantel",3],["Brustgestütztes Kurzhantelrudern",3],["Glute Bridge mit Kurzhantel",2]]}
   },
   glutes:{
     label:"Abnehmen · Gesäß und Beine", cardio:60,
@@ -3882,8 +3891,8 @@ const FAMILY_TRAINING = {
   maintain:{
     label:"Gewicht halten · Ganzkörper und Kondition", cardio:60,
     cardioPlan:"2 × 30 Min. moderates Cardio pro Woche als Einstieg. Im Alltag kommt zügiges Gehen dazu.",
-    A:{name:"Ganzkörper A",min:"25–35",short:"20–25",main:[["Beinpresse",3],["Brustpresse Maschine",3],["Kabelrudern eng",3],["Rumänisches Kreuzheben KH",2]]},
-    B:{name:"Ganzkörper B",min:"25–35",short:"20–25",main:[["Goblet Squat",3],["Schulterpresse Maschine",2],["Latzug",3],["Hip Thrust",2]]}
+    A:{name:"Krafttraining A",min:"25–35",short:"20–25",main:[["Beinpresse",3],["Brustpresse Maschine",3],["Kabelrudern eng",3],["Rumänisches Kreuzheben KH",2]]},
+    B:{name:"Krafttraining B",min:"25–35",short:"20–25",main:[["Goblet Squat",3],["Schulterpresse Maschine",2],["Latzug",3],["Hip Thrust",2]]}
   }
 };
 const ROMAN_SCHEDULE = [
@@ -3917,8 +3926,8 @@ function strengthPlan(p, unit, session){
   const family = session ? FAMILY_TRAINING[session.trainingFocus] : FAMILY_TRAINING[p.trainFocus];
   return family?.[unit] || COMPACT_PLANS[p.tmpl][unit];
 }
-function strengthName(p, unit, session){
-  return strengthPlan(p,unit,session)?.name || UNITS[p.tmpl][unit]?.name || unit;
+function strengthName(unit){
+  return unit === "D" ? "Krafttraining ohne Geräte" : UNIT_KEYS.includes(unit) ? "Krafttraining " + unit : unit;
 }
 const activityName = x => x.u === "S" && x.kind === "kick" ? "Kickboxen" : unitName(x.u);
 function activityTime(x){
@@ -4181,7 +4190,7 @@ function tphase(w){
   return "Aufbau";
 }
 const inTrip = d => P().trips.some(t => t.from && t.to && d >= t.from && d <= t.to);
-const unitName = u => u === "S" ? P().sportLabel : strengthName(P(),u);
+const unitName = u => u === "S" ? P().sportLabel : strengthName(u);
 const kcalGoal = w => { const ph = phase(w); const k = P().kcal; return ph==="Vorbereitung"||ph==="Einstieg" ? k.Einstieg : ph==="Defizit" ? k.Defizit : k.Erhaltung; };
 const stepGoal = w => { const p = P(); return Math.min(p.stepsEnd, p.steps0 + p.stepInc*(Math.max(w,1)-1)); };
 const wpGoal = w => { const p = P(); return FAMILY_TRAINING[p.trainFocus]?.cardio || Math.min(p.wpEnd, p.wp0 + p.wpInc*(Math.max(w,1)-1)); };
@@ -4432,7 +4441,14 @@ function plannedOn(d){
   if (trip) return sl.some(x => x.u !== "S") ? [{t: sl.find(x => x.u !== "S").t, u:"D"}] : [];
   return sl;
 }
-const isDone = (d, u, kind) => u === "S" ? !!sportCount(S.days[d],kind) : hasSessionWork(sessionOf(d,u)) || (u !== "D" && hasSessionWork(sessionOf(d,"D")));
+function isDone(date,u,kind){
+  if (u==="S"){
+    if (S.days[date]?.sport && (!kind || kind==="mma")) return true;
+    return Object.entries(S.days).some(([actual,day])=>activityEntries(day,"sportLog").some(x=>
+      (x.planDate||actual)===date && (!kind || x.type===kind)));
+  }
+  return hasSessionWork(plannedStrengthEntry(date,u)) || (u!=="D" && hasSessionWork(plannedStrengthEntry(date,"D")));
+}
 function dayChecks(d){
   const p = P(), w = weekOf(d), o = S.days[d] || {}, kg = kcalGoal(w), sg = stepGoal(w);
   if (w < 1 || phase(w) === "Urlaub") return null;
@@ -4885,7 +4901,7 @@ function openTrainingBasis(){
     </div>`, onOpen: sh => { $(".r", sh).style.visibility = "hidden"; }});
 }
 const TRAIN_ART = {"Bankdrücken Langhantel":"t:1","Brustpresse Maschine":"t:2","Schrägbankdrücken Kurzhantel":"t:3","Flachbankdrücken Kurzhantel":"t:4","Liegestütz":"t:5","Liegestütz erhöht":"t:6","Pike Push-up":"t:7","Stuhl-Dips":"t:8","Schulterdrücken Kurzhantel":"t:9","Schulterpresse Maschine":"t:10","Latzug":"t:11","Latzug eng":"t:12","Latzug breit":"t:13","Klimmzug assistiert":"t:14","Klimmzug":"t:15","Latzug mit Band":"t:16","Kabelrudern eng":"t:17","Brustgestütztes Kurzhantelrudern":"t:18","Rudermaschine":"t:19","Langhantelrudern vorgebeugt":"t:20","Rucksack-Rudern":"t:21","Kurzhantelrudern einarmig":"t:22","Rudern mit Band":"t:23","Schulterdrücken mit Band":"t:24","Seitheben Kurzhantel":"t:25","Seitheben Kabel":"t:26","Seitheben mit Band":"t:27","Face Pull":"t:28","Reverse Fly Kurzhantel":"t:29","Bizepscurl (Supersatz)":"t:30","Hammercurl (Supersatz)":"t:31","Bizepscurl Kabel":"t:32","Trizepsdrücken Kabel":"t:33","Trizepsdrücken über Kopf (Supersatz)":"t:34","Trizepsstrecken mit Band":"t:35","Beinpresse":"t:36","Kniebeuge Langhantel":"t:37","Goblet Squat":"t:38","Goblet Squat auf Box":"t:39","Kniebeuge zum Stuhl":"t:40","Bulgarian Split Squat":"t:41","Bulgarian Split Squat am Bett":"t:42","Ausfallschritt rückwärts KH":"t:43","Ausfallschritt rückwärts":"t:44","Rumänisches Kreuzheben":"t:45","Rumänisches Kreuzheben KH":"t:46","Rumänisches Kreuzheben mit Band":"t:47","Hyperextension Gesäß-Fokus":"t:48","Einbeiniges Hüftbeugen":"t:49","Hip Thrust":"t:50","Glute Bridge":"t:51","Glute Bridge mit Kurzhantel":"t:52","Kabel-Kickback":"t:53","Beinbeuger sitzend":"t:54","Beinbeuger liegend":"t:55","Beinbeuger mit Handtuch":"t:56","Abduktoren-Maschine":"t:57","Beinheben seitlich stehend":"t:58","Seitliches Beinheben im Liegen":"t:59","Wadenheben stehend":"t:60","Wadenheben mit Kurzhantel":"t:61","Wadenheben einbeinig":"t:62","Dead Bug":"t:63","Unterarmstütz":"t:64","Vierfüßlerstand diagonal":"t:65","Kabel-Crunch kniend":"t:66","Hängendes Beinheben":"t:67","Reverse Crunch":"t:68","Pallof Press":"t:69","Pallof Press mit Band":"t:70","Trizepsdrücken Kabel (Supersatz)":"t:33"};
-const TRAIN_ART_PACK = {"f":"img-38d439f5d7.bin","i":[["t:1",0,11016,"image/webp"],["t:2",11016,13338,"image/webp"],["t:3",24354,10096,"image/webp"],["t:4",34450,9036,"image/webp"],["t:5",43486,6914,"image/webp"],["t:6",50400,9494,"image/webp"],["t:7",59894,8234,"image/webp"],["t:8",68128,9022,"image/webp"],["t:9",77150,9018,"image/webp"],["t:10",86168,12628,"image/webp"],["t:11",98796,9582,"image/webp"],["t:12",108378,9130,"image/webp"],["t:13",117508,10264,"image/webp"],["t:14",127772,9530,"image/webp"],["t:15",137302,8090,"image/webp"],["t:16",145392,6904,"image/webp"],["t:17",152296,14346,"image/webp"],["t:18",166642,10436,"image/webp"],["t:19",177078,15412,"image/webp"],["t:20",192490,9790,"image/webp"],["t:21",202280,9872,"image/webp"],["t:22",212152,10868,"image/webp"],["t:23",223020,8042,"image/webp"],["t:24",231062,7208,"image/webp"],["t:25",238270,6876,"image/webp"],["t:26",245146,12972,"image/webp"],["t:27",258118,8036,"image/webp"],["t:28",266154,9792,"image/webp"],["t:29",275946,8010,"image/webp"],["t:30",283956,7476,"image/webp"],["t:31",291432,7328,"image/webp"],["t:32",298760,10564,"image/webp"],["t:33",309324,9360,"image/webp"],["t:34",318684,6858,"image/webp"],["t:35",325542,8532,"image/webp"],["t:36",334074,16170,"image/webp"],["t:37",350244,8764,"image/webp"],["t:38",359008,6448,"image/webp"],["t:39",365456,8368,"image/webp"],["t:40",373824,8356,"image/webp"],["t:41",382180,7768,"image/webp"],["t:42",389948,7828,"image/webp"],["t:43",397776,6442,"image/webp"],["t:44",404218,5922,"image/webp"],["t:45",410140,4854,"image/webp"],["t:46",414994,3968,"image/webp"],["t:47",418962,6002,"image/webp"],["t:48",424964,8696,"image/webp"],["t:49",433660,6154,"image/webp"],["t:50",439814,9790,"image/webp"],["t:51",449604,5740,"image/webp"],["t:52",455344,6154,"image/webp"],["t:53",461498,10286,"image/webp"],["t:54",471784,11670,"image/webp"],["t:55",483454,9700,"image/webp"],["t:56",493154,6500,"image/webp"],["t:57",499654,11502,"image/webp"],["t:58",511156,8498,"image/webp"],["t:59",519654,7620,"image/webp"],["t:60",527274,6442,"image/webp"],["t:61",533716,4676,"image/webp"],["t:62",538392,5942,"image/webp"],["t:63",544334,7138,"image/webp"],["t:64",551472,6492,"image/webp"],["t:65",557964,7286,"image/webp"],["t:66",565250,10084,"image/webp"],["t:67",575334,8096,"image/webp"],["t:68",583430,5884,"image/webp"],["t:69",589314,7742,"image/webp"],["t:70",597056,5606,"image/webp"]]};
+const TRAIN_ART_PACK = {"f":"img-fad7e70de4.bin","i":[["t:1",0,11016,"image/webp"],["t:2",11016,13338,"image/webp"],["t:3",24354,10096,"image/webp"],["t:4",34450,9036,"image/webp"],["t:5",43486,6914,"image/webp"],["t:6",50400,9494,"image/webp"],["t:7",59894,8234,"image/webp"],["t:8",68128,9022,"image/webp"],["t:9",77150,9018,"image/webp"],["t:10",86168,12628,"image/webp"],["t:11",98796,9582,"image/webp"],["t:12",108378,9130,"image/webp"],["t:13",117508,10264,"image/webp"],["t:14",127772,9530,"image/webp"],["t:15",137302,8090,"image/webp"],["t:16",145392,6904,"image/webp"],["t:17",152296,14346,"image/webp"],["t:18",166642,10436,"image/webp"],["t:19",177078,15412,"image/webp"],["t:20",192490,9790,"image/webp"],["t:21",202280,9872,"image/webp"],["t:22",212152,10868,"image/webp"],["t:23",223020,8042,"image/webp"],["t:24",231062,7208,"image/webp"],["t:25",238270,6876,"image/webp"],["t:26",245146,12972,"image/webp"],["t:27",258118,8036,"image/webp"],["t:28",266154,9792,"image/webp"],["t:29",275946,8010,"image/webp"],["t:30",283956,7476,"image/webp"],["t:31",291432,7328,"image/webp"],["t:32",298760,10564,"image/webp"],["t:33",309324,9360,"image/webp"],["t:34",318684,6858,"image/webp"],["t:35",325542,8532,"image/webp"],["t:36",334074,16170,"image/webp"],["t:37",350244,8764,"image/webp"],["t:38",359008,6448,"image/webp"],["t:39",365456,8368,"image/webp"],["t:40",373824,8356,"image/webp"],["t:41",382180,7768,"image/webp"],["t:42",389948,7828,"image/webp"],["t:43",397776,6442,"image/webp"],["t:44",404218,5922,"image/webp"],["t:45",410140,4854,"image/webp"],["t:46",414994,3968,"image/webp"],["t:47",418962,6002,"image/webp"],["t:48",424964,8696,"image/webp"],["t:49",433660,6154,"image/webp"],["t:50",439814,9790,"image/webp"],["t:51",449604,5740,"image/webp"],["t:52",455344,6154,"image/webp"],["t:53",461498,10286,"image/webp"],["t:54",471784,11670,"image/webp"],["t:55",483454,9700,"image/webp"],["t:56",493154,6500,"image/webp"],["t:57",499654,11502,"image/webp"],["t:58",511156,8498,"image/webp"],["t:59",519654,7620,"image/webp"],["t:60",527274,6442,"image/webp"],["t:61",533716,4676,"image/webp"],["t:62",538392,5942,"image/webp"],["t:63",544334,7138,"image/webp"],["t:64",551472,6492,"image/webp"],["t:65",557964,7286,"image/webp"],["t:66",565250,10084,"image/webp"],["t:67",575334,8096,"image/webp"],["t:68",583430,5884,"image/webp"],["t:69",589314,7742,"image/webp"],["t:70",597056,5606,"image/webp"],["cover:strength",602662,21440,"image/webp"],["cover:cardio",624102,22674,"image/webp"],["cover:mma",646776,41084,"image/webp"],["cover:kick",687860,21894,"image/webp"]]};
 function trainingIllustration(name, label, open){
   const choices = name === "Klimmzug assistiert / Latzug" ? ["Klimmzug assistiert","Latzug"] : [name];
   const illustrated = choices.filter(choice => TRAIN_ART[choice]);
@@ -4917,6 +4933,13 @@ function sportCount(day, kind){
 function cardioMinutes(day){
   return (Number(day?.wp)||0) + (Number(day?.cardio)||0) + activityEntries(day,"cardioLog").reduce((sum,x) => sum + (Number(x.min)||0),0);
 }
+function actualTrainingDate(input){
+  if (!input.value || !input.checkValidity() || input.value > todayISO()){
+    toast("Bitte ein gültiges Trainingsdatum bis heute wählen");
+    return null;
+  }
+  return input.value;
+}
 function openActivityLog(category, selected, atDate = S.date, options = {}){
   const combat = category === "sport", key = combat ? "sportLog" : "cardioLog";
   const title = options.title || (combat ? "Kampfsport & Zusatzsport" : "Cardio erfassen");
@@ -4925,8 +4948,8 @@ function openActivityLog(category, selected, atDate = S.date, options = {}){
   const past = values();
   const planned = combat && plannedOn(atDate).find(x => x.u === "S" && (!selected || x.kind === selected));
   const defaultType = types.includes(selected) ? selected : planned?.kind || (combat && P().trainFocus !== "combat" ? "other" : types[0]);
-  const saveRows = rows => {
-    writeDoc("days",atDate,{...S.days[atDate],date:atDate,[key]:rows});
+  const saveRows = (date,rows) => {
+    writeDoc("days",date,{...S.days[date],date,[key]:rows});
     persistLocal(true);
     builtDate = null;
     if (S.tab === "training") updateTrainingDashboard();
@@ -4936,7 +4959,9 @@ function openActivityLog(category, selected, atDate = S.date, options = {}){
   let editing = -1;
   openSheet({title,right:"Speichern",body:`
     <p class="note">${esc(dateLong(atDate))}${options.location?" · "+esc(options.location):""} · ${combat ? "Gesamtdauer erfassen. Details sind freiwillig." : "Zeit und Belastung erfassen. Beim Laufband ist die Steigung in Prozent."} Belastung: 1 sehr leicht, 10 maximal.</p>
+    ${options.planDate?`<p class="note">Geplant für ${esc(dateLong(options.planDate))}</p>`:""}
     <div class="group">
+      <label class="row" for="act-date"><span class="lbl">Trainingsdatum</span><input type="date" class="field" id="act-date" value="${esc(atDate)}" max="${todayISO()}" required></label>
       <label class="row" for="act-type"><span class="lbl">Aktivität</span><select class="field" id="act-type">${types.map(t=>`<option value="${t}" ${t===defaultType?"selected":""}>${ACTIVITY_TYPES[t]}</option>`).join("")}</select></label>
       ${field("min","Dauer in Minuten",options.min || planned?.min || (defaultType==="mma" && P().trainFocus==="combat" ? 90 : ""),1,300)}
       ${field("rpe","Belastung 1–10","",1,10)}
@@ -4957,6 +4982,7 @@ function openActivityLog(category, selected, atDate = S.date, options = {}){
       };
       const edit = index => {
         editing = index;
+        $("#act-date",sh).value = atDate;
         const row = past[index];
         for (const f of ["type","min","rpe","warm","tech","spar","rounds","grade","speed","note"]){
           const el = $("#act-"+f,sh); if (el) el.value = row[f] ?? "";
@@ -4967,7 +4993,7 @@ function openActivityLog(category, selected, atDate = S.date, options = {}){
       $$("[data-act-edit]",sh).forEach(button => button.onclick = () => edit(Number(button.dataset.actEdit)));
       if (options.index>=0 && past[options.index]) edit(options.index);
       $("#act-delete",sh).onclick = () => {
-        saveRows(values().filter((_,i)=>i!==editing));
+        saveRows(atDate,values().filter((_,i)=>i!==editing));
         closeSheet(); toast("Eintrag gelöscht");
       };
     },
@@ -4981,21 +5007,36 @@ function openActivityLog(category, selected, atDate = S.date, options = {}){
         if (input.value) row[k]=Number(input.value);
       }
       if ((row.warm||0)+(row.tech||0)+(row.spar||0)>min){ toast("Die Teilzeiten überschreiten die Gesamtdauer"); return false; }
-      const rows = values().slice();
-      const planKey = editing<0 ? options.planKey : rows[editing]?.planKey;
+      const date = actualTrainingDate($("#act-date",sh));
+      if (!date) return false;
+      const rows = values().slice(), previous = rows[editing];
+      const planKey = previous?.planKey || options.planKey;
+      const planDate = previous?.planDate || options.planDate || (planKey && editing>=0 ? atDate : null);
       if (planKey) row.planKey = planKey;
-      if(editing<0) rows.push(row); else rows[editing]=row;
-      saveRows(rows); toast("Einheit gespeichert");
+      if (planDate && (date!==planDate || previous?.planDate)) row.planDate = planDate;
+      if (date===atDate){
+        if (editing<0) rows.push(row); else rows[editing]=row;
+        saveRows(date,rows);
+      } else {
+        if (editing>=0) writeDoc("days",atDate,{...S.days[atDate],date:atDate,[key]:rows.filter((_,i)=>i!==editing)});
+        saveRows(date,[...activityEntries(S.days[date],key),row]);
+      }
+      toast("Einheit gespeichert");
     }});
 }
 const studioWindows = {
   tueCardio:{wd:2,t:"17:10",end:"17:30",u:"C+",kind:"bike",min:20,key:"tue-cardio",context:"Tochter: Kickboxen 17:00–18:00",note:"Moderates Airbike oder zügig gehen. Danach Pause bis MMA."},
   friPrimary:{context:"Sohn: Kickboxen 15:30–16:15",note:"Bei schweren Beinen nach Donnerstagssparring: Kurzversion wählen."},
-  friLate:{wd:5,t:"17:20",end:"17:55",u:"A",min:35,optional:true,context:"Tochter: Kickboxen 17:15–18:15",note:"Ersatz für Ganzkörper A am Nachmittag."},
+  friLate:{wd:5,t:"17:20",end:"17:55",u:"A",min:35,optional:true,context:"Tochter: Kickboxen 17:15–18:15",note:"Ersatz für Krafttraining A am Nachmittag."},
   friCardio:{wd:5,t:"17:20",end:"17:40",u:"C+",kind:"bike",min:20,key:"fri-cardio",context:"Tochter: Kickboxen 17:15–18:15",note:"Zweiter Cardio-Block. Dieses Fenster für Cardio nutzen, wenn Kraft A schon erledigt ist."},
-  sunEarly:{wd:0,t:"10:05",end:"10:40",u:"B",min:35,optional:true,context:"Sohn: Kickboxen 10:00–10:45",note:"Ersatz für Ganzkörper B mittags."},
+  sunEarly:{wd:0,t:"10:05",end:"10:40",u:"B",min:35,optional:true,context:"Sohn: Kickboxen 10:00–10:45",note:"Ersatz für Krafttraining B mittags."},
   sunPrimary:{context:"Tochter: MMA 12:00–13:00",note:"Wenn du danach hart kickboxen willst: B verkürzen oder verschieben."}
 };
+function plannedStrengthEntry(date,unit){
+  const local = sessionOf(date,unit);
+  if (local && (!local.planDate || local.planDate===date)) return local;
+  return Object.values(S.sessions).find(s=>s?.unit===unit && s.planDate===date);
+}
 function trainingDay(date,p){
   const day = S.days[date], away = inTrip(date), localStudio = p.trainFocus === "combat" && !away;
   const holiday = date >= p.vacFrom && date <= p.vacTo;
@@ -5008,12 +5049,12 @@ function trainingDay(date,p){
     if (wd===2) planned.push(studioWindows.tueCardio);
     if (wd===5){
       if (a) Object.assign(a,studioWindows.friPrimary);
-      if (a && !strengthUnitFinished(date,"A") && !activityEntries(day,"cardioLog").some(x=>x.planKey===studioWindows.friCardio.key)) planned.push(studioWindows.friLate);
+      if (a && !strengthUnitFinished(plannedStrengthEntry(date,"A")?.date||date,"A") && !activityEntries(day,"cardioLog").some(x=>x.planKey===studioWindows.friCardio.key)) planned.push(studioWindows.friLate);
       planned.push(studioWindows.friCardio);
     }
     if (wd===0){
       if (b) Object.assign(b,studioWindows.sunPrimary);
-      if (b && !strengthUnitFinished(date,"B")) planned.push(studioWindows.sunEarly);
+      if (b && !strengthUnitFinished(plannedStrengthEntry(date,"B")?.date||date,"B")) planned.push(studioWindows.sunEarly);
     }
   }
   if (!holiday && (p.trainFocus==="glutes" || p.trainFocus==="maintain")){
@@ -5029,27 +5070,36 @@ function trainingDay(date,p){
   const used = {sport:new Set(),cardio:new Set(),strength:new Set()};
   const rows = planned.sort((a,b)=>(a.t||"99:99").localeCompare(b.t||"99:99")).map(x => {
     const type = x.u === "S" ? "sport" : x.u === "C+" ? "cardio" : "strength";
-    let index = -1, status = x.optional ? "Alternative" : "Geplant";
-    let session = null;
+    let index = -1, status = x.optional ? "Alternative" : "Geplant", entryDate = date;
+    let session = null, matched = null;
+    const planKey = x.key || (type==="sport" ? "sport:"+x.t+":"+(x.kind||"other") : undefined);
     if (type === "strength"){
-      session = sessionOf(date,x.u);
-      if (strengthUnitFinished(date,x.u)) status = "Erfasst";
+      session = plannedStrengthEntry(date,x.u);
+      entryDate = session?.date || date;
+      if (strengthUnitFinished(entryDate,x.u) && session) status = "Erfasst";
       else if (hasSessionWork(session)) status = "Begonnen";
-      used.strength.add(x.u);
+      if (entryDate===date && session) used.strength.add(x.u);
     } else {
-      index = logs[type].findIndex((log,i)=>!used[type].has(i) && (type==="cardio" ? log.planKey===x.key : !x.kind || x.kind===log.type));
-      if (index>=0){ used[type].add(index); status="Erfasst"; }
-      else if (type==="sport" && day?.sport && (!x.kind || x.kind==="mma")) status="Erfasst";
+      for (const candidate of [date,...Object.keys(S.days).filter(d=>d!==date)]){
+        const entries = activityEntries(S.days[candidate],type==="sport"?"sportLog":"cardioLog");
+        index = entries.findIndex((log,i)=>(candidate!==date || !used[type].has(i)) &&
+          (log.planDate||candidate)===date && (type!=="sport" || !x.kind || x.kind===log.type) &&
+          (log.planKey ? log.planKey===planKey : type==="sport" && candidate===date && (!x.kind || x.kind===log.type)));
+        if (index<0) continue;
+        entryDate = candidate; matched = entries[index]; status="Erfasst";
+        if (entryDate===date) used[type].add(index);
+        break;
+      }
+      if (index<0 && type==="sport" && day?.sport && (!x.kind || x.kind==="mma")) status="Erfasst";
     }
-    const matched = logs[type]?.[index];
-    const label = type==="cardio" ? "Moderates Cardio" : type==="strength" ? strengthName(p,x.u,session) : activityName(x);
-    return {...x,type,label,index,status,actualMin:matched?.min,plannedDuration:type==="strength"?strengthPlan(p,x.u,session)?.min:null,
+    const label = type==="cardio" ? "Moderates Cardio" : type==="strength" ? strengthName(x.u) : activityName(x);
+    return {...x,type,label,index,status,entryDate,planDate:date,planKey,actualMin:matched?.min,plannedDuration:type==="strength"?strengthPlan(p,x.u,session)?.min:null,
       location:localStudio ? "Boxstudio" : away ? "Unterwegs" : x.u==="D" ? "Zuhause" : type==="strength" ? "Fitnessstudio" : "Nach Wahl"};
   });
   UNIT_KEYS.forEach(u => {
     const session = sessionOf(date,u);
     if (used.strength.has(u) || !hasSessionWork(session)) return;
-    rows.push({type:"strength",u,label:strengthName(p,u,session),status:strengthUnitFinished(date,u)?"Erfasst":"Begonnen",location:"Zusätzlich"});
+    rows.push({type:"strength",u,label:strengthName(u),status:strengthUnitFinished(date,u)?"Erfasst":"Begonnen",location:"Zusätzlich"});
   });
   for (const type of ["sport","cardio"]){
     logs[type].forEach((log,index)=>{
@@ -5064,20 +5114,28 @@ function trainingDay(date,p){
   return {date, rows, away, holiday};
 }
 function trainingWeekRow(day,row,index,today){
-  const future = day.date>today, alt = !!row.optional;
+  const alt = !!row.optional;
   const kind = row.type==="sport" ? "Kampfsport" : row.type==="cardio" ? "Cardio" : "Kraft";
   const status = row.kind==="kick" && alt && row.status==="Alternative" ? "Optional" : row.status==="Geplant" && day.date<today ? "Offen" : row.status;
-  const action = row.status==="Begonnen" ? "Fortsetzen" : row.status==="Erfasst" ? "Ansehen" : future ? "Ansehen" : "Öffnen";
-  return `<div class="week-slot ${row.type} ${alt?"is-option":""}">
-    <div class="week-slot-time"><b>${esc(row.t ? activityTime(row) : "Flexibel")}</b>${(row.actualMin||row.min||row.plannedDuration)?`<small>${esc(row.actualMin||row.min||row.plannedDuration)} Min.</small>`:""}</div>
+  const canOpen = !row.legacy && !(row.type==="sport" && row.status==="Erfasst" && row.index<0);
+  const action = row.status==="Begonnen" ? "Fortsetzen" : row.status==="Erfasst" ? "Bearbeiten" : "Starten";
+  const cover = "cover:"+(row.type==="sport" ? row.kind==="kick"?"kick":row.kind==="mma"||row.label==="MMA"?"mma":"kick" : row.type);
+  const image = IMG_URL.get(cover);
+  const mins = row.actualMin||row.min||row.plannedDuration;
+  const attrs = `data-week-entry="${index}" data-week-day="${day.date}"`;
+  return `<article class="week-slot ${row.type} ${alt?"is-option":""}">
+    <img class="week-cover" alt="" aria-hidden="true" loading="lazy" data-train-art="${cover}" ${image?`src="${esc(image)}"`:""}>
+    <div class="week-slot-top"><span>${esc(row.t ? activityTime(row) : "Flexibel")}${mins?" · "+esc(mins)+" Min.":""}</span><span class="${status==="Erfasst"?"logged":""}">${status}</span></div>
     <div class="week-slot-info"><div class="week-slot-meta">${kind} · ${esc(row.location)}</div>
       <strong>${esc(row.label)}</strong>${row.context?`<small>${esc(row.context)}</small>`:""}
       ${row.note?`<small>${esc(row.note)}</small>`:""}
+      ${row.entryDate && row.entryDate!==day.date?`<small>${row.status==="Erfasst"?"Erfasst am":"Begonnen am"} ${esc(dateShort(row.entryDate))}</small>`:""}
     </div>
-    <div class="week-slot-action"><span class="${status==="Erfasst"?"logged":""}">${status}</span>
-      <button type="button" class="week-open" data-week-entry="${index}" data-week-day="${day.date}" aria-label="${esc(row.label+" "+action)}">${action} ${ICON.chev}</button>
+    <div class="week-slot-action">
+      <button type="button" class="week-open" ${attrs} data-week-action="preview" aria-label="${esc(row.label+" Ansehen")}">Ansehen</button>
+      ${canOpen?`<button type="button" class="week-open week-start" ${attrs} data-week-action="start" aria-label="${esc(row.label+" "+action)}">${action} ${ICON.chev}</button>`:""}
     </div>
-  </div>`;
+  </article>`;
 }
 function trainingDashboard(){
   const p = P(), today = todayISO(), family = FAMILY_TRAINING[p.trainFocus];
@@ -5103,11 +5161,26 @@ function trainingDashboard(){
       ${day.rows.length?day.rows.map((row,i)=>trainingWeekRow(day,row,i,today)).join(""):
         `<p class="week-empty">${day.holiday?"Urlaub":day.away?"Dienstreise · Zeit für zügiges Gehen oder eine kurze Reise-Einheit":"Freier Tag"}</p>`}
     </section>`).join("")}</div>
-    <button type="button" class="pause week-sources" data-week-nav="sources">Plan & Quellen</button>`;
+    <button type="button" class="pause week-sources" data-week-nav="sources">Plan & Quellen</button><p class="note week-credits">MMA-Foto: Lee Brimelow, <a href="https://commons.wikimedia.org/wiki/File:UFC_74_Respect_Bout.jpg" target="_blank" rel="noopener">UFC 74</a>, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>, Ausschnitt.</p>`;
 }
-let strengthOpen = false;
-function openStrengthEntry(date,unit){
+let strengthOpen = false, strengthOrigin = null, strengthWeekDate = null;
+function openStrengthEntry(date,unit,plannedDate = null){
   if (date > todayISO() || !UNIT_KEYS.includes(unit)) return;
+  const existing = sessionOf(date,unit);
+  if (existing && plannedDate && (existing.planDate||date)!==plannedDate){
+    openSheet({title:strengthName(unit),right:"Starten",body:`
+      <p class="note">Am ${esc(dateLong(date))} gibt es bereits einen Eintrag. Wähle das Datum für die nachgeholte Einheit.</p>
+      <label class="row" for="strength-start-date"><span class="lbl">Trainingsdatum</span><input class="field" type="date" id="strength-start-date" max="${todayISO()}" required></label>`,
+      onSave: sh => {
+        const chosen = actualTrainingDate($("#strength-start-date",sh));
+        if (!chosen) return false;
+        if (sessionOf(chosen,unit)){ toast("Für dieses Datum gibt es bereits einen Eintrag für diese Einheit"); return false; }
+        openStrengthEntry(chosen,unit,plannedDate);
+      }});
+    return;
+  }
+  strengthWeekDate = S.date;
+  strengthOrigin = existing?.planDate || plannedDate;
   S.date = date;
   S.unit = unit;
   strengthOpen = true;
@@ -5118,20 +5191,25 @@ function openStrengthEntry(date,unit){
 }
 function openWeekPreview(day,row){
   const p = P();
-  const plan = row.type==="strength" ? strengthPlan(p,row.u,sessionOf(day.date,row.u)) : null;
+  const actualDate = row.entryDate || day.date;
+  const saved = row.type==="strength" ? sessionOf(actualDate,row.u) : null;
+  const plan = row.type==="strength" ? strengthPlan(p,row.u,saved) : null;
+  const exercises = plan && saved && saved.plan!==COMPACT_VERSION ? EX[p.tmpl][row.u].map(e=>e.slice(0,2)) : plan?.main;
   const legacy = S.days[day.date] || {};
+  const record = row.index>=0 ? activityEntries(S.days[actualDate],row.type==="sport"?"sportLog":"cardioLog")[row.index] : null;
   openSheet({title:row.label,left:"Schließen",right:"",body:`
     <p class="note">${esc([dateLong(day.date),row.t?activityTime(row):"",row.location].filter(Boolean).join(" · "))}</p>
     ${row.context?`<p>${esc(row.context)}</p>`:""}${row.note?`<p class="note">${esc(row.note)}</p>`:""}
-    ${plan?`<div class="section"><div class="section-h">Übungen</div><div class="group">${plan.main.map(([name,sets])=>`<div class="row"><span class="lbl">${esc(name)}</span><span>${sets} Sätze</span></div>`).join("")}</div></div>`:""}
+    ${exercises?`<div class="section"><div class="section-h">Übungen</div><div class="group">${exercises.map(([name,sets])=>`<div class="row"><span class="lbl">${esc(name)}</span><span>${sets} Sätze</span></div>`).join("")}</div></div>`:""}
     ${row.status==="Erfasst" && row.index<0 && row.type==="sport" && legacy.sportMin?`<p>${legacy.sportMin} Min. protokolliert</p>`:""}
-    ${day.date>todayISO()?`<p class="note">An diesem Tag kannst du die Einheit hier öffnen und erfassen.</p>`:""}`,
+    ${record?`<p>${esc(ACTIVITY_TYPES[record.type]||"Training")} · ${record.min} Min.${record.rpe?" · Belastung "+record.rpe+"/10":""}</p>${record.note?`<p class="note">${esc(record.note)}</p>`:""}`:""}
+    ${row.type==="sport" && row.kind==="mma"?`<p class="note">Aufwärmen, Technik und Sparring kannst du im Trainingsfenster erfassen.</p>`:""}`,
     onOpen: sh => { $(".r",sh).style.visibility="hidden"; }});
 }
 function openWeekAdd(){
   const p = P();
   const choices = [
-    ...UNIT_KEYS.map(u=>[u,strengthName(p,u),"Kraft"]),
+    ...UNIT_KEYS.map(u=>[u,strengthName(u),"Kraft"]),
     ["mma","MMA","Kampfsport"],["kick","Kickboxen","Kampfsport"],
     ["other","Zusatzsport","Sport"],["cardio","Cardio","Laufband, Airbike oder Gehen"]
   ];
@@ -5170,10 +5248,10 @@ function bindTrainingWeek(dash){
     const day = trainingDay(button.dataset.weekDay,P());
     const row = day.rows[Number(button.dataset.weekEntry)];
     if (!row) return;
-    if (day.date>todayISO() || row.legacy || (row.type==="sport" && row.status==="Erfasst" && row.index<0)){
-      openWeekPreview(day,row);
-    } else if (row.type==="strength") openStrengthEntry(day.date,row.u);
-    else openActivityLog(row.type,row.kind,day.date,{index:row.index,min:row.min,planKey:row.key,title:row.label,location:row.location});
+    if (button.dataset.weekAction==="preview"){ openWeekPreview(day,row); return; }
+    const date = row.status==="Begonnen" || row.status==="Erfasst" ? row.entryDate || day.date : todayISO();
+    if (row.type==="strength") openStrengthEntry(date,row.u,row.planDate);
+    else openActivityLog(row.type,row.kind,date,{index:row.index,min:row.min,planKey:row.planKey,planDate:row.planDate,title:row.label,location:row.location});
   };
 }
 function updateTrainingDashboard(){
@@ -5207,8 +5285,10 @@ function renderTraining(force){
   let html = `${banner()}
     <button type="button" class="train-swap week-back" id="train-week-back">‹ Wochenplan</button>
     <div class="train-section-heading" id="train-session" tabindex="-1">
-      <h2>${esc(strengthName(p,S.unit,saved))}</h2><span class="pill">${esc(dateShort(S.date))}</span>
+      <h2>${esc(strengthName(S.unit))}</h2>
     </div>
+    <div class="group train-date-group"><label class="row" for="strength-date"><span class="lbl">Trainingsdatum${strengthOrigin?`<small>Geplant für ${esc(dateLong(strengthOrigin))}</small>`:""}</span>
+      <input class="field" type="date" id="strength-date" value="${esc(S.date)}" max="${todayISO()}" required></label></div>
     ${compact ? `<div class="train-mode"><div class="seg" role="group" aria-label="Trainingsdauer wählen">
       <button type="button" data-short="0" aria-pressed="${!ses.short}">Standard · ${plan.min} Min.</button>
       <button type="button" data-short="1" aria-pressed="${!!ses.short}">Kurz · ${plan.short} Min.</button></div></div>` : ""}
@@ -5251,8 +5331,16 @@ function renderTraining(force){
   el.innerHTML = html;
   $("#train-week-back",el).onclick = () => {
     strengthOpen = false;
+    const target = strengthOrigin || S.date;
+    S.date = strengthWeekDate || S.date;
+    strengthOrigin = null;
     renderTraining(true);
-    $("[data-week-group='"+S.date+"']",el)?.scrollIntoView({block:"start"});
+    $("[data-week-group='"+target+"']",el)?.scrollIntoView({block:"start"});
+  };
+  $("#strength-date",el).onchange = event => {
+    const input = event.currentTarget, date = actualTrainingDate(input);
+    if (!date || (date!==S.date && !moveStrengthDate(date))){ input.value=S.date; return; }
+    renderTraining(true);
   };
   $$("button[data-short]", el).forEach(b => b.onclick = () => {
     const short = b.dataset.short === "1";
@@ -5313,9 +5401,32 @@ function renderTraining(force){
     if (c.done) toast("Cardio erledigt");
   };
 }
+function moveStrengthDate(date){
+  const oldDate = S.date, unit = S.unit, oldKey = oldDate+"_"+unit, key = date+"_"+unit;
+  const saved = S.sessions[oldKey];
+  if (saved && S.sessions[key]){ toast("Für dieses Datum gibt es bereits einen Eintrag für diese Einheit"); return false; }
+  if (saved){
+    const planDate = saved.planDate || strengthOrigin || (plannedOn(oldDate).some(x=>x.u===unit)?oldDate:undefined);
+    delete S.sessions[oldKey];
+    S.sessions[key] = {...saved,date,planDate};
+    if (S.days[oldDate]){
+      const day = S.days[oldDate], remaining = UNIT_KEYS.map(u=>sessionOf(oldDate,u)).filter(Boolean);
+      const hadWork = Object.values(saved.ex||{}).some(hasExerciseWork);
+      const stillWork = remaining.some(s=>Object.values(s.ex||{}).some(hasExerciseWork));
+      const cardio = remaining.reduce((n,s)=>n+(s.cardio?.done ? Number(s.cardio.min)||0 : 0),0);
+      writeDoc("days",oldDate,{...day,cardio:saved.cardio?.done ? cardio||null : day.cardio,kraft:hadWork&&!stillWork?null:day.kraft});
+    }
+    S.date = date;
+    saveSession(true);
+  } else {
+    S.date = date;
+    if (S.sessions[key]) strengthOrigin = S.sessions[key].planDate || null;
+  }
+  return true;
+}
 function ensureSession(){
   const k = S.date + "_" + S.unit;
-  return S.sessions[k] || (S.sessions[k] = {date:S.date, unit:S.unit, plan:COMPACT_VERSION, trainingFocus:P().trainFocus, ex:{}});
+  return S.sessions[k] || (S.sessions[k] = {date:S.date, unit:S.unit, plan:COMPACT_VERSION, trainingFocus:P().trainFocus, planDate:strengthOrigin||undefined, ex:{}});
 }
 function saveSession(immediate){
   const k = S.date + "_" + S.unit, date = S.date, session = S.sessions[k];
@@ -5635,7 +5746,7 @@ function openGoals(){
 const WD_ORDER = [1,2,3,4,5,6,0];
 function openSchedule(){
   const p = P(); let list = p.schedule.map(x => Object.assign({}, x));
-  const opts = () => UNIT_KEYS.map(u => [u, strengthName(p,u)]).concat(p.trainFocus==="combat" ? [["S","MMA"],["kick","Kickboxen · optional"]] : [["S",p.sportLabel]]);
+  const opts = () => UNIT_KEYS.map(u => [u, strengthName(u)]).concat(p.trainFocus==="combat" ? [["S","MMA"],["kick","Kickboxen · optional"]] : [["S",p.sportLabel]]);
   const draw = sh => {
     $("#sc-list", sh).innerHTML = list.length ? list.map((x,i) => `<div class="sched" data-i="${i}">
       <select data-f="wd" aria-label="Wochentag">${WD_ORDER.map(d => `<option value="${d}" ${d===x.wd?"selected":""}>${WDs[d]}</option>`).join("")}</select>
