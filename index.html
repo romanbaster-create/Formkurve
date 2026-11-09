@@ -205,45 +205,45 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 .amp.g i{background:var(--green)} .amp.y i{background:var(--yellow)} .amp.r i{background:var(--red)} .amp.u i{background:var(--teal)}
 
 /* Training */
-.train-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
-.train-action-row .btn{font-size:12px;min-height:44px;padding:6px}
-.train-activity small{line-height:1.35}
 .act-edit{text-align:left;width:100%;justify-content:space-between}
+.week-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;border-radius:12px;background:var(--card);border:1px solid var(--sep);padding:3px 6px;font-size:13px}
+.week-controls .icon-btn{min-width:40px;min-height:39px}
+.week-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 2px}
+.week-toolbar>b{font-size:16px}
+.week-hint{margin:0 0 14px}
+.week-day{margin:0 0 13px;scroll-margin-top:12px}
+.week-day h2{margin:0 0 5px;padding:0 2px;font-size:13px}
+.week-day h2 span{color:var(--label2);font-weight:500;margin-left:4px}
+.week-day h2 .week-today{background:var(--fill);color:var(--tint);padding:3px 6px;border-radius:7px;font-size:10px;font-weight:750}
+.week-empty{margin:0;padding:6px 3px;color:var(--label2);font-size:12px}
+.week-slot{display:grid;grid-template-columns:minmax(62px,auto) minmax(0,1fr) auto;align-items:start;gap:8px;background:var(--card);border:1px solid var(--sep);border-left:3px solid var(--tint);border-radius:10px;padding:8px 7px;margin:0 0 5px}
+.week-slot.cardio{border-left-color:var(--teal)}
+.week-slot.sport{border-left-color:var(--orange)}
+.week-slot.is-option{background:color-mix(in srgb,var(--card) 65%,transparent)}
+.week-slot-time b,.week-slot-time small,.week-slot-info strong,.week-slot-info small{display:block}
+.week-slot-time b{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.week-slot-time small,.week-slot-info small{font-size:11px;color:var(--label2);line-height:1.3;margin-top:3px;overflow-wrap:anywhere}
+.week-slot-meta{font-size:10px;color:var(--label2)}
+.week-slot-info strong{font-size:14px;line-height:1.25;margin-top:2px;overflow-wrap:anywhere}
+.week-slot-action{display:grid;justify-items:end;gap:2px}
+.week-slot-action>span{font-size:10px;color:var(--label2);white-space:nowrap}
+.week-slot-action>span.logged{color:var(--green)}
+.week-open{min-height:36px;border-radius:8px;background:var(--fill);padding:3px 6px;font-size:11px;font-weight:700;color:var(--tint);white-space:nowrap}
+.week-open svg{width:5px;height:9px}
+.week-back{min-height:44px;margin:0 0 4px}
+.week-sources{min-height:44px;padding:0 5px}
+@media(min-width:600px){.week-slot{gap:14px;padding:10px 12px}.week-slot-time b{font-size:12px}.week-slot-info small{font-size:12px}.week-open{min-width:74px}}
 .train-dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:4px 0 14px}
 .train-dash-head .large-title{margin:3px 0 0}
 .train-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--tint)}
 .train-today{min-height:36px;flex:none}
-.train-overview{display:grid;gap:10px}
 .train-week-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.train-kpi,.train-calendar,.train-next-card{background:var(--card);border:1px solid var(--sep);border-radius:15px}
+.train-kpi{background:var(--card);border:1px solid var(--sep);border-radius:15px}
 .train-kpi{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px;min-width:0}
 .train-kpi>span{font-size:11px;font-weight:700;color:var(--label2);overflow-wrap:anywhere}
 .train-kpi b{font-family:var(--font-round);font-size:24px;line-height:1.16;white-space:nowrap}
 .train-kpi small{font-size:10px;color:var(--label2);font-weight:600}
 .train-kpi b small{font-size:12px}
-.train-kpi-bar{height:3px;width:100%;overflow:hidden;border-radius:4px;background:var(--fill);margin-top:3px}
-.train-kpi-bar i{display:block;height:100%;border-radius:inherit;background:var(--tint)}
-.train-calendar{padding:11px 12px}
-.train-calendar-head,.train-calendar-key{display:flex;justify-content:space-between;align-items:center;gap:5px}
-.train-calendar-head{font-size:12px;font-weight:750;margin-bottom:8px}
-.train-calendar-head small,.train-calendar-key{color:var(--label2);font-weight:600;font-size:10px}
-.train-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-.train-day{display:grid;place-items:center;gap:3px;padding:4px 1px;border-radius:8px;color:var(--label);min-height:46px}
-.train-day span{font-size:10px;color:var(--label2)}
-.train-day b{font-size:13px}
-.train-day:disabled{opacity:.68}
-.train-day[aria-pressed="true"]{background:color-mix(in srgb,var(--tint) 15%,var(--card));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tint) 42%,transparent)}
-.train-day i,.train-calendar-key i{display:inline-block;width:6px;height:6px;border-radius:100%;background:transparent}
-.train-day.planned i,.train-calendar-key span:first-child i{box-shadow:inset 0 0 0 1px var(--tint)}
-.train-day.logged i,.train-calendar-key span:last-child i{background:var(--green)}
-.train-calendar-key{justify-content:flex-end;gap:12px;margin-top:7px}
-.train-calendar-key i{margin-right:3px}
-.train-next-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 12px;margin-top:10px;background:color-mix(in srgb,var(--tint) 7%,var(--card))}
-.train-next-card strong,.train-next-card small{display:block;margin-top:4px}
-.train-next-card strong{font-size:18px}
-.train-next-card small{font-size:11px;color:var(--label2)}
-.train-next-card .train-dash-action{display:inline-flex;align-items:center;justify-content:center;gap:5px;width:auto;min-height:44px;padding:8px 10px;flex:none;font-size:12px}
-.train-dash-action svg{height:10px;width:6px}
 .train-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:24px 0 10px;scroll-margin-top:14px}
 .train-section-heading h2{margin:0;font-size:21px;letter-spacing:-.3px}
 .train-section-heading .pill{white-space:nowrap}
@@ -257,7 +257,6 @@ input[type=range].unset::-webkit-slider-thumb{background:var(--card2);box-shadow
 .train-illustration figcaption span{padding:5px 2px 7px}
 .train-illustration figcaption span + span{border-left:1px solid #e8e9ec}
 @media (min-width:760px){
-  .train-overview{grid-template-columns:1fr 1.05fr;align-items:stretch}
   .train-kpi{padding:12px 8px}
   .train-kpi b{font-size:26px}
 }
@@ -3894,13 +3893,6 @@ const ROMAN_SCHEDULE = [
   {wd:0,t:"12:05",end:"12:40",u:"B",min:35},
   {wd:0,t:"13:15",end:"14:15",u:"S",kind:"kick",min:60,optional:true}
 ];
-const KIDS_STUDIO = [
-  [2,"17:00–18:00","Tochter · Kickboxen","17:10–17:30 moderates Gehen oder Airbike. Danach erholen und um 18:00 ins MMA."],
-  [5,"15:30–16:15","Sohn · Kickboxen","15:35–16:10 Ganzkörper A. Nach hartem Donnerstagssparring mit der Kurzversion starten oder verschieben."],
-  [5,"17:15–18:15","Tochter · Kickboxen","Ersatzfenster für Ganzkörper A, falls der frühe Termin ausfällt. Falls Kraft schon erledigt ist: bei Bedarf 20 Min. moderates Cardio."],
-  [0,"10:00–10:45","Sohn · Kickboxen","Ausweichfenster für Ganzkörper B oder ein Spaziergang. Einen Kraftblock auswählen."],
-  [0,"12:00–13:00","Tochter · MMA","12:05–12:40 Ganzkörper B. Bei anschließend intensivem Kickboxen B kürzen, verschieben oder Kickboxen technisch locker halten."]
-];
 const FOCUS_LABELS = {combat:"MMA, Kraft und Abnehmen",glutes:"Abnehmen · Gesäß und Beine",maintain:"Gewicht halten und fitter werden",standard:"Bisheriger Trainingsplan"};
 function focusFor(pr){
   if (Object.hasOwn(FOCUS_LABELS,pr.trainingFocus)) return pr.trainingFocus;
@@ -4700,7 +4692,7 @@ function bindHeute(el){
   $("#d-prev", el).onclick = () => { S.date = addDays(S.date,-1); renderAll(); };
   $("#d-next", el).onclick = () => { if (S.date < todayISO()){ S.date = addDays(S.date,1); renderAll(); } };
   const ci = $("#go-checkin", el); if (ci) ci.onclick = () => openCheckin(weekOf(S.date));
-  $$(".plan-today", el).forEach(b => b.onclick = () => { if (b.dataset.u === "S"){ openActivityLog("sport",b.dataset.kind); return; } S.unit = b.dataset.u; setTab("training"); });
+  $$(".plan-today", el).forEach(b => b.onclick = () => { if (b.dataset.u === "S"){ openActivityLog("sport",b.dataset.kind); return; } openStrengthEntry(S.date,b.dataset.u); });
   $$("input.field, textarea.field", el).forEach(inp => {
     const k = inp.dataset.k;
     inp.addEventListener("input", () => {
@@ -4885,6 +4877,10 @@ function openTrainingBasis(){
         <a class="row" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/" target="_blank" rel="noopener">ACSM · Krafttraining und Muskelaufbau (2026)</a>
         <a class="row" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8449772/" target="_blank" rel="noopener">Iversen et al. · Zeiteffizientes Krafttraining (2021)</a>
         <a class="row" href="https://pubmed.ncbi.nlm.nih.gov/41343037/" target="_blank" rel="noopener">Pelland et al. · Wochenvolumen und Trainingseffekt (2026)</a>
+      <a class="row" href="https://doi.org/10.1001/jamanetworkopen.2024.52185" target="_blank" rel="noopener">Ausdauertraining und Körperfett · JAMA (2024)</a>
+      <a class="row" href="https://doi.org/10.1136/bmjsem-2024-002363" target="_blank" rel="noopener">Krafttraining beim Abnehmen · BMJ (2025)</a>
+      <a class="row" href="https://pubmed.ncbi.nlm.nih.gov/12183501/" target="_blank" rel="noopener">Energieaufwand beim Bergaufgehen · Minetti et al.</a>
+      <a class="row" href="https://doi.org/10.3389/fphys.2025.1542334" target="_blank" rel="noopener">Gesäßmuskelaufbau · Systematische Übersicht (2025)</a>
       </div>
     </div>`, onOpen: sh => { $(".r", sh).style.visibility = "hidden"; }});
 }
@@ -4921,9 +4917,9 @@ function sportCount(day, kind){
 function cardioMinutes(day){
   return (Number(day?.wp)||0) + (Number(day?.cardio)||0) + activityEntries(day,"cardioLog").reduce((sum,x) => sum + (Number(x.min)||0),0);
 }
-function openActivityLog(category, selected, atDate = S.date){
+function openActivityLog(category, selected, atDate = S.date, options = {}){
   const combat = category === "sport", key = combat ? "sportLog" : "cardioLog";
-  const title = combat ? "Kampfsport & Zusatzsport" : "Cardio erfassen";
+  const title = options.title || (combat ? "Kampfsport & Zusatzsport" : "Cardio erfassen");
   const types = combat ? ["mma","kick","other"] : ["incline","walk","bike","cardio"];
   const values = () => activityEntries(S.days[atDate],key);
   const past = values();
@@ -4939,10 +4935,10 @@ function openActivityLog(category, selected, atDate = S.date){
   const field = (id,label,value,min,max,step=1) => `<label class="row" for="act-${id}"><span class="lbl">${label}</span><input class="field num" id="act-${id}" type="number" min="${min}" max="${max}" step="${step}" inputmode="${step===1?"numeric":"decimal"}" value="${esc(value??"")}" placeholder="–"></label>`;
   let editing = -1;
   openSheet({title,right:"Speichern",body:`
-    <p class="note">${esc(dateLong(atDate))} · ${combat ? "Gesamtdauer erfassen. Details sind freiwillig." : "Zeit und Belastung erfassen. Beim Laufband ist die Steigung in Prozent."} Belastung: 1 sehr leicht, 10 maximal.</p>
+    <p class="note">${esc(dateLong(atDate))}${options.location?" · "+esc(options.location):""} · ${combat ? "Gesamtdauer erfassen. Details sind freiwillig." : "Zeit und Belastung erfassen. Beim Laufband ist die Steigung in Prozent."} Belastung: 1 sehr leicht, 10 maximal.</p>
     <div class="group">
       <label class="row" for="act-type"><span class="lbl">Aktivität</span><select class="field" id="act-type">${types.map(t=>`<option value="${t}" ${t===defaultType?"selected":""}>${ACTIVITY_TYPES[t]}</option>`).join("")}</select></label>
-      ${field("min","Dauer in Minuten",planned?.min || (defaultType==="mma" && P().trainFocus==="combat" ? 90 : ""),1,300)}
+      ${field("min","Dauer in Minuten",options.min || planned?.min || (defaultType==="mma" && P().trainFocus==="combat" ? 90 : ""),1,300)}
       ${field("rpe","Belastung 1–10","",1,10)}
     </div>
     <details class="section"><summary>${combat?"Aufwärmen, Technik & Sparring":"Gerätedaten"}</summary><div class="group">
@@ -4959,15 +4955,17 @@ function openActivityLog(category, selected, atDate = S.date){
           min.value = {mma:90,kick:60}[$("#act-type",sh).value] || "";
         }
       };
-      $$("[data-act-edit]",sh).forEach(button => button.onclick = () => {
-        editing = Number(button.dataset.actEdit);
-        const row = past[editing];
+      const edit = index => {
+        editing = index;
+        const row = past[index];
         for (const f of ["type","min","rpe","warm","tech","spar","rounds","grade","speed","note"]){
-          const el = $("#act-"+f,sh); if(el) el.value = row[f] ?? "";
+          const el = $("#act-"+f,sh); if (el) el.value = row[f] ?? "";
         }
         $("details",sh).open = true;
         $("#act-delete",sh).hidden = false;
-      });
+      };
+      $$("[data-act-edit]",sh).forEach(button => button.onclick = () => edit(Number(button.dataset.actEdit)));
+      if (options.index>=0 && past[options.index]) edit(options.index);
       $("#act-delete",sh).onclick = () => {
         saveRows(values().filter((_,i)=>i!==editing));
         closeSheet(); toast("Eintrag gelöscht");
@@ -4984,91 +4982,212 @@ function openActivityLog(category, selected, atDate = S.date){
       }
       if ((row.warm||0)+(row.tech||0)+(row.spar||0)>min){ toast("Die Teilzeiten überschreiten die Gesamtdauer"); return false; }
       const rows = values().slice();
+      const planKey = editing<0 ? options.planKey : rows[editing]?.planKey;
+      if (planKey) row.planKey = planKey;
       if(editing<0) rows.push(row); else rows[editing]=row;
       saveRows(rows); toast("Einheit gespeichert");
     }});
 }
-function openFamilyTrainingPlan(){
-  const p = P(), family = FAMILY_TRAINING[p.trainFocus];
-  openSheet({title:"Wochenplan & Wartezeiten",left:"Schließen",right:"",body:`
-    <p class="note">${esc(family?.label||"Training nach Wochenplan")}</p>
-    ${family ? `<div class="card"><b>Cardio · ${family.cardio} Min. als Einstieg</b><p class="note">${esc(family.cardioPlan)}</p>
-    <p class="note">Moderates Tempo: Sprechen ist möglich. Laufband bei Bedarf mit etwa 3–6 % starten und Steigung oder Dauer schrittweise erhöhen. 15 % sind rund 8,5°.</p></div>`:""}
-    ${p.trainFocus === "combat" ? `<div class="section"><div class="section-h">Eigener Kampfsport</div><div class="group">
-    ${p.schedule.filter(x=>x.u==="S").map(x=>`<div class="row"><span class="lbl">${esc(WD[x.wd])} · ${esc(activityName(x))}${x.optional?" (optional)":""}<small>${esc(activityTime(x))}</small></span></div>`).join("")}</div></div>
-    <div class="section"><div class="section-h">${inTrip(S.date)?"Dienstreise · Studiofenster vor Ort":"Studiofenster während des Kindertrainings"}</div><div class="group">
-    ${KIDS_STUDIO.map(([wd,time,name,plan])=>`<div class="row"><span class="lbl">${esc(WD[wd])} · ${esc(time)} · ${esc(name)}<small>${esc(plan)}</small></span></div>`).join("")}</div>
-    <p class="note">Auf Dienstreise: kurze Reise-Einheit und zügiges Gehen als Ersatz.</p></div>`:""}
-    <div class="section"><div class="section-h">Studien & Richtlinien</div><div class="group">
-      <a class="row" href="https://doi.org/10.1001/jamanetworkopen.2024.52185" target="_blank" rel="noopener">Ausdauertraining und Körperfett · JAMA (2024)</a>
-      <a class="row" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/" target="_blank" rel="noopener">Krafttraining · ACSM (2026)</a>
-      <a class="row" href="https://doi.org/10.1136/bmjsem-2024-002363" target="_blank" rel="noopener">Krafttraining beim Abnehmen · BMJ (2025)</a>
-      <a class="row" href="https://pubmed.ncbi.nlm.nih.gov/12183501/" target="_blank" rel="noopener">Energieaufwand beim Bergaufgehen · Minetti et al.</a>
-      <a class="row" href="https://doi.org/10.3389/fphys.2025.1542334" target="_blank" rel="noopener">Gesäßmuskelaufbau · Systematische Übersicht (2025)</a>
-    </div></div>`,onOpen:sh=>{$(".r",sh).style.visibility="hidden";}});
+const studioWindows = {
+  tueCardio:{wd:2,t:"17:10",end:"17:30",u:"C+",kind:"bike",min:20,key:"tue-cardio",context:"Tochter: Kickboxen 17:00–18:00",note:"Moderates Airbike oder zügig gehen. Danach Pause bis MMA."},
+  friPrimary:{context:"Sohn: Kickboxen 15:30–16:15",note:"Bei schweren Beinen nach Donnerstagssparring: Kurzversion wählen."},
+  friLate:{wd:5,t:"17:20",end:"17:55",u:"A",min:35,optional:true,context:"Tochter: Kickboxen 17:15–18:15",note:"Ersatz für Ganzkörper A am Nachmittag."},
+  friCardio:{wd:5,t:"17:20",end:"17:40",u:"C+",kind:"bike",min:20,key:"fri-cardio",context:"Tochter: Kickboxen 17:15–18:15",note:"Zweiter Cardio-Block. Dieses Fenster für Cardio nutzen, wenn Kraft A schon erledigt ist."},
+  sunEarly:{wd:0,t:"10:05",end:"10:40",u:"B",min:35,optional:true,context:"Sohn: Kickboxen 10:00–10:45",note:"Ersatz für Ganzkörper B mittags."},
+  sunPrimary:{context:"Tochter: MMA 12:00–13:00",note:"Wenn du danach hart kickboxen willst: B verkürzen oder verschieben."}
+};
+function trainingDay(date,p){
+  const day = S.days[date], away = inTrip(date), localStudio = p.trainFocus === "combat" && !away;
+  const holiday = date >= p.vacFrom && date <= p.vacTo;
+  const fixed = holiday ? [] : plannedOn(date).filter(x => x.u === "S" || UNIT_KEYS.includes(x.u));
+  const planned = fixed.map(x => ({...x}));
+  if (localStudio && !holiday){
+    const wd = dow(date);
+    const a = planned.find(x=>x.u==="A" && x.t==="15:35");
+    const b = planned.find(x=>x.u==="B" && x.t==="12:05");
+    if (wd===2) planned.push(studioWindows.tueCardio);
+    if (wd===5){
+      if (a) Object.assign(a,studioWindows.friPrimary);
+      if (a && !strengthUnitFinished(date,"A") && !activityEntries(day,"cardioLog").some(x=>x.planKey===studioWindows.friCardio.key)) planned.push(studioWindows.friLate);
+      planned.push(studioWindows.friCardio);
+    }
+    if (wd===0){
+      if (b) Object.assign(b,studioWindows.sunPrimary);
+      if (b && !strengthUnitFinished(date,"B")) planned.push(studioWindows.sunEarly);
+    }
+  }
+  if (!holiday && (p.trainFocus==="glutes" || p.trainFocus==="maintain")){
+    const cardioDays = ["A","B"].map(u=>p.schedule.find(x=>x.u===u)?.wd).filter(Number.isInteger);
+    const extra = p.trainFocus==="glutes" ? [1,2,4,5,0,3,6].find(wd=>!cardioDays.includes(wd)) : null;
+    const wd = dow(date);
+    if (cardioDays.includes(wd) || wd===extra){
+      planned.push({u:"C+",t:"",kind:"walk",min:p.trainFocus==="glutes"?20:30,key:"flex-cardio-"+wd,
+        note:cardioDays.includes(wd)?"Flexibel nach Kraft oder später am Tag.":"Flexibler Wochenblock für Gehen, Rad oder Laufband."});
+    }
+  }
+  const logs = {sport:activityEntries(day,"sportLog"),cardio:activityEntries(day,"cardioLog")};
+  const used = {sport:new Set(),cardio:new Set(),strength:new Set()};
+  const rows = planned.sort((a,b)=>(a.t||"99:99").localeCompare(b.t||"99:99")).map(x => {
+    const type = x.u === "S" ? "sport" : x.u === "C+" ? "cardio" : "strength";
+    let index = -1, status = x.optional ? "Alternative" : "Geplant";
+    let session = null;
+    if (type === "strength"){
+      session = sessionOf(date,x.u);
+      if (strengthUnitFinished(date,x.u)) status = "Erfasst";
+      else if (hasSessionWork(session)) status = "Begonnen";
+      used.strength.add(x.u);
+    } else {
+      index = logs[type].findIndex((log,i)=>!used[type].has(i) && (type==="cardio" ? log.planKey===x.key : !x.kind || x.kind===log.type));
+      if (index>=0){ used[type].add(index); status="Erfasst"; }
+      else if (type==="sport" && day?.sport && (!x.kind || x.kind==="mma")) status="Erfasst";
+    }
+    const matched = logs[type]?.[index];
+    const label = type==="cardio" ? "Moderates Cardio" : type==="strength" ? strengthName(p,x.u,session) : activityName(x);
+    return {...x,type,label,index,status,actualMin:matched?.min,plannedDuration:type==="strength"?strengthPlan(p,x.u,session)?.min:null,
+      location:localStudio ? "Boxstudio" : away ? "Unterwegs" : x.u==="D" ? "Zuhause" : type==="strength" ? "Fitnessstudio" : "Nach Wahl"};
+  });
+  UNIT_KEYS.forEach(u => {
+    const session = sessionOf(date,u);
+    if (used.strength.has(u) || !hasSessionWork(session)) return;
+    rows.push({type:"strength",u,label:strengthName(p,u,session),status:strengthUnitFinished(date,u)?"Erfasst":"Begonnen",location:"Zusätzlich"});
+  });
+  for (const type of ["sport","cardio"]){
+    logs[type].forEach((log,index)=>{
+      if (!used[type].has(index)) rows.push({type,index,kind:log.type,min:log.min,label:ACTIVITY_TYPES[log.type]||"Aktivität",status:"Erfasst",location:"Zusätzlich"});
+    });
+  }
+  const legacyCardio = (Number(day?.wp)||0)+(Number(day?.cardio)||0);
+  if (legacyCardio) rows.push({type:"cardio",label:"Walking Pad / Cardio",min:legacyCardio,status:"Erfasst",location:"Tagesprotokoll",legacy:true});
+  if (day?.sport && !logs.sport.length && !rows.some(x=>x.type==="sport" && x.status==="Erfasst")){
+    rows.push({type:"sport",label:p.sportLabel,min:day.sportMin,status:"Erfasst",location:"Tagesprotokoll",legacy:true});
+  }
+  return {date, rows, away, holiday};
+}
+function trainingWeekRow(day,row,index,today){
+  const future = day.date>today, alt = !!row.optional;
+  const kind = row.type==="sport" ? "Kampfsport" : row.type==="cardio" ? "Cardio" : "Kraft";
+  const status = row.kind==="kick" && alt && row.status==="Alternative" ? "Optional" : row.status==="Geplant" && day.date<today ? "Offen" : row.status;
+  const action = row.status==="Begonnen" ? "Fortsetzen" : row.status==="Erfasst" ? "Ansehen" : future ? "Ansehen" : "Öffnen";
+  return `<div class="week-slot ${row.type} ${alt?"is-option":""}">
+    <div class="week-slot-time"><b>${esc(row.t ? activityTime(row) : "Flexibel")}</b>${(row.actualMin||row.min||row.plannedDuration)?`<small>${esc(row.actualMin||row.min||row.plannedDuration)} Min.</small>`:""}</div>
+    <div class="week-slot-info"><div class="week-slot-meta">${kind} · ${esc(row.location)}</div>
+      <strong>${esc(row.label)}</strong>${row.context?`<small>${esc(row.context)}</small>`:""}
+      ${row.note?`<small>${esc(row.note)}</small>`:""}
+    </div>
+    <div class="week-slot-action"><span class="${status==="Erfasst"?"logged":""}">${status}</span>
+      <button type="button" class="week-open" data-week-entry="${index}" data-week-day="${day.date}" aria-label="${esc(row.label+" "+action)}">${action} ${ICON.chev}</button>
+    </div>
+  </div>`;
 }
 function trainingDashboard(){
-  const p = P(), today = todayISO();
+  const p = P(), today = todayISO(), family = FAMILY_TRAINING[p.trainFocus];
   const monday = addDays(S.date, -((dow(S.date)+6)%7));
-  const dates = Array.from({length:7}, (_,i) => addDays(monday,i));
-  const days = dates.map(date => {
-    const exercises = UNIT_KEYS.map(u => Object.values(sessionOf(date,u)?.ex || {}));
-    const strength = exercises.filter(list => list.some(e => e.done || recordedSets(e))).length;
-    const sets = exercises.flat().reduce((n,e) => n + recordedSets(e), 0);
-    const manual = !exercises.some(list => list.length) && S.days[date]?.kraft;
-    const plan = date >= p.vacFrom && date <= p.vacTo ? [] : plannedOn(date).filter(item => item.u === "S" || UNIT_KEYS.includes(item.u));
-    return {date, strength:strength || (manual ? 1 : 0), sets, sport:sportCount(S.days[date]), mma:sportCount(S.days[date],"mma"), cardio:cardioMinutes(S.days[date]), plan};
-  });
-  const strength = days.reduce((n,d) => n+d.strength, 0), sets = days.reduce((n,d) => n+d.sets, 0);
-  const sport = days.reduce((n,d)=>n+(p.trainFocus==="combat"?d.mma:d.sport),0);
-  const cardio = days.reduce((n,d)=>n+d.cardio,0), family = FAMILY_TRAINING[p.trainFocus];
-  const selected = days.find(d => d.date === S.date);
-  const resumed = UNIT_KEYS.find(u => {
-    const session = sessionOf(S.date,u);
-    return session?.plan === COMPACT_VERSION && Object.values(session.ex).some(hasExerciseWork) && !strengthUnitFinished(S.date,u);
-  });
-  const due = resumed ? selected.plan.find(x => x.u === resumed) || {u:resumed} :
-    selected.plan.find(x => !x.optional && (x.u === "S" ? !sportCount(S.days[S.date],x.kind) : !strengthUnitFinished(S.date,x.u) && !strengthUnitFinished(S.date,"D")));
-  const inProgress = !!resumed;
-  const next = S.date === today && !due ? nextTraining() : null;
-  const planned = due || next;
-  const headline = planned ? activityName(planned) : selected.strength || selected.sport ? "Aktivität erfasst" : "Freier Trainingstag";
-  const when = planned ? [next ? dateLong(next.d) : S.date === today ? "Heute" : dateLong(S.date), activityTime(planned) ? activityTime(planned) + " Uhr" : ""].filter(Boolean).join(" · ") :
-    S.date === today ? "Heute" : dateLong(S.date);
-  const action = inProgress ? "Einheit fortsetzen" : due ? (due.u === "S" ? "Sport erfassen" : "Einheit öffnen") : "Einheiten ansehen";
-  return `<div class="train-dash-head"><div><div class="train-eyebrow">WOCHENÜBERSICHT</div><h1 class="large-title">Training</h1></div>
-    <button type="button" class="pill train-today" data-dash-date="${today}" aria-label="Zum heutigen Tag">${S.date === today ? "Heute" : "Heute anzeigen"}</button></div>
-    <div class="train-overview">
-      <div class="train-week-kpis">
-        <div class="train-kpi"><span>Kraft</span><b>${strength}<small> / ${p.kraft}</small></b><small>Einheiten</small>
-          <div class="train-kpi-bar" aria-hidden="true"><i style="width:${Math.min(100,Math.round(100*strength/Math.max(1,p.kraft)))}%"></i></div></div>
-        <div class="train-kpi"><span>Sätze</span><b>${sets}</b><small>protokolliert</small></div>
-        <div class="train-kpi"><span>${esc(p.sport ? p.sportLabel : "Sport")}</span><b>${sport}${p.sport ? `<small> / ${p.sport}</small>` : ""}</b><small>Einheiten</small></div>
-      </div>
-      <div class="train-calendar">
-        <div class="train-calendar-head"><span>${esc(dateShort(dates[0]))} – ${esc(dateShort(dates[6]))}</span><small>Wochenverlauf</small></div>
-        <div class="train-days" aria-label="Trainingstage dieser Woche">${days.map(d => {
-          const status = d.strength || d.sport || d.cardio ? "logged" : d.plan.length ? "planned" : "free";
-          const statusText = status === "logged" ? "Erfasst" : status === "planned" ? d.plan.map(activityName).join(", ") : "Frei";
-          return `<button type="button" data-dash-date="${d.date}" class="train-day ${status}" aria-label="${esc(dateLong(d.date) + " · " + statusText)}" aria-pressed="${S.date === d.date}" ${d.date > today ? "disabled" : ""}><span>${esc(WDs[dow(d.date)])}</span><b>${Number(d.date.slice(-2))}</b><i aria-hidden="true"></i></button>`;
-        }).join("")}</div>
-        <div class="train-calendar-key"><span><i></i>Geplant</span><span><i></i>Erfasst</span></div>
-      </div>
+  const currentMonday = addDays(today,-((dow(today)+6)%7));
+  const days = Array.from({length:7}, (_,i)=>trainingDay(addDays(monday,i),p));
+  const strength = days.reduce((n,{date})=>n+UNIT_KEYS.filter(u=>strengthUnitFinished(date,u)).length,0);
+  const sport = days.reduce((n,{date})=>n+sportCount(S.days[date],p.trainFocus==="combat"?"mma":undefined),0);
+  const cardio = days.reduce((n,{date})=>n+cardioMinutes(S.days[date]),0);
+  return `<div class="train-dash-head"><div><div class="train-eyebrow">WOCHENPLAN</div><h1 class="large-title">Training</h1></div>
+    <button type="button" class="pill train-today" data-week-nav="today">Heute</button></div>
+    <div class="week-controls"><button class="icon-btn" type="button" data-week-nav="-7" aria-label="Vorige Woche">${ICON.left}</button>
+      <b>${esc(dateShort(monday))} – ${esc(dateShort(days[6].date))}</b><button class="icon-btn" type="button" data-week-nav="7" aria-label="Nächste Woche" ${monday>=currentMonday?"disabled":""}>${ICON.right}</button></div>
+    <div class="train-week-kpis">
+      <div class="train-kpi"><span>Kraft</span><b>${strength}<small> / ${p.kraft}</small></b><small>Einheiten</small></div>
+      <div class="train-kpi"><span>${p.trainFocus==="combat"?"MMA":"Sport"}</span><b>${sport}${p.sport?`<small> / ${p.sport}</small>`:""}</b><small>Einheiten</small></div>
+      <div class="train-kpi"><span>Cardio</span><b>${cardio}${family?`<small> / ${family.cardio}</small>`:""}</b><small>Minuten</small></div>
     </div>
-    <div class="train-next-card"><div><div class="train-eyebrow">${inProgress ? "EINHEIT BEGONNEN" : due ? "GEPLANTE EINHEIT" : next ? "ALS NÄCHSTES" : "TAGESSTATUS"}</div><strong>${esc(headline)}</strong><small>${esc(when)}</small></div>
-      <button type="button" class="btn train-dash-action" data-dash-unit="${due?.u || ""}" data-dash-kind="${esc(due?.kind || "")}">${action} ${ICON.chev}</button>
-    </div>
-    <div class="train-next-card train-activity"><div><div class="train-eyebrow">CARDIO DIESE WOCHE</div><strong>${cardio}${family ? " / " + family.cardio : ""} Min.</strong><small>${family ? esc(family.cardioPlan) : "Gehen, Rad oder Laufband"}</small></div>
-      <button type="button" class="btn train-dash-action" data-activity="cardio">Cardio erfassen</button></div>
-    <div class="train-action-row"><button type="button" class="btn secondary" data-activity="sport">${p.trainFocus==="combat"?"MMA / Kickboxen erfassen":"Sport erfassen"}</button>
-      <button type="button" class="btn secondary" data-activity="plan">${p.trainFocus==="combat"?"Wartezeiten & Wochenplan":"Wochenplan & Quellen"}</button></div>`;
+    <div class="week-toolbar"><b>Diese Woche im Überblick</b><button type="button" class="train-swap" data-week-nav="add">+ Eintrag</button></div>
+    <p class="note week-hint">${p.trainFocus==="combat"?"Deine Einheiten und die Studiofenster während des Kindertrainings.":"Kraft, Sport und Cardio in einer Liste. "+(family?.cardioPlan||"")}</p>
+    <div class="week-timeline">${days.filter(day=>day.rows.length||day.date===today||day.away||day.holiday).map(day=>`<section class="week-day ${day.date===today?"is-today":""}" data-week-group="${day.date}">
+      <h2>${esc(WD[dow(day.date)])} <span>${esc(dateShort(day.date))}</span>${day.date===today?` <span class="week-today">Heute</span>`:""}</h2>
+      ${day.rows.length?day.rows.map((row,i)=>trainingWeekRow(day,row,i,today)).join(""):
+        `<p class="week-empty">${day.holiday?"Urlaub":day.away?"Dienstreise · Zeit für zügiges Gehen oder eine kurze Reise-Einheit":"Freier Tag"}</p>`}
+    </section>`).join("")}</div>
+    <button type="button" class="pause week-sources" data-week-nav="sources">Plan & Quellen</button>`;
+}
+let strengthOpen = false;
+function openStrengthEntry(date,unit){
+  if (date > todayISO() || !UNIT_KEYS.includes(unit)) return;
+  S.date = date;
+  S.unit = unit;
+  strengthOpen = true;
+  if (S.tab !== "training") setTab("training");
+  else renderTraining(true);
+  window.scrollTo(0,0);
+  $("#train-session")?.focus({preventScroll:true});
+}
+function openWeekPreview(day,row){
+  const p = P();
+  const plan = row.type==="strength" ? strengthPlan(p,row.u,sessionOf(day.date,row.u)) : null;
+  const legacy = S.days[day.date] || {};
+  openSheet({title:row.label,left:"Schließen",right:"",body:`
+    <p class="note">${esc([dateLong(day.date),row.t?activityTime(row):"",row.location].filter(Boolean).join(" · "))}</p>
+    ${row.context?`<p>${esc(row.context)}</p>`:""}${row.note?`<p class="note">${esc(row.note)}</p>`:""}
+    ${plan?`<div class="section"><div class="section-h">Übungen</div><div class="group">${plan.main.map(([name,sets])=>`<div class="row"><span class="lbl">${esc(name)}</span><span>${sets} Sätze</span></div>`).join("")}</div></div>`:""}
+    ${row.status==="Erfasst" && row.index<0 && row.type==="sport" && legacy.sportMin?`<p>${legacy.sportMin} Min. protokolliert</p>`:""}
+    ${day.date>todayISO()?`<p class="note">An diesem Tag kannst du die Einheit hier öffnen und erfassen.</p>`:""}`,
+    onOpen: sh => { $(".r",sh).style.visibility="hidden"; }});
+}
+function openWeekAdd(){
+  const p = P();
+  const choices = [
+    ...UNIT_KEYS.map(u=>[u,strengthName(p,u),"Kraft"]),
+    ["mma","MMA","Kampfsport"],["kick","Kickboxen","Kampfsport"],
+    ["other","Zusatzsport","Sport"],["cardio","Cardio","Laufband, Airbike oder Gehen"]
+  ];
+  openSheet({title:"Eintrag hinzufügen",right:"",body:`<label class="row" for="week-add-date"><span class="lbl">Datum</span><input type="date" class="field" id="week-add-date" value="${esc(S.date)}" max="${todayISO()}"></label>
+    <div class="group">${choices.map(([id,label,kind])=>`<button type="button" class="row act-edit" data-add-training="${id}"><span class="lbl">${esc(label)}<small>${kind}</small></span>${ICON.chev}</button>`).join("")}</div>`,
+    onOpen:sh=>{
+      $(".r",sh).style.visibility="hidden";
+      $$("[data-add-training]",sh).forEach(button=>button.onclick=()=>{
+        const input = $("#week-add-date",sh), date = input.value;
+        if (!date || !input.checkValidity()){ toast("Bitte ein gültiges Datum wählen"); return; }
+        const type = button.dataset.addTraining;
+        closeSheet();
+        if (UNIT_KEYS.includes(type)) openStrengthEntry(date,type);
+        else openActivityLog(type==="cardio"?"cardio":"sport",type==="cardio"?undefined:type,date);
+      });
+    }});
+}
+function bindTrainingWeek(dash){
+  dash.onclick = event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    const nav = button.dataset.weekNav;
+    if (nav==="add"){ openWeekAdd(); return; }
+    if (nav==="sources"){ openTrainingBasis(); return; }
+    if (nav){
+      const today = todayISO();
+      const date = nav==="today" ? today : addDays(S.date,Number(nav));
+      S.date = date>today ? today : date;
+      S.unit = null;
+      renderTraining(true);
+      if (nav==="today") $("[data-week-group='"+today+"']")?.scrollIntoView({block:"start"});
+      else $("[data-week-nav='"+nav+"']")?.focus({preventScroll:true});
+      return;
+    }
+    if (button.dataset.weekEntry==null) return;
+    const day = trainingDay(button.dataset.weekDay,P());
+    const row = day.rows[Number(button.dataset.weekEntry)];
+    if (!row) return;
+    if (day.date>todayISO() || row.legacy || (row.type==="sport" && row.status==="Erfasst" && row.index<0)){
+      openWeekPreview(day,row);
+    } else if (row.type==="strength") openStrengthEntry(day.date,row.u);
+    else openActivityLog(row.type,row.kind,day.date,{index:row.index,min:row.min,planKey:row.key,title:row.label,location:row.location});
+  };
 }
 function updateTrainingDashboard(){
   const dash = $("#train-dashboard");
   if (dash && S.tab === "training") dash.innerHTML = trainingDashboard();
 }
 function renderTraining(force){
-  const el = $("#s-training"), p = P(), w = weekOf(S.date), tp = tphase(w);
+  const el = $("#s-training");
+  if (!strengthOpen){
+    el.innerHTML = `${banner()}<section id="train-dashboard" aria-label="Trainingswoche">${trainingDashboard()}</section>`;
+    bindTrainingWeek($("#train-dashboard",el));
+    return;
+  }
+  const p = P(), w = weekOf(S.date), tp = tphase(w);
   if (!S.unit) S.unit = defaultUnit();
   const key = S.date + "|" + S.unit + "|" + p.tmpl;
   if (!force && builtTrain === key && el.firstChild && el.contains(document.activeElement)) return;
@@ -5077,7 +5196,7 @@ function renderTraining(force){
   const openArt = new Set(sameSession ? $$("details.train-illustration[open]", el).map(d => d.closest("article")?.dataset.name) : []);
   const cardioOpen = sameSession && $("#train-cardio-details", el)?.open;
   builtTrain = key;
-  const U = UNITS[p.tmpl], unit = U[S.unit];
+  const unit = UNITS[p.tmpl][S.unit];
   const cardio = FAMILY_TRAINING[p.trainFocus] ? {min:20,t:"Moderates Gehen oder Airbike",d:"Als geplanter Wochenblock oder nach Kraft. Sprechen ist möglich. Minuten einmal hier oder unter „Cardio erfassen“ eintragen."} : CARDIO[p.tmpl][S.unit];
   const saved = sessionOf(S.date, S.unit);
   const compact = !saved || saved.plan === COMPACT_VERSION;
@@ -5085,14 +5204,11 @@ function renderTraining(force){
   const ses = saved || {ex:{}}, cd = ses.cardio || {};
   const list = compact ? compactExercises(plan) : EX[p.tmpl][S.unit];
   const slots = trainingSlots(list, ses, compact, tp, w);
-  const today = todayISO();
   let html = `${banner()}
-    <section id="train-dashboard" aria-label="Wochenübersicht Training">${trainingDashboard()}</section>
+    <button type="button" class="train-swap week-back" id="train-week-back">‹ Wochenplan</button>
     <div class="train-section-heading" id="train-session" tabindex="-1">
-      <h2>Einheit · ${esc(strengthName(p,S.unit,saved))}</h2>
-      <div class="nav-btns"><button class="icon-btn" id="t-prev" aria-label="Vorheriger Tag">${ICON.left}</button><span class="pill">${esc(dateShort(S.date))}</span><button class="icon-btn" id="t-next" aria-label="Nächster Tag" ${S.date>=today?"disabled":""}>${ICON.right}</button></div>
+      <h2>${esc(strengthName(p,S.unit,saved))}</h2><span class="pill">${esc(dateShort(S.date))}</span>
     </div>
-    <div class="seg" role="group" aria-label="Einheit wählen">${UNIT_KEYS.map(u => `<button type="button" data-u="${u}" aria-pressed="${S.unit===u}">${esc(strengthName(p,u))}${U[u].opt && !U[u].bw ? " ⁺" : ""}</button>`).join("")}</div>
     ${compact ? `<div class="train-mode"><div class="seg" role="group" aria-label="Trainingsdauer wählen">
       <button type="button" data-short="0" aria-pressed="${!ses.short}">Standard · ${plan.min} Min.</button>
       <button type="button" data-short="1" aria-pressed="${!!ses.short}">Kurz · ${plan.short} Min.</button></div></div>` : ""}
@@ -5124,7 +5240,7 @@ function renderTraining(force){
         <span class="mini"><label for="p-${i}">Schmerz</label><input id="p-${i}" data-f="pain" inputmode="numeric" placeholder="0" value="${e.pain!=null?esc(e.pain):""}"></span></div>
     </article>`;
   });
-  html += `<details class="train-cardio" id="train-cardio-details" ${cardioOpen || cd.done || cd.min!=null ? "open" : ""}>
+  if (cd.done || cd.min!=null) html += `<details class="train-cardio" id="train-cardio-details" ${cardioOpen || cd.done || cd.min!=null ? "open" : ""}>
     <summary>Cardio zu dieser Einheit · ${cardio.min} Min.</summary><article class="ex cardio" id="cardio">
       <div class="ex-h"><span class="ex-n">♥</span><div class="ex-t"><b>Cardio</b><span>${esc(cardio.t)}</span></div>
         <button type="button" class="check" id="cd-done" aria-pressed="${!!cd.done}" aria-label="Cardio erledigt">${ICON.check}</button></div>
@@ -5133,31 +5249,11 @@ function renderTraining(force){
         <button type="button" class="pause" data-sec="${cardio.min*60}">Timer ${cardio.min} min</button></div>
     </article></details>`;
   el.innerHTML = html;
-  $("#train-dashboard", el).onclick = event => {
-    const button = event.target.closest("button");
-    if (!button) return;
-    if (button.dataset.dashDate){
-      S.date = button.dataset.dashDate;
-      S.unit = null;
-      renderTraining(true);
-      const current = $$(`[data-dash-date="${S.date}"]`, el).at(-1);
-      current?.focus({preventScroll:true});
-      return;
-    }
-    if (button.dataset.activity === "plan"){ openFamilyTrainingPlan(); return; }
-    if (button.dataset.activity){ openActivityLog(button.dataset.activity); return; }
-    if (button.dataset.dashUnit === "S"){ openActivityLog("sport",button.dataset.dashKind); return; }
-    if (button.dataset.dashUnit && button.dataset.dashUnit !== S.unit){
-      S.unit = button.dataset.dashUnit;
-      renderTraining(true);
-    }
-    const section = $("#train-session", el);
-    section.focus({preventScroll:true});
-    section.scrollIntoView({block:"start", behavior:matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  $("#train-week-back",el).onclick = () => {
+    strengthOpen = false;
+    renderTraining(true);
+    $("[data-week-group='"+S.date+"']",el)?.scrollIntoView({block:"start"});
   };
-  $("#t-prev", el).onclick = () => { S.date = addDays(S.date,-1); S.unit = null; renderAll(); };
-  $("#t-next", el).onclick = () => { if (S.date < today){ S.date = addDays(S.date,1); S.unit = null; renderAll(); } };
-  $$("button[data-u]", el).forEach(b => b.onclick = () => { S.unit = b.dataset.u; renderTraining(true); });
   $$("button[data-short]", el).forEach(b => b.onclick = () => {
     const short = b.dataset.short === "1";
     if (short === !!ses.short) return;
@@ -5205,10 +5301,10 @@ function renderTraining(force){
     };
   });
   const cdMin = $("#cd-min", el), cdDone = $("#cd-done", el);
-  cdMin.addEventListener("input", () => {
+  cdMin?.addEventListener("input", () => {
     const s = ensureSession(); s.cardio = Object.assign({}, s.cardio, {min:parseNum(cdMin.value)}); saveSession();
   });
-  cdDone.onclick = () => {
+  if (cdDone) cdDone.onclick = () => {
     const s = ensureSession(), c = Object.assign({}, s.cardio);
     c.done = !c.done;
     if (c.done && c.min == null){ c.min = cardio.min; cdMin.value = cardio.min; }
@@ -5732,7 +5828,7 @@ function renderUebersicht(){
     <div class="section"><div class="section-h"><span>Wenn-Dann-Pläne</span><button type="button" class="link" id="d-it" style="font-size:13px;text-transform:none">Bearbeiten</button></div>
       <div class="group">${p.ifthen.map(x => `<div class="row it"><span class="lbl"><b>Wenn</b> ${esc(x[0])},<br><b>dann</b> ${esc(x[1])}.</span></div>`).join("")}</div></div>`;
   const go = $("#d-go", el); if (go) go.onclick = () => { S.date = today; setTab("heute"); };
-  $("#d-next", el).onclick = () => { if (nt?.u === "S" && nt.i === 0){ openActivityLog("sport",nt.kind,today); } else if (nt && nt.u !== "S"){ S.date = nt.i === 0 ? today : S.date; S.unit = nt.u; setTab("training"); } else openSchedule(); };
+  $("#d-next", el).onclick = () => { if (nt?.u === "S" && nt.i === 0){ openActivityLog("sport",nt.kind,today); } else if (nt?.i === 0) openStrengthEntry(today,nt.u); else if (nt){ strengthOpen=false; S.date=today; setTab("training"); } else openSchedule(); };
   $("#d-sos", el).onclick = openSOS;
   $("#d-mehr", el).onclick = () => setTab("mehr");
   $("#d-lv", el).onclick = openAchievements;
@@ -9025,7 +9121,10 @@ function renderAll(){
   if (t === "fortschritt" && !document.querySelector("#s-fortschritt :focus")) renderFortschritt();
   if (t === "mehr") renderMehr();
 }
-$$(".tab").forEach(b => b.onclick = () => setTab(b.dataset.tab));
+$$(".tab").forEach(b => b.onclick = () => {
+  if (b.dataset.tab==="training"){ strengthOpen=false; S.date=todayISO(); S.unit=null; }
+  setTab(b.dataset.tab);
+});
 const savedTab = lsGet("trafo.tab"); if (["uebersicht","ausblick","heute","essen","kueche","training","leben","fortschritt","mehr"].includes(savedTab)) S.tab = savedTab;
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S.date > todayISO()) S.date = todayISO(); });
 
