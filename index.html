@@ -1498,6 +1498,27 @@ body:has(.sheet.on) .ks-fab{display:none} .km-q{display:flex;gap:10px;align-item
 .bud-serving{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px}
 .bud-serving>div{display:grid;gap:4px;padding:8px;border:1px solid var(--sep);border-radius:10px}
 .bud-serving small{overflow-wrap:anywhere}.bud-r>b{white-space:nowrap}
+.kb-rail-toggle{flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border:1px solid var(--sep);border-radius:12px;background:var(--fill);color:var(--label);cursor:pointer}
+.kb-rail-toggle svg{width:21px;height:21px}
+.kb-rail-toggle:focus-visible,.kb-shortcuts button:focus-visible{outline:2px solid var(--tint);outline-offset:2px}
+#koch.kb-rail-closed .kb-rail,#koch.kb-rail-closed .cb-tabs{display:none!important}
+#koch.classic .kb-rail-toggle{background:var(--btn);color:var(--ink);border-color:var(--line)}
+#koch.classic.kb-rail-closed .cb-page{border-radius:14px}
+.kb-shortcuts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+#koch .kb-shortcuts .kb-quick{width:auto;min-height:44px;gap:7px;margin:0;padding:5px 11px;border:1px solid var(--sep);border-radius:11px;background:var(--fill);box-shadow:none}
+#koch.classic .kb-shortcuts .kb-quick{background:var(--btn);border-color:var(--line)}
+#koch .kb-shortcuts .kbq-i{width:auto;height:auto;font-size:15px;background:none}
+#koch .kb-shortcuts b{font-size:14px}
+#koch .kb-shortcuts small{font-size:12px}
+@media(max-width:700px){.cb-bar .kb-rail-toggle{display:none}}
+@media(min-width:701px){
+ #qk-open,#fr-box .fr-det summary{padding:7px 10px;min-height:44px;gap:8px;border-radius:12px;background:var(--card);box-shadow:none}
+ #qk-open{width:auto;max-width:100%}
+ #qk-open small{display:none}
+ #fr-box .fr-det{background:var(--card);border-radius:12px}
+ #qk-open .hb-i,#fr-box .hb-i{width:26px;height:26px;flex-basis:26px;font-size:15px;border-radius:7px;background:var(--fill)!important}
+ #qk-open b,#fr-box summary b{font-size:14px}
+}
 </style>
 
 </head>
@@ -8290,8 +8311,10 @@ function kochConnect(root){
   $("#kb-go", root).onclick = () => { let v = $("#kb-su", root).value; if (!v.trim()){ toast("Bitte zuerst den Link einfügen"); return; } if (/#kb=/.test(v)) v = "ITOGOKB:" + v.match(/#kb=([A-Za-z0-9_-]+)/)[1]; kbApply(kbDecodeSetup(v.replace(/\s+/g, "")), v); };
   $("#kb-clip", root).onclick = async () => { let t = ""; try { t = await navigator.clipboard.readText(); } catch(e){} if (/#kb=/.test(t)) t = "ITOGOKB:" + t.match(/#kb=([A-Za-z0-9_-]+)/)[1]; if (!t){ toast("Zwischenablage ist leer – Link lange antippen → Einfügen"); $("#kb-su", root).focus(); return; } $("#kb-su", root).value = t; kbApply(kbDecodeSetup(t.replace(/\s+/g, "")), t); };
 }
+const kochRailKey = () => kb.view === "rec" ? "formkurve.kbRecipeRailClosed" : "formkurve.kbLibraryRailClosed";
+const kochRailToggle = target => `<button type="button" class="kb-rail-toggle" id="kb-rail-toggle" aria-controls="${target}"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14"/></svg></button>`;
 function kochRail(compact){
-  return `<aside class="kb-rail ${compact ? "c" : ""}"><div class="kb-logo">${LOGO_MARK}<span>Kochbuch</span></div>
+  return `<aside id="kb-navigation" aria-label="Kochbuch-Navigation" class="kb-rail ${compact ? "c" : ""}"><div class="kb-logo">${LOGO_MARK}<span>Kochbuch</span></div>
     ${KB_CATS.map(([k,i,l]) => `<button type="button" class="kb-cat" data-kc="${k}" aria-pressed="${kb.view === "lib" && kb.cat === k}" title="${esc(l)}"><span class="kb-ci">${i}</span><span class="kb-cl">${esc(l)}</span></button>`).join("")}
     <div class="kb-sp"></div>
     <button type="button" class="kb-cat" id="kb-paste" title="Link einfügen"><span class="kb-ci">📋</span><span class="kb-cl">Link einfügen</span></button>
@@ -8300,6 +8323,22 @@ function kochRail(compact){
     <button type="button" class="kb-cat" id="kb-re" title="Mit ITOGO verbinden"><span class="kb-ci">📷</span><span class="kb-cl">Mit ITOGO verbinden</span></button></aside>`;
 }
 function kochRailBind(root){
+  const toggle = $("#kb-rail-toggle",root);
+  const key = kochRailKey();
+  const updateRail = closed => {
+    root.classList.toggle("kb-rail-closed",closed);
+    if (!toggle) return;
+    const label = closed ? "Navigation einblenden" : "Navigation ausblenden";
+    toggle.setAttribute("aria-expanded",String(!closed));
+    toggle.setAttribute("aria-label",label);
+    toggle.title = label;
+  };
+  updateRail(lsGet(key) === true);
+  if (toggle) toggle.onclick = () => {
+    const closed = !root.classList.contains("kb-rail-closed");
+    lsSet(key,closed);
+    updateRail(closed);
+  };
   $$("[data-kc]", root).forEach(b => b.onclick = () => { kochTimersKeep(); kb.view = "lib"; kb.cat = b.dataset.kc; kb.q = ""; lsSet("formkurve.kbcat", kb.cat); kochWake(false); kochRender(); });
   const ps = $("#kb-paste", root); if (ps) ps.onclick = pasteShared;
   const dvb = $("#kb-dev", root); if (dvb) dvb.onclick = () => openDevices(() => kochRender());
@@ -8317,7 +8356,8 @@ function kochList(){
 }
 function kbFridgeHits(){ return kitPantry().length ? allRecipes().map(r => Object.assign({r}, fridgeMatch(r))).filter(x => x.have.length).sort((a,b) => (b.urgent - a.urgent) || (b.cov - a.cov) || (a.miss.length - b.miss.length)).slice(0, 24) : []; }
 function kbFridgeTile(){ const pan = kitPantry(), n = pan.length ? kbFridgeHits().length : 0, soon = pan.filter(x => x.u).length;
-  return `<button type="button" class="kb-quick kb-ice" id="kb-fridge"><span class="kbq-i">🧊</span><span><b>${pan.length ? "Kühlschrank-Rezepte" : "Was ist im Kühlschrank?"}</b><small>${pan.length ? `<span class="num">${n}</span> <span>passende Rezepte</span>${soon ? ` · ⏰ <span class="num">${soon}</span> <span>muss bald weg</span>` : ""}` : "Zutaten eintragen – die App findet passende Rezepte und verbraucht zuerst, was weg muss."}</small></span><span class="kbq-go">›</span></button>`; }
+  return `<button type="button" class="kb-quick kb-ice" id="kb-fridge"><span class="kbq-i" aria-hidden="true">🧊</span><b>Kühlschrank</b>${n ? `<small aria-label="${n} passende Rezepte${soon ? ", " + soon + " Zutaten bald verbrauchen" : ""}" title="${n} passende Rezepte">${n}${soon ? " · ⏰" : ""}</small>` : ""}</button>`;
+}
 function kochCard(r, i, extra){
   const T = recTotals(r), ph = recipeCardPhoto(r);
   return `<button type="button" class="kb-card${ph ? " kb-pc" : ""}" data-kr="${i}">${ph ? `<img class="kb-cimg" src="${esc(ph)}" alt="" loading="lazy" decoding="async">` : `<span class="kb-ce">${recEmoji(r)}</span>`}${extra ? `<span class="kb-cx">${extra}</span>` : ""}<b>${esc(r.n)}</b>
@@ -8336,12 +8376,12 @@ function kochLib(root){
       const tiles = KB_CATS.filter(c => !["start","plan"].includes(c[0])).map(c => [c, c[0] === "alle" ? all.length : all.filter(r => recMatch(r, c[0], ck)).length]).filter(([c, n]) => n > 0);
       const fav = all.filter(r => (avgRating(r)?.a || 0) >= 4 || ck[r.n]).sort((a, b) => (ck[b.n] || 0) - (ck[a.n] || 0)).slice(0, 8);
       L = fav;
-      body = `<button type="button" class="kb-quick" id="kb-quick"><span class="kbq-i">⚡</span><span><b>Schnell-Rezept</b><small>Wer isst mit? Was ist da? – die App rechnet die Mengen für alle und öffnet das Rezept hier im Kochbuch.</small></span><span class="kbq-go">›</span></button>` + kbFridgeTile() + (days.length ? `<h2 class="kb-h2">📅 Geplant</h2>` + body : "") + `<h2 class="kb-h2">Worauf habt ihr Lust?</h2><div class="kb-tiles">${tiles.map(([c, n]) => `<button type="button" class="kb-tile rcat-photo" data-kc2="${c[0]}">${categoryCardPhoto(c[0])}<span class="rcat-e">${c[1]}</span><b>${esc(c[2])}</b><small class="num">${n} Rezepte</small></button>`).join("")}</div>`
+      body = `<div class="kb-shortcuts"><button type="button" class="kb-quick" id="kb-quick"><span class="kbq-i" aria-hidden="true">⚡</span><b>Schnell-Rezept</b></button>${kbFridgeTile()}</div>` + (days.length ? `<h2 class="kb-h2">📅 Geplant</h2>` + body : "") + `<h2 class="kb-h2">Worauf habt ihr Lust?</h2><div class="kb-tiles">${tiles.map(([c, n]) => `<button type="button" class="kb-tile rcat-photo" data-kc2="${c[0]}">${categoryCardPhoto(c[0])}<span class="rcat-e">${c[1]}</span><b>${esc(c[2])}</b><small class="num">${n} Rezepte</small></button>`).join("")}</div>`
         + (fav.length ? `<h2 class="kb-h2">⭐ Eure Favoriten</h2><div class="kb-grid">${fav.map((r, i) => kochCard(r, i)).join("")}</div>` : ""); }
   } else if (kb.cat === "fridge" && !kb.q.trim()){ const H = kbFridgeHits(); L = H.map(h => h.r);
     body = L.length ? `<div class="kb-grid">${H.map((h, i) => kochCard(h.r, i, `🧊 <span class="num">${h.have.length}/${h.have.length + h.miss.length}</span>${h.urgent ? " · ⏰" : ""}`)).join("")}</div>` : `<p class="note">Noch kein passendes Rezept – mehr Zutaten in den Vorrat eintragen.</p>`;
   } else { L = sortRecipes(kochList()); body = L.length ? recipeSortHTML("kb-sort") + `<div class="kb-grid">${L.map((r, i) => kochCard(r, i)).join("")}</div>` : `<p class="note">Nichts gefunden.</p>`; }
-  root.innerHTML = kochRail(false) + `<main class="kb-main"><div class="kb-top"><h1 class="kb-h1">${kb.q.trim() ? "Suche" : kb.cat === "start" ? "Kochbuch" : kb.cat === "fridge" ? "🧊 <span>Kühlschrank-Rezepte</span>" : `${cat[1]} ${esc(cat[2])}`}</h1><div class="fd-search kb-search"><input id="kb-q" type="search" placeholder="Rezept oder Zutat suchen …" value="${esc(kb.q)}" autocomplete="off"></div>${kbStyleToggle()}</div>${kb.cat === "start" && !kb.q.trim() ? alinaFoodInspiration("cook") : ""}${kb.cat==="zuhause-schnell"&&!kb.q.trim()?homeGuideHTML():""}${body}</main>`;
+  root.innerHTML = kochRail(false) + `<main class="kb-main"><div class="kb-top">${kochRailToggle("kb-navigation")}<h1 class="kb-h1">${kb.q.trim() ? "Suche" : kb.cat === "start" ? "Kochbuch" : kb.cat === "fridge" ? "🧊 <span>Kühlschrank-Rezepte</span>" : `${cat[1]} ${esc(cat[2])}`}</h1><div class="fd-search kb-search"><input id="kb-q" type="search" placeholder="Rezept oder Zutat suchen …" value="${esc(kb.q)}" autocomplete="off"></div>${kbStyleToggle()}</div>${kb.cat === "start" && !kb.q.trim() ? alinaFoodInspiration("cook") : ""}${kb.cat==="zuhause-schnell"&&!kb.q.trim()?homeGuideHTML():""}${body}</main>`;
   kochRailBind(root); kochStyleBind(root);
   const sort = $("#kb-sort",root);
   if (sort) sort.onchange = event => { lsSet("formkurve.recipeSort",event.target.value); kochLib(root); $("#kb-sort",root)?.focus(); };
@@ -8456,7 +8496,7 @@ function kochRecipe(root){
     return `<section class="kb-lane l${li}" data-lane="${li}">${two ? `<div class="kb-lh"><button type="button" class="kb-ln" data-kn="${li}">👤 <b>${esc(kochName(li))}</b> ▾</button>${pl.roles[li] ? `<span class="kb-role">${pl.roles[li]}</span>` : ""}<span class="kb-lm"><span class="num kb-cnt"></span>${pl.eta[li] ? ` · <span class="num">≈ ${pl.eta[li]} min</span>` : ""}</span></div>` : ""}<ol class="kb-steps">${h || `<li class="kb-free">Nichts zu tun – hilf beim anderen mit 🙂</li>`}</ol></section>`; };
   const ph = recipeCardPhoto(r);
   root.innerHTML = kochRail(true) + `<main class="kb-rec">
-    <header class="kb-rh"><button type="button" class="kb-back" id="kb-back" aria-label="Zurück">‹</button>
+    <header class="kb-rh">${kochRailToggle("kb-navigation")}<button type="button" class="kb-back" id="kb-back" aria-label="Zurück">‹</button>
       <div class="kb-rt"><small>${esc((CAT[r.cat] || CAT.h)[0])}</small><h1>${esc(r.n)}</h1></div>
       <div class="kb-timers" id="kb-timers"></div>
       <div class="kb-meta"><span><i>⏱</i><b class="num">${min}</b><small>min</small></span><span><i>👥</i><b class="num">${fmt(portions)}</b><small>Portionen</small></span><span><i>🔥</i><b class="num">${fmt(T.k / r.serv)}</b><small>kcal / Port.</small></span></div></header>
@@ -8565,7 +8605,7 @@ function kochClassicRecipe(root){
     return h + `<li class="kb-st cb-st ${kb.done.has(i) ? "done" : ""}" data-ks="${i}" data-ln="${pl ? pl.lane[i] : 0}"><span class="cb-n num">${num}.</span><div class="kb-stt">${who}${x.t ? stepHTML(r, x.t, f) : ""}${x.c ? `<div class="st-c">${devChipHTML(x.d, x.c)}</div>` : ""}${mins ? `<button type="button" class="kb-tm" data-kt="${i}|${mins}">⏱ ${mins} min</button>` : ""}${wt}</div><span class="kb-ck" aria-hidden="true"></span></li>`; }).join("");
   const tabs = KB_CATS.filter(c => !["start","plan","own"].includes(c[0]));
   root.innerHTML = `<main class="cb-wrap"><div class="cb-book"><div class="cb-page">
-    <div class="cb-bar"><button type="button" class="cb-ib" id="kb-back" aria-label="Zurück">‹</button><button type="button" class="cb-ib" id="kb-home" aria-label="Start">⌂</button>
+    <div class="cb-bar">${kochRailToggle("kb-page-tabs")}<button type="button" class="cb-ib" id="kb-back" aria-label="Zurück">‹</button><button type="button" class="cb-ib" id="kb-home" aria-label="Start">⌂</button>
       <button type="button" class="cb-pill" id="kb-who"><span>${esc(eaters.map(x => x.n).join(", ") || "–")}</span> · <span>${esc(MEALS.find(x => x[0] === kb.wst.m)[1])}</span> ▾</button>
       ${kb.opts.length > 1 ? `<span class="cb-devs">${kb.opts.map(([k,i,n]) => `<button type="button" data-kd="${k}" aria-pressed="${k === kb.dv}">${k === "herd" ? "Kochfeld" : esc(n)}</button>`).join("")}</span>` : ""}
       <span class="kb-timers" id="kb-timers"></span>${kbNSeg(n)}${kbStyleToggle()}</div>
@@ -8577,7 +8617,7 @@ function kochClassicRecipe(root){
       <p class="cb-mac num">${macLine({p:T.p/r.serv, c:T.c/r.serv, f:T.f/r.serv}, true)} <span>pro Portion</span></p></div></div>
     <h3 class="cb-h">Zubereitung</h3><section class="kb-lane cb-steps" data-lane="0"><ol class="kb-steps">${steps}</ol></section>
     <p class="cb-foot">— ITOGO Kochbuch —</p></div></div>
-    <nav class="cb-tabs">${tabs.map(([k,i,l], j) => `<button type="button" data-kc="${k}" style="--h:${j * 9}">${esc(l)}</button>`).join("")}</nav></div></main>`;
+    <nav class="cb-tabs" id="kb-page-tabs" aria-label="Rezeptkategorien">${tabs.map(([k,i,l], j) => `<button type="button" data-kc="${k}" style="--h:${j * 9}">${esc(l)}</button>`).join("")}</nav></div></main>`;
   kochBindRec(root, r, st);
   $("#kb-home", root).onclick = () => { kb.view = "lib"; kb.cat = "start"; kochWake(false); kochRender(); };
 }
