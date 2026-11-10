@@ -1590,6 +1590,21 @@ body:has(.sheet.on) .ks-fab{display:none} .km-q{display:flex;gap:10px;align-item
 }
 </style>
 
+<style>
+.house-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.house-actions{margin-block:12px}
+.house-controls select{min-width:0}
+.house-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px}
+.house-row + .house-row{border-top:1px solid rgba(128,140,160,.18)}
+.house-row small{display:block;opacity:.74;margin-top:2px}
+.house-row b{overflow-wrap:anywhere}
+.house-row .chip-btn{min-width:44px;min-height:44px}
+.house-row [aria-pressed=true]{color:var(--green,#35d890)}
+.house-empty{padding:10px 12px}
+.house-form{display:grid;gap:12px;padding-bottom:16px}
+.house-form label{display:grid;gap:5px;min-width:0}
+.house-form .field{box-sizing:border-box;width:100%;min-width:0}
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -7774,6 +7789,127 @@ function bindTop3(el, d){
   $$(".t3 input", el).forEach(inp => inp.oninput = () => { const o = S.days[d] || (S.days[d] = {}); const t = (o.top3 || []).concat([{},{},{}]).slice(0,3).map(x => Object.assign({}, x)); t[inp.dataset.i].t = inp.value; o.top3 = t; save(); });
   $$(".t3c", el).forEach(b => b.onclick = () => { const o = S.days[d] || (S.days[d] = {}); const t = (o.top3 || []).concat([{},{},{}]).slice(0,3).map(x => Object.assign({}, x)); const x = t[b.dataset.i]; if (!x.t){ toast("Erst eintragen"); return; } x.d = !x.d; o.top3 = t; save(); builtDate = null; renderAll(); });
 }
+/* =================== HAUSHALTSPLAN =================== */
+const HOUSE_KEY = "formkurve.housePlan";
+const HOUSE_PEOPLE = ["Roman", "Alina", "Michael", "Katerina", "Kateryna"];
+const HOUSE_ROOMS = [
+  [["Erdgeschoss","Первый этаж"], [["wohnen","Wohn- und Esszimmer","Гостиная и столовая"],["kueche","Küche","Кухня"],["wc","Gäste-WC","Гостевой туалет"]]],
+  [["1. Stock","Второй этаж"], [["schlafen","Schlafzimmer Roman & Alina","Спальня Романа и Алины"],["michael","Kinderzimmer Michael","Комната Михаэля"],["bad","Badezimmer","Ванная"]]],
+  [["2. Stock","Третий этаж"], [["katerina","Kinderzimmer Katerina","Комната Катерины"],["kateryna","Zimmer Kateryna","Комната Катерины (Kateryna)"]]],
+  [["Keller","Подвал"], [["arbeit","Arbeitszimmer","Кабинет"],["vorrat","Vorratsraum","Кладовая"],["waschen","Waschraum","Прачечная"]]]
+];
+const houseText = (de, ru) => LANG === "ru" ? ru : de;
+const houseRoom = key => {
+  const group = HOUSE_ROOMS.find(([, rooms]) => rooms.some(r => r[0] === key));
+  const [, de, ru] = group[1].find(r => r[0] === key);
+  return houseText(...group[0]) + " · " + houseText(de, ru);
+};
+const houseTasks = () => lsGet(HOUSE_KEY) || [];
+const houseOccurs = (task, date) => {
+  const days = diffDays(task.date, date);
+  return days === 0 || (days > 0 && task.repeat > 0 && days % task.repeat === 0);
+};
+const houseMonday = date => addDays(date, -((dow(date) + 6) % 7));
+function openHousePlan(){
+  const t = houseText;
+  const today = todayISO(), current = houseMonday(today);
+  let week = current, person = "";
+  const title = t("Haushaltsplan", "План домашних дел");
+  const sh = openSheet({title, left:t("Schließen","Закрыть"), right:"", body:'<div class="house-plan"></div>'});
+  $(".sheet-h .r", sh).style.visibility = "hidden";
+  const view = $(".house-plan", sh);
+  const people = () => HOUSE_PEOPLE.map(n => `<option>${n}</option>`).join("");
+  const save = tasks => {
+    if (!lsSet(HOUSE_KEY, tasks)){ toast(t("Haushaltsplan konnte nicht gespeichert werden","Не удалось сохранить план")); return false; }
+    return true;
+  };
+  function render(){
+    const tasks = houseTasks().filter(x => !person || x.person === person);
+    const days = Array.from({length:7}, (_, i) => {
+      const date = addDays(week, i);
+      return [date, tasks.filter(x => houseOccurs(x,date)).sort((a,b) => (a.time || "99").localeCompare(b.time || "99"))];
+    });
+    const count = days.reduce((n, [, rows]) => n + rows.length, 0);
+    const done = days.reduce((n, [d, rows]) => n + rows.filter(x => x.done?.[d]).length, 0);
+    view.innerHTML = `<div class="house-controls">
+      <button type="button" class="chip-btn" id="hp-prev" aria-label="${t("Vorherige Woche","Предыдущая неделя")}">‹</button>
+      <button type="button" class="chip-btn" id="hp-now" aria-label="${t("Zur aktuellen Woche","Текущая неделя")}">${dateShort(week)} – ${dateShort(addDays(week,6))}</button>
+      <button type="button" class="chip-btn" id="hp-next" aria-label="${t("Nächste Woche","Следующая неделя")}">›</button>
+    </div><div class="house-controls house-actions">
+      <select class="field" id="hp-filter" aria-label="${t("Nach Person filtern","Фильтр по человеку")}"><option value="">${t("Alle Personen","Все участники")}</option>${people()}</select>
+      <button type="button" class="btn small" id="hp-add">+ ${t("Aufgabe","Задача")}</button>
+    </div><p class="meta">${done} / ${count} ${t("erledigt","выполнено")}</p>
+    ${days.map(([d, rows]) => `<div class="section"><div class="section-h"><span>${dateLong(d)}${d === today ? " · " + t("Heute","Сегодня") : ""}</span></div>
+      <div class="glass">${rows.length ? rows.map(x => `<div class="house-row">
+        <button type="button" class="chip-btn" data-house-done="${esc(x.id)}" data-date="${d}" aria-pressed="${!!x.done?.[d]}" aria-label="${esc(x.title)} · ${x.done?.[d] ? t("Wieder öffnen","Вернуть в план") : t("Erledigen","Отметить выполненной")}">${x.done?.[d] ? "✓" : "○"}</button>
+        <div><b>${esc(x.title)}</b><small>${x.time ? esc(x.time) + " · " : ""}${esc(x.person)}${x.repeat ? " · ↻" : ""}</small><small>${esc(houseRoom(x.room))}</small></div>
+        <button type="button" class="chip-btn" data-house-edit="${esc(x.id)}" aria-label="${esc(x.title)} · ${t("Bearbeiten","Изменить")}">✎</button>
+      </div>`).join("") : `<div class="house-empty meta">${t("Keine Aufgaben geplant","Задач нет")}</div>`}</div></div>`).join("")}`;
+    $("#hp-filter",view).value = person;
+    $("#hp-filter",view).onchange = e => { person = e.target.value; render(); };
+    $("#hp-prev",view).onclick = () => { week = addDays(week,-7); render(); };
+    $("#hp-next",view).onclick = () => { week = addDays(week,7); render(); };
+    $("#hp-now",view).onclick = () => { week = current; render(); };
+    $("#hp-add",view).onclick = () => edit(null);
+    $$("[data-house-edit]",view).forEach(b => b.onclick = () => edit(houseTasks().find(x => x.id === b.dataset.houseEdit)));
+    $$("[data-house-done]",view).forEach(b => b.onclick = () => {
+      const tasks = houseTasks(), x = tasks.find(item => item.id === b.dataset.houseDone);
+      if (!x) return;
+      const d = b.dataset.date;
+      x.done ||= {};
+      if (x.done[d]) delete x.done[d]; else x.done[d] = true;
+      if (save(tasks)){ b.setAttribute("aria-pressed", String(!!x.done[d])); render(); $$("[data-house-done]",view).find(el => el.dataset.houseDone === x.id && el.dataset.date === d)?.focus({preventScroll:true}); }
+    });
+  }
+  function edit(task){
+    const rooms = HOUSE_ROOMS.map(([floor, entries]) => `<optgroup label="${esc(t(...floor))}">${entries.map(([id,de,ru]) => `<option value="${id}">${esc(t(de,ru))}</option>`).join("")}</optgroup>`).join("");
+    view.innerHTML = `<form class="house-form">
+      <h2>${task ? t("Aufgabe bearbeiten","Изменить задачу") : t("Neue Aufgabe","Новая задача")}</h2>
+      <label>${t("Aufgabe","Задача")}<input class="field wide" name="title" required maxlength="100" value="${esc(task?.title)}" placeholder="${t("z. B. Waschbecken putzen","Например, вымыть раковину")}"></label>
+      <label>${t("Zuständig","Ответственный")}<select class="field wide" name="person" required><option value="">${t("Person auswählen","Выберите человека")}</option>${people()}</select></label>
+      <label>${t("Raum","Комната")}<select class="field wide" name="room" required><option value="">${t("Raum auswählen","Выберите комнату")}</option>${rooms}</select></label>
+      <label>${t("Datum","Дата")}<input class="field wide" name="date" type="date" required value="${task?.date || (week === current ? today : week)}"></label>
+      <label>${t("Uhrzeit (optional)","Время (необязательно)")}<input class="field wide" name="time" type="time" value="${esc(task?.time)}"></label>
+      <label>${t("Wiederholung","Повтор")}<select class="field wide" name="repeat"><option value="0">${t("Einmalig","Однократно")}</option><option value="1">${t("Täglich","Ежедневно")}</option><option value="7">${t("Wöchentlich","Еженедельно")}</option><option value="14">${t("Alle zwei Wochen","Раз в две недели")}</option></select></label>
+      ${task?.repeat ? `<p class="meta">${t("Änderungen gelten für die gesamte Serie.","Изменения применяются ко всей серии.")}</p>` : ""}
+      <div class="house-controls house-actions"><button class="btn secondary" type="button" id="hp-back">${t("Zurück","Назад")}</button><button class="btn" type="submit">${t("Speichern","Сохранить")}</button></div>
+      ${task ? `<button class="link bad" type="button" id="hp-delete">${task.repeat ? t("Serie löschen","Удалить серию") : t("Aufgabe löschen","Удалить задачу")}</button>` : ""}
+    </form>`;
+    const form = $("form",view);
+    form.elements.person.value = task?.person || person;
+    form.elements.room.value = task?.room || "";
+    form.elements.repeat.value = task?.repeat || 0;
+    $("#hp-back",view).onclick = render;
+    if (task) $("#hp-delete",view).onclick = () => {
+      if (confirm(t("Wirklich löschen?","Удалить?")) && save(houseTasks().filter(x => x.id !== task.id))) render();
+    };
+    form.elements.title.oninput = () => form.elements.title.setCustomValidity("");
+    form.onsubmit = e => {
+      e.preventDefault();
+      const fields = Object.fromEntries(new FormData(form));
+      fields.title = fields.title.trim();
+      if (!fields.title){
+        form.elements.title.setCustomValidity(t("Bitte gib eine Aufgabe ein.","Введите название задачи."));
+        form.elements.title.reportValidity(); return;
+      }
+      fields.repeat = Number(fields.repeat);
+      const tasks = houseTasks();
+      if (task){
+        const idx = tasks.findIndex(x => x.id === task.id);
+        if (idx < 0){ render(); return; }
+        tasks[idx] = {...tasks[idx], ...fields};
+      } else tasks.push({...fields, id:kitId(), done:{}});
+      if (save(tasks)){
+        if (!task || task.date !== fields.date) week = houseMonday(fields.date);
+        if (person && person !== fields.person) person = "";
+        render();
+      }
+    };
+    $(".sheet-b",sh).scrollTop = 0;
+  }
+  render();
+}
+
 function renderLeben(){
   const el = $("#s-leben"), p = P(), today = todayISO(), o = S.days[today] || {}, f = getFocus();
   if (f && Date.now() >= f.start + f.min*60000){ finishFocus(true); return; }
@@ -7784,7 +7920,8 @@ function renderLeben(){
   const ss = p.mods.smoke ? smokeStats() : null;
   const ring = (v, c, label, sub) => { const r = 30, C = 2*Math.PI*r; return `<div class="lring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="${r}" fill="none" stroke="${c}" stroke-opacity=".16" stroke-width="8"/>${v > 0 ? `<circle cx="38" cy="38" r="${r}" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C*clamp(v,0,1)).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)" style="filter:drop-shadow(0 0 4px ${c})"/>` : ""}</svg><div><b class="num">${label}</b><small>${sub}</small></div></div>`; };
   let h = `${banner()}<div class="nav"><span class="sub">${esc(WD[dow(today)])}, ${esc(dateShort(today))}</span><button type="button" class="gear" id="l-set" aria-label="Lebensbereiche einstellen">${GEAR}</button></div>
-    <h1 class="large-title">Leben</h1>`;
+    <h1 class="large-title">Leben</h1>
+    <div class="section"><div class="glass"><button type="button" class="row tap" id="l-house" style="width:100%;text-align:left"><span class="lbl">🏠 ${houseText("Haushaltsplan","План домашних дел")}<small>${houseText("Aufgaben nach Raum, Tag und Person planen","Задачи по комнатам, дням и участникам")}</small></span>${ICON.chev}</button></div></div>`;
   if (p.mods.cycle) h += cycleSectionHTML();
   if (p.mods.focus) h += `<div class="section"><div class="section-h"><span>Die 3 wichtigsten Dinge heute</span></div><div class="glass">${top3HTML(today)}
       <div class="social"><span>Handy & Social Media</span><b class="num ${o.social > p.socialMax ? "bad" : ""}">${o.social != null ? fmt(o.social) + " / " + fmt(p.socialMax) + " min" : "unter Heute eintragen"}</b></div></div>
@@ -7818,6 +7955,7 @@ function renderLeben(){
       <div class="section-f">* Rechnung: ca. 20 Minuten Lebenszeit pro Zigarette (UCL-Studie, 2024). Gesundheitsverlauf nach WHO und NHS – Durchschnittswerte. Rückfall? Kein Drama: Zähler läuft ab dem nächsten rauchfreien Tag neu. Beratung kostenlos: 0800 8 31 31 31.</div></div>`;
   if (!p.mods.read && !p.mods.learn && !p.mods.smoke && !p.mods.focus) h += `<div class="card note">Alle Lebensbereiche sind aus. Oben rechts einschalten.</div>`;
   el.innerHTML = h;
+  $("#l-house", el).onclick = openHousePlan;
   $("#l-set", el).onclick = openLifeSettings;
   if (p.mods.cycle) bindCycle(el);
   if (p.mods.focus) bindTop3(el, today);
@@ -8118,7 +8256,7 @@ async function offerFile(name, text, mime){
   return false;
 }
 async function doBackup(){
-  const data = JSON.stringify({app:"formkurve", version:1, exportedAt:new Date().toISOString(), profile:S.profile, days:S.days, sessions:S.sessions, measures:S.measures, checkins:S.checkins, kitchen:K});
+  const data = JSON.stringify({app:"formkurve", version:1, exportedAt:new Date().toISOString(), profile:S.profile, days:S.days, sessions:S.sessions, measures:S.measures, checkins:S.checkins, kitchen:K, housePlan:houseTasks()});
   const ok = await offerFile(`ITOGO-Sicherung_${todayISO()}.json`, data, "application/json");
   if (ok){ lsSet("formkurve.backupAt", Date.now()); if (S.syncNote.startsWith("Letzte Sicherung")) S.syncNote = ""; renderAll(); toast("Sicherung erstellt"); }
 }
@@ -8132,7 +8270,7 @@ function doRestore(file){
     openSheet({title:"Sicherung laden", right:"Ersetzen", body:`<div class="card" style="margin-top:8px"><h3>${esc(o.profile?.name || "Unbekannt")}</h3>
       <p class="meta">${n} Tage · ${Object.keys(o.sessions||{}).length} Trainings · gesichert am ${esc(String(o.exportedAt||"").slice(0,10))}</p></div>
       <p class="note" style="margin:12px 4px">Alle Einträge auf diesem iPhone werden durch die Sicherung ersetzt.</p>`,
-      onSave: () => { Object.assign(S, {profile:o.profile||null, days:o.days||{}, sessions:o.sessions||{}, measures:o.measures||{}, checkins:o.checkins||{}}); if (o.kitchen && o.kitchen.items){ K = Object.assign(o.kitchen, {dev: K.dev}); kitSave(); } persistLocal(); applyPerson(); builtDate = null; builtTrain = null; renderAll(); toast("Sicherung geladen"); }});
+      onSave: () => { if (Array.isArray(o.housePlan) && !lsSet(HOUSE_KEY, o.housePlan)){ toast("Haushaltsplan konnte nicht geladen werden"); return false; } Object.assign(S, {profile:o.profile||null, days:o.days||{}, sessions:o.sessions||{}, measures:o.measures||{}, checkins:o.checkins||{}}); if (o.kitchen && o.kitchen.items){ K = Object.assign(o.kitchen, {dev: K.dev}); kitSave(); } persistLocal(); applyPerson(); builtDate = null; builtTrain = null; renderAll(); toast("Sicherung geladen"); }});
   };
   r.readAsText(file);
 }
