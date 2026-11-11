@@ -4089,12 +4089,324 @@ let I18N_RU = {"Hähnchenbrust, roh":"Куриная грудка, сырая","
 const DE_DATES = {};
 const NUMRE = /[+−\-–±]?\d[\d.,:]*/g, LETTER = /[A-Za-zÄÖÜäöüß]/;
 let LANG = (() => { try { return JSON.parse(localStorage.getItem("formkurve.lang")) || "de"; } catch(e){ return "de"; } })();
-let FRRE = null, FRMAP = null, trObs = null;
+const I18N_CS = {
+  "Heute": "Dnes",
+  "Morgen": "Zítra",
+  "Übermorgen": "Pozítří",
+  "Gestern": "Včera",
+  "Morgen (geplant)": "Zítra (naplánováno)",
+  "Übermorgen (geplant)": "Pozítří (naplánováno)",
+  "Übersicht": "Přehled",
+  "Ausblick": "Výhled",
+  "Essen": "Jídlo",
+  "Küche": "Kuchyně",
+  "Training": "Trénink",
+  "Leben": "Život",
+  "Verlauf": "Historie",
+  "Fortschritt": "Pokrok",
+  "Mehr": "Více",
+  "Weniger": "Méně",
+  "Einstellungen": "Nastavení",
+  "Sprache": "Jazyk",
+  "Farbe & Design": "Barvy a vzhled",
+  "Darstellung": "Vzhled",
+  "Layout": "Rozvržení",
+  "Farbwelt": "Barevný motiv",
+  "Farbwelten": "Barevné motivy",
+  "Frühstück": "Snídaně",
+  "Hotel-Frühstück": "Hotelová snídaně",
+  "Mittagessen": "Oběd",
+  "Abendessen": "Večeře",
+  "Mittag": "Oběd",
+  "Abend": "Večer",
+  "Snacks": "Svačiny",
+  "Snack": "Svačina",
+  "Rezepte": "Recepty",
+  "Rezept": "Recept",
+  "Neues Rezept": "Nový recept",
+  "Rezept bearbeiten": "Upravit recept",
+  "Als eigenes Rezept anpassen": "Upravit jako vlastní recept",
+  "Rezept öffnen": "Otevřít recept",
+  "Rezept nicht gefunden": "Recept nebyl nalezen",
+  "Rezept suchen …": "Vyhledat recept…",
+  "Rezept, Zutat oder Fast Food suchen …": "Vyhledat recept, surovinu nebo rychlé občerstvení…",
+  "Kategorien": "Kategorie",
+  "Suchergebnisse": "Výsledky vyhledávání",
+  "Sortieren": "Seřadit",
+  "Standard": "Výchozí",
+  "Alle": "Vše",
+  "Passend": "Vhodné",
+  "Favorit": "Oblíbené",
+  "Favoriten": "Oblíbené",
+  "Hauptgerichte": "Hlavní jídla",
+  "Schnell zu Hause": "Rychlá domácí jídla",
+  "Smoothies": "Smoothie",
+  "Bowls": "Misky",
+  "Vegetarisch": "Vegetariánské",
+  "vegetarisch": "vegetariánské",
+  "schnell": "rychlé",
+  "Obst, Gemüse & cremige Snacks": "Ovoce, zelenina a krémové svačiny",
+  "Kochen": "Vaření",
+  "Kochen fortsetzen": "Pokračovat ve vaření",
+  "Kochentwurf verwerfen": "Zahodit rozpracované vaření",
+  "Kochentwurf verwerfen?": "Zahodit rozpracované vaření?",
+  "Rezept gespeichert": "Recept uložen",
+  "Rezept löschen": "Smazat recept",
+  "Ein Schritt pro Zeile": "Jeden krok na řádek",
+  "Name fehlt": "Zadej název",
+  "Mindestens eine Zutat": "Přidej alespoň jednu surovinu",
+  "Kochbuch": "Kuchařka",
+  "Gekocht": "Uvařeno",
+  "Geplant": "Naplánováno",
+  "geplant": "naplánováno",
+  "Planen": "Plánovat",
+  "Gericht planen": "Naplánovat jídlo",
+  "Eingeplant": "Naplánováno",
+  "In den Küchen-Plan": "Přidat do plánu jídel",
+  "Einkaufen": "Nákup",
+  "Einkaufsliste": "Nákupní seznam",
+  "Einkaufsliste teilen": "Sdílet nákupní seznam",
+  "Vorrat": "Zásoby",
+  "Kühlschrank-Rezepte": "Recepty ze zásob",
+  "Schnell-Rezept": "Rychlý recept",
+  "Zutaten": "Suroviny",
+  "Einkaufen & Zutaten": "Nákup a suroviny",
+  "Zubereitung": "Příprava",
+  "Schritte": "Kroky",
+  "Schritt": "Krok",
+  "Geräte": "Spotřebiče",
+  "Ohne Kochen": "Bez vaření",
+  "Anrichten": "Servírování",
+  "Vorbereiten": "Příprava",
+  "Garen": "Tepelná úprava",
+  "Zutat": "Surovina",
+  "Zutat hinzufügen": "Přidat surovinu",
+  "Zutat suchen": "Vyhledat surovinu",
+  "Zutat ersetzen": "Nahradit surovinu",
+  "Zutat entfernen": "Odebrat surovinu",
+  "Alles anpassen": "Upravit vše",
+  "Nur diese Zutat": "Jen tato surovina",
+  "nur diese Zutat": "jen tato surovina",
+  "angepasst": "upraveno",
+  "Übernehmen": "Použít",
+  "Zurücksetzen": "Obnovit výchozí hodnoty",
+  "Eintrag": "Záznam",
+  "Eintrag löschen": "Smazat záznam",
+  "Menge fehlt": "Zadejte množství",
+  "Menge": "Množství",
+  "Gesamtmenge": "Celkové množství",
+  "Gewicht": "Hmotnost",
+  "Körperfett": "Tělesný tuk",
+  "Speichern": "Uložit",
+  "Sichern": "Uložit",
+  "Gesichert": "Uloženo",
+  "Abbrechen": "Zrušit",
+  "Hinzufügen": "Přidat",
+  "Bearbeiten": "Upravit",
+  "Löschen": "Smazat",
+  "Fertig": "Hotovo",
+  "Schließen": "Zavřít",
+  "Zurück": "Zpět",
+  "Weiter": "Dále",
+  "Ja": "Ano",
+  "Nein": "Ne",
+  "optional": "volitelné",
+  "Bitte eine Menge eingeben": "Zadejte množství",
+  "Ernährungstagebuch": "Deník jídel",
+  "Kalorien": "Kalorie",
+  "Kalorien fehlen": "Zadejte kalorie",
+  "Protein": "Bílkoviny",
+  "Eiweiß": "Bílkoviny",
+  "Kohlenhydrate": "Sacharidy",
+  "Kohlenh.": "Sacharidy",
+  "Fett": "Tuky",
+  "Ballaststoffe": "Vláknina",
+  "Zucker": "Cukry",
+  "Nährwerte": "Výživové hodnoty",
+  "Ziel": "Cíl",
+  "Tagesbudget": "Denní rozpočet",
+  "Mahlzeit & Tagesbudget": "Jídlo a denní rozpočet",
+  "Mahlzeit": "Jídlo",
+  "noch nichts eingetragen": "Zatím bez záznamů",
+  "noch nichts": "Zatím nic",
+  "im Plan": "V rámci plánu",
+  "über dem Ziel": "Nad cílem",
+  "kcal übrig": "kcal zbývá",
+  "kcal drüber": "kcal navíc",
+  "Wann isst du das?": "Kdy to budeš jíst?",
+  "Wer isst mit?": "Kdo bude jíst?",
+  "Nur ich": "Jen já",
+  "Niemand ausgewählt": "Nikdo není vybrán",
+  "Für wen kochst du?": "Pro koho vaříš?",
+  "Haushalt & Ziele · Tages-Update": "Domácnost a cíle · Denní aktualizace",
+  "Haushalt": "Domácnost",
+  "Haushaltsplan": "Plán domácnosti",
+  "Wer bekommt wie viel?": "Kdo dostane kolik?",
+  "Wiegegruppen anpassen": "Upravit skupiny pro vážení",
+  "Alles zusammen": "Vše dohromady",
+  "Einzeln / Komponenten": "Jednotlivé složky",
+  "Komponente": "Složka",
+  "Gericht": "Jídlo",
+  "Hauptteil": "Hlavní část",
+  "Beilage": "Příloha",
+  "Gemüse": "Zelenina",
+  "Soße": "Omáčka",
+  "Waage-Modus": "Režim vážení",
+  "Waage-Modus – Teller für Teller": "Režim vážení – talíř po talíři",
+  "Alle Teller im Überblick": "Přehled všech porcí",
+  "Letzter Schritt": "Poslední krok",
+  "Als Nächstes": "Následuje",
+  "Teller": "Talíř",
+  "Box": "Krabička",
+  "Portion": "Porce",
+  "Portionen": "Porce",
+  "je Portion": "na porci",
+  "Meine Portion eintragen": "Zapsat moji porci",
+  "Box für morgen eintragen": "Zapsat krabičku na zítřek",
+  "Teller an die Familie senden": "Sdílet porce s rodinou",
+  "Teilen abgeschlossen. Deine Portion kannst du jetzt eintragen.": "Sdílení dokončeno. Teď můžeš zapsat svou porci.",
+  "Link kopiert": "Odkaz zkopírován",
+  "Teilen": "Sdílet",
+  "Einfügen": "Vložit",
+  "Link einfügen": "Vložit odkaz",
+  "Wie hat's geschmeckt?": "Jak ti chutnalo?",
+  "Mag ich nicht": "Nechutná mi",
+  "Geht so": "Ujde to",
+  "Gut": "Dobré",
+  "Sehr lecker": "Moc dobré",
+  "Lieblingsessen": "Oblíbené jídlo",
+  "Noch nicht bewertet": "Zatím bez hodnocení",
+  "Bewertung": "Hodnocení",
+  "Bewertungen": "Hodnocení",
+  "Zuständig": "Zodpovídá",
+  "Raum": "Místnost",
+  "Aufgabe": "Úkol",
+  "Neue Aufgabe": "Nový úkol",
+  "Aufgabe bearbeiten": "Upravit úkol",
+  "Datum": "Datum",
+  "Uhrzeit (optional)": "Čas (volitelný)",
+  "Wiederholung": "Opakování",
+  "Einmalig": "Jednorázově",
+  "Täglich": "Denně",
+  "Wöchentlich": "Týdně",
+  "Alle zwei Wochen": "Jednou za dva týdny",
+  "Alle Personen": "Všichni",
+  "Keine Aufgaben geplant": "Žádné naplánované úkoly",
+  "Erdgeschoss": "Přízemí",
+  "1. Stock": "1. patro",
+  "2. Stock": "2. patro",
+  "Keller": "Suterén",
+  "Wohn- und Esszimmer": "Obývací pokoj a jídelna",
+  "Gäste-WC": "WC pro hosty",
+  "Badezimmer": "Koupelna",
+  "Arbeitszimmer": "Pracovna",
+  "Vorratsraum": "Spíž",
+  "Waschraum": "Prádelna",
+  "Vorheriger Tag": "Předchozí den",
+  "Nächster Tag": "Následující den",
+  "Vorherige Woche": "Předchozí týden",
+  "Nächste Woche": "Následující týden",
+  "Training starten": "Zahájit trénink",
+  "Krafttraining": "Silový trénink",
+  "Ausdauer": "Vytrvalost",
+  "Wiederholungen": "Opakování",
+  "Satz": "Série",
+  "Sätze": "Série",
+  "Trainingsplan": "Tréninkový plán",
+  "Wochenübersicht": "Týdenní přehled",
+  "Schritte heute": "Dnešní kroky",
+  "Lernen": "Učení",
+  "Lesen": "Čtení",
+  "Lernen & Karriere": "Učení a kariéra",
+  "Wasser": "Voda",
+  "Schlaf": "Spánek",
+  "Notiz": "Poznámka",
+  "Stimmung": "Nálada",
+  "Energie": "Energie",
+  "Sicherung erstellen": "Vytvořit zálohu",
+  "Sicherung laden": "Načíst zálohu",
+  "Sicherung erstellt": "Záloha vytvořena",
+  "Ersetzen": "Nahradit",
+  "Hähnchenbrust": "Kuřecí prsa",
+  "Lachs": "Losos",
+  "Reis": "Rýže",
+  "Nudeln": "Těstoviny",
+  "Kartoffeln": "Brambory",
+  "Brokkoli": "Brokolice",
+  "Tomaten": "Rajčata",
+  "Tomate": "Rajče",
+  "Karotte": "Mrkev",
+  "Gurke": "Okurka",
+  "Spinat": "Špenát",
+  "Zwiebel": "Cibule",
+  "Knoblauch": "Česnek",
+  "Haferflocken": "Ovesné vločky",
+  "Ei": "Vejce",
+  "Eier": "Vejce",
+  "Skyr natur": "Bílý skyr",
+  "Kefir": "Kefír",
+  "Joghurt": "Jogurt",
+  "Magerquark": "Nízkotučný tvaroh",
+  "Apfel": "Jablko",
+  "Birne": "Hruška",
+  "Banane": "Banán",
+  "Heidelbeeren": "Borůvky",
+  "Himbeeren": "Maliny",
+  "Erdbeeren": "Jahody",
+  "Brombeeren": "Ostružiny",
+  "Schwarze Johannisbeeren": "Černý rybíz",
+  "Orange": "Pomeranč",
+  "Ananas": "Ananas",
+  "Aprikosen": "Meruňky",
+  "Pfirsich": "Broskev",
+  "Pflaumen": "Švestky",
+  "Backkakao": "Kakao",
+  "Rote Bete, gegart": "Vařená červená řepa",
+  "Leinsamen, geschrotet": "Drcené lněné semínko",
+  "Limettensaft": "Limetková šťáva",
+  "Zimt": "Skořice",
+  "Erdnussmus, ungesüßt": "Neslazené arašídové máslo",
+  "Heidelbeer-Hafer-Kefir": "Kefír s borůvkami a ovesnými vločkami",
+  "Himbeer-Birnen-Kefir": "Kefír s malinami a hruškou",
+  "Erdbeer-Skyr mit Hafer": "Jahodový skyr s ovesnými vločkami",
+  "Brombeer-Kefir mit Leinsamen": "Ostružinový kefír se lněným semínkem",
+  "Johannisbeer-Bananen-Joghurt": "Jogurt s rybízem a banánem",
+  "Kirsch-Kakao-Kefir": "Kefír s třešněmi a kakaem",
+  "Birne-Kiwi-Spinat mit Joghurt": "Jogurt s hruškou, kiwi a špenátem",
+  "Apfel-Gurken-Smoothie mit Spinat": "Jablečné smoothie s okurkou a špenátem",
+  "Ananas-Gurken-Kefir mit Minze": "Kefír s ananasem, okurkou a mátou",
+  "Mango-Möhren-Joghurt mit Limette": "Jogurt s mangem, mrkví a limetkou",
+  "Orangen-Möhren-Smoothie mit Ingwer": "Pomerančovo-mrkvové smoothie se zázvorem",
+  "Pfirsich-Himbeer-Kefir": "Kefír s broskví a malinami",
+  "Aprikosen-Hafer-Joghurt": "Jogurt s meruňkami a ovesnými vločkami",
+  "Pflaumen-Zimt-Kefir": "Kefír se švestkami a skořicí",
+  "Bananen-Kakao-Kefir mit Erdnussmus": "Banánový kefír s kakaem a arašídovým máslem",
+  "Apfel-Birnen-Joghurt mit Hafer und Zimt": "Jogurt s jablkem, hruškou, vločkami a skořicí",
+  "Heidelbeer-Rote-Bete-Kefir": "Kefír s borůvkami a červenou řepou",
+  "Mango-Spinat-Kefir": "Kefír s mangem a špenátem",
+  "Erdbeer-Rote-Bete-Joghurt": "Jogurt s jahodami a červenou řepou",
+  "Bananen-Kiwi-Kefir mit Spinat": "Kefír s banánem, kiwi a špenátem",
+  "Alle Zutaten 30–60 Sekunden glatt mixen und direkt servieren.": "Vše mixuj 30–60 sekund dohladka a ihned podávej."
+};
+const translations = () => LANG === "cs" ? I18N_CS : I18N_RU;
+const fragments = new Map();
+let trObs = null;
 const escRe = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-function buildFR(){ const fr = Object.keys(I18N_RU).filter(k => k.length >= 3 && !k.includes("{}")).sort((a,b) => b.length - a.length);
-  FRMAP = new Map(fr.map(k => [k, I18N_RU[k]])); FRRE = new RegExp("(?<![A-Za-zÄÖÜäöüß])(?:" + fr.map(escRe).join("|") + ")(?![A-Za-zÄÖÜäöüß])", "g"); }
-function trExact(c){ let r = I18N_RU[c]; if (r != null) return r; const nums = []; const key = c.replace(NUMRE, m => { nums.push(m); return "{}"; }); const tpl = I18N_RU[key];
-  if (tpl != null){ let i = 0; return tpl.replace(/\{\}/g, () => nums[i++] ?? ""); } return null; }
+function fragmentPattern(){
+  if (!fragments.has(LANG)){
+    const keys = Object.keys(translations()).filter(k => k.length >= 3 && !k.includes("{}")).sort((a,b) => b.length - a.length);
+    fragments.set(LANG, new RegExp("(?<![A-Za-zÄÖÜäöüß])(?:" + keys.map(escRe).join("|") + ")(?![A-Za-zÄÖÜäöüß])", "g"));
+  }
+  return fragments.get(LANG);
+}
+function trExact(c){
+  const dict = translations();
+  if (Object.hasOwn(dict,c)) return dict[c];
+  const nums = [], key = c.replace(NUMRE, n => { nums.push(n); return "{}"; });
+  if (!Object.hasOwn(dict,key)) return null;
+  let i = 0;
+  return dict[key].replace(/\{\}/g, () => nums[i++] ?? "");
+}
 Object.assign(I18N_RU,{"Reis-Käse-Pfannkuchen (PP-Mama)": "Рисовый блин с сыром (PP-Mama)", "Bratapfel mit Walnüssen (PP-Mama)": "Запечённое яблоко с грецким орехом (PP-Mama)", "Hähnchenbrust mit Quark-Kräuter-Füllung (PP-Mama)": "Грудка с творогом и зеленью (PP-Mama)", "Kräuter-Käse-Omelett (PP-Mama)": "Омлет с сыром и зеленью (PP-Mama)", "Rote-Bete-Apfel-Vitaminsalat (PP-Mama)": "Витаминный салат (PP-Mama)", "Syrniki aus Tvorog (PP-Mama)": "Сырники (PP-Mama)", "Frucht-Hafer-Kefir-Smoothie (PP-Mama)": "Фруктово-овсяный смузи (PP-Mama)", "Gehackte Hähnchen-Kotlety (PP-Mama)": "Рубленые куриные котлеты (PP-Mama)", "Einfache Schakschuka (PP-Mama)": "Ленивая шакшука (PP-Mama)", "Fleisch-Watruschki mit Ei und Käse (PP-Mama)": "Мясные ватрушки (PP-Mama)", "Japanische Quark-Pancakes (PP-Mama)": "Японские оладьи (PP-Mama)", "Quark-Chia-Waffeln (PP-Mama)": "Нежные венские вафли (PP-Mama)", "Putenbällchen-Bulgur-Suppe (PP-Mama)": "Суп с фрикадельками (PP-Mama)", "Paprika mit Hähnchenfüllung (PP-Mama)": "Фаршированные перчики (PP-Mama)", "Hafer-Beeren-Oladji (PP-Mama)": "Овсяные оладьи с ягодами (PP-Mama)", "Faule Golubzy ohne Reis (PP-Mama)": "Ленивые голубцы (PP-Mama)", "Rotkohlsalat mit Gurke und Karotte (PP-Mama)": "Салат из краснокочанной капусты (PP-Mama)", "Schnelle Lavash-Achma aus der Pfanne (PP-Mama)": "Ленивая ачма (PP-Mama)", "Hähnchen-Fächer mit Tomate und Käse (PP-Mama)": "Гармошка из грудки (PP-Mama)", "Eierrollen mit Tvorog und Käse (PP-Mama)": "Яичные роллы (PP-Mama)", "Herzhafte Karotten-Torte aus der Pfanne (PP-Mama)": "Морковный тортик (PP-Mama)", "Bulgur-Plow mit Hähnchen (PP-Mama)": "ПП плов из булгура (PP-Mama)", "Ljulja-Kebab aus dem Ofen (PP-Mama)": "Люля-кебаб в духовке (PP-Mama)", "Haferbrei mit variablen Toppings (PP-Mama)": "Овсяная каша с добавками (PP-Mama)", "Hähnchensalat mit Dijon-Dressing (PP-Mama)": "Салат с куриной грудкой (PP-Mama)", "Tvorog-Auflauf mit Beeren (PP-Mama)": "Творожная запеканка (PP-Mama)", "Hähnchen-Kotlety mit Karotte (PP-Mama)": "Куриные котлеты (PP-Mama)", "Grüner Apfel-Birnen-Smoothie (PP-Mama)": "Зелёный смузи с яблоком и грушей (PP-Mama)", "Geschmorter Weißkohl mit Pute (PP-Mama)": "Капуста тушёная с индейкой (PP-Mama)", "Mais-Käse-Pfannkuchen (PP-Mama)": "Кукурузный блин с сыром (PP-Mama)", "Leber-Oladji (PP-Mama)": "Печёночные оладьи (PP-Mama)", "Pizza mit Hähnchenboden (PP-Mama)": "Пицца на курином тесте (PP-Mama)", "Faule Wareniki mit Kirschen (PP-Mama)": "Ленивые вареники с вишней (PP-Mama)", "Leichter Borschtsch mit Rind (PP-Mama)": "Лёгкий борщ (PP-Mama)", "Buntes Gemüse-Ragout (PP-Mama)": "Овощное рагу (PP-Mama)", "Ofenbirne mit Tvorog und Walnüssen (PP-Mama)": "Груша запечённая с творогом (PP-Mama)", "Lavash-Dreiecke mit Kräuterquark (PP-Mama)": "Треугольники из лаваша (PP-Mama)", "Zucchini-Pizza (PP-Mama)": "Пицца из кабачка (PP-Mama)", "Hähnchen mit Champignons und Käse (PP-Mama)": "Грудка с грибами на сковороде (PP-Mama)", "Klassischer Haferpfannkuchen (PP-Mama)": "Классический овсяноблин (PP-Mama)", "Hähnchen-Brisol mit Gurkencreme (PP-Mama)": "Бризоль из куриной грудки (PP-Mama)", "Schneller Bananen-Kakao-Kuchen (PP-Mama)": "Банановый кекс с какао (PP-Mama)", "Hähnchen-Käse-Kotlety (PP-Mama)": "Котлеты с сыром (PP-Mama)", "Rjaschenka-Karamell-Dessert (PP-Mama)": "Карамельный десерт из ряженки (PP-Mama)", "Hähnchen in Pilz-Soja-Smetana-Sauce (PP-Mama)": "Грудка с грибами в соево-сметанном соусе (PP-Mama)", "Mais-Pancakes mit Banane und Joghurt (PP-Mama)": "Кукурузные панкейки (PP-Mama)", "Chatschapuri aus der Pfanne (PP-Mama)": "Хачапури по-аджарски на сковороде (PP-Mama)", "Puten-Schaschlik aus dem Ofen (PP-Mama)": "Шашлычки из индейки в духовке (PP-Mama)", "Tefteli in Tomatensauce (PP-Mama)": "Тефтели в томатном соусе (PP-Mama)", "Apfel-Scharlotka aus der Pfanne (PP-Mama)": "Яблочная шарлотка на сковороде (PP-Mama)", "Selbstgemachte Hähnchen-Würstchen (PP-Mama)": "Куриные ПП колбаски (PP-Mama)", "Zucchini-Schiffchen mit Hähnchen (PP-Mama)": "Лодочки из кабачков (PP-Mama)", "52 Rezepte aus deiner Sammlung": "52 рецепта из вашей подборки"});
 Object.assign(I18N_RU,{"Deine Inspiration": "Твоё вдохновение", "Selbstbewusst im Alltag": "Уверенность каждый день", "Für die Dinge, die dir wichtig sind.": "Для того, что важно тебе.", "Zeit für dich": "Время для себя", "Schritt für Schritt in deinem Tempo.": "Шаг за шагом, в своём темпе.", "Deine Stärke wächst": "Твоя сила растёт", "Jede Einheit ist ein Moment für dich.": "Каждая тренировка — время для себя.", "Das Leben genießen": "Наслаждаться жизнью", "Dein Weg darf sich gut anfühlen.": "Пусть твой путь приносит радость.", "Gut essen. Gut für dich sorgen.": "Вкусно есть. Заботиться о себе.", "Genuss gehört zu deinem Alltag.": "Удовольствие — часть твоего дня.", "Für dich, Alina": "Для тебя, Алина", "Mit Freude kochen.": "Готовить с удовольствием.", "Gut essen. Dich gut fühlen.": "Вкусно есть. Хорошо себя чувствовать.", "Ein leckeres Gericht. Ein guter Moment für dich.": "Вкусное блюдо. Приятный момент для себя.", "Eine Mahlzeit nach der anderen. In deinem Tempo.": "Один приём пищи за другим. В своём темпе."});
 Object.assign(I18N_RU, {
@@ -4133,13 +4445,16 @@ Object.assign(I18N_RU, {
   "Liegestütz erhöht":"Отжимания с опорой на возвышение", "So ist der kompakte Plan aufgebaut":"Как устроен компактный план"
 });
 function trText(t){
-  if (LANG !== "ru" || !t || !LETTER.test(t)) return t;
+  if (LANG === "de" || !t || !LETTER.test(t)) return t;
   const lead = t.match(/^\s*/)[0], trail = t.match(/\s*$/)[0], core = t.trim().replace(/\s+/g, " ");
-  let r = I18N_RU[core];
-  if (r == null){ const nums = []; const key = core.replace(NUMRE, m => { nums.push(m); return "{}"; }); const tpl = I18N_RU[key];
-    if (tpl != null){ let i = 0; r = tpl.replace(/\{\}/g, () => nums[i++] ?? ""); } }
-  if (r == null){ const pm = core.match(/^(.*?)([.,:;]+)$/); if (pm){ const x = trExact(pm[1]); if (x != null) r = x + pm[2]; } }
-  if (r == null){ if (!FRRE) buildFR(); r = core.replace(FRRE, m => FRMAP.get(m) ?? m); }
+  let r = trExact(core);
+  if (r == null){
+    const punct = core.match(/^(.*?)([.,:;]+)$/);
+    const exact = punct && trExact(punct[1]);
+    if (exact != null) r = exact + punct[2];
+  }
+  if (r == null) r = core.replace(fragmentPattern(), match => translations()[match]);
+  if (LANG === "cs") return lead + r + trail;
   r = r.replace(/(^|\s)S\. (?=\d)/g, "$1стр. ");
   r = r.replace(/(\d)\. (?=[а-яё])/gi, "$1 ").replace(/(\d)\s?(kcal|kg|g|ml|min|cm|h|km\/h|Stk\.|S\.)(?![A-Za-zÄÖÜäöüß])/g, (m, d, u) => d + " " + ({kcal:"ккал",kg:"кг",g:"г",ml:"мл",min:"мин",cm:"см",h:"ч","km/h":"км/ч","Stk.":"шт.","S.":"стр."})[u]);
   return lead + r + trail;
@@ -4147,6 +4462,7 @@ function trText(t){
 const TR_ATTR = ["placeholder","aria-label","title"];
 function trEl(el){
   if (el.nodeType !== 1 || el.closest("[data-notr]")) return;
+  if (el.tagName === "OPTION" && !el.hasAttribute("value")) el.value = el.textContent.trim();
   TR_ATTR.forEach(a => { const v = el.getAttribute(a); if (!v) return; el.__dea = el.__dea || {}; el.__rua = el.__rua || {};
     if (el.__rua[a] !== v) el.__dea[a] = v; const r = trText(el.__dea[a]); el.__rua[a] = r; if (r !== v) el.setAttribute(a, r); });
 }
@@ -4169,20 +4485,25 @@ function untrTree(root){
 }
 const RU_DATES = {WD:["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"], WDs:["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],
   MON:["янв.","февр.","марта","апр.","мая","июня","июля","авг.","сент.","окт.","нояб.","дек."], MONL:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]};
+const CS_DATES = {WD:["neděle","pondělí","úterý","středa","čtvrtek","pátek","sobota"], WDs:["Ne","Po","Út","St","Čt","Pá","So"],
+  MON:["led.","úno.","bře.","dub.","kvě.","čer.","čvc.","srp.","zář.","říj.","lis.","pro."], MONL:["Leden","Únor","Březen","Duben","Květen","Červen","Červenec","Srpen","Září","Říjen","Listopad","Prosinec"]};
 function applyDates(){ const A = {WD, WDs, MON, MONL};
-  Object.keys(A).forEach(k => { if (!DE_DATES[k]) DE_DATES[k] = A[k].slice(); A[k].splice(0, A[k].length, ...(LANG === "ru" ? RU_DATES[k] : DE_DATES[k])); }); }
+  Object.keys(A).forEach(k => { if (!DE_DATES[k]) DE_DATES[k] = A[k].slice(); A[k].splice(0, A[k].length, ...(LANG === "ru" ? RU_DATES[k] : LANG === "cs" ? CS_DATES[k] : DE_DATES[k])); }); }
 function startTr(){
   if (trObs) trObs.disconnect();
-  trObs = new MutationObserver(recs => { if (LANG !== "ru") return; recs.forEach(r => { if (r.type === "characterData") trTextNode(r.target); else r.addedNodes.forEach(trTree); }); });
+  trObs = new MutationObserver(recs => { if (LANG === "de") return; recs.forEach(r => { if (r.type === "characterData") trTextNode(r.target); else r.addedNodes.forEach(trTree); }); });
   trObs.observe(document.body, {subtree:true, childList:true, characterData:true});
   trTree(document.body);
 }
 function setLang(l, silent){
-  LANG = l === "ru" ? "ru" : "de"; try { localStorage.setItem("formkurve.lang", JSON.stringify(LANG)); } catch(e){}
+  const next = ["de","ru","cs"].includes(l) ? l : "de";
+  if (trObs) { trObs.disconnect(); trObs = null; }
+  if (next !== LANG) untrTree(document.body);
+  LANG = next; try { localStorage.setItem("formkurve.lang", JSON.stringify(LANG)); } catch(e){}
   document.documentElement.lang = LANG; applyDates();
   $$(".langsw button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.l === LANG)));
-  if (LANG === "ru"){ startTr(); } else { if (trObs) trObs.disconnect(); trObs = null; untrTree(document.body); }
-  if (!silent){ builtDate = null; const osh = document.querySelector(".sheet.on"); if (osh && osh._relang){ renderAll(); try { osh._relang(); } catch(e){} } else { if (typeof closeSheet === "function") closeSheet(true); renderAll(); } }
+  if (LANG !== "de") startTr();
+  if (!silent){ builtDate = null; const osh = document.querySelector(".sheet.on"); if (osh && osh._relang){ renderAll(); try { osh._relang(); } catch(e){} } else renderAll(); }
 }
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } };
 const lsSet = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e) { return false; } };
@@ -4360,7 +4681,7 @@ async function initStore(){
     setTimeout(() => toast("Eingerichtet für " + (S.profile.name || "dich")), 300);
   }
   if (setup && setup.lang) LANG = setup.lang === "ru" ? "ru" : "de";
-  document.body.insertAdjacentHTML("beforeend", `<div class="langsw" data-notr role="group" aria-label="Sprache / Язык"><button type="button" data-l="de" aria-pressed="false">DE</button><button type="button" data-l="ru" aria-pressed="false">RU</button></div>`);
+  document.body.insertAdjacentHTML("beforeend", `<div class="langsw" data-notr role="group" aria-label="Sprache / Язык / Jazyk"><button type="button" data-l="de" aria-pressed="false">DE</button><button type="button" data-l="ru" aria-pressed="false">RU</button><button type="button" data-l="cs" aria-pressed="false" aria-label="Čeština">CS</button></div>`);
   $$(".langsw button").forEach(b => b.onclick = () => setLang(b.dataset.l));
   setLang(LANG, true);
   S.profileKnown = true; applyPerson(); renderAll();
@@ -4387,8 +4708,16 @@ function openSheet({title, left="Abbrechen", right="Fertig", body, onSave, onOpe
   const sh = document.createElement("div"); sh.className = "sheet"; sh.setAttribute("role","dialog"); sh.setAttribute("aria-modal","true"); sh.setAttribute("aria-label", title);
   sh.innerHTML = `<div class="sheet-in"><div class="grabber"></div><div class="sheet-h"><button class="l" type="button">${esc(left)}</button><div class="t">${esc(title)}</div><button class="r" type="button">${esc(right)}</button></div><div class="sheet-b">${body}</div></div>`;
   document.body.append(scrim, sh);
-  requestAnimationFrame(()=>{ scrim.classList.add("on"); sh.classList.add("on"); });
-  const close = () => { scrim.classList.remove("on"); sh.classList.remove("on"); setTimeout(()=>{ scrim.remove(); sh.remove(); }, 320); sheetClose = null; };
+  requestAnimationFrame(() => {
+    if (sheetClose === close) { scrim.classList.add("on"); sh.classList.add("on"); }
+  });
+  const close = () => {
+    if (sheetClose !== close) return;
+    sheetClose = null;
+    scrim.classList.remove("on");
+    sh.classList.remove("on");
+    setTimeout(() => { scrim.remove(); sh.remove(); }, 320);
+  };
   sheetClose = close;
   scrim.onclick = () => left && close();
   $(".l", sh).onclick = () => close();
@@ -6085,7 +6414,7 @@ function openFoodAdd(meal, d, pick){
         if (mode === "online"){ h += list.length ? `<div class="fd-h">Open Food Facts</div><div class="group">${list.map(foodRow).join("")}</div>` : `<p class="note fd-empty">Nichts gefunden. Anders schreiben, Barcode scannen oder als „Eigenes“ anlegen.</p>`; }
         else if (q.length >= 2){
           const words = q.split(/\s+/);
-          list = allLocal().filter(x => words.every(w => norm(x.n).includes(w) || (LANG === "ru" && norm(trText(x.n)).includes(w)))).sort((a,b) => (norm(b.n).startsWith(words[0]) - norm(a.n).startsWith(words[0])) || a.n.length - b.n.length).slice(0, 30);
+          list = allLocal().filter(x => words.every(w => norm(x.n).includes(w) || (LANG !== "de" && norm(trText(x.n)).includes(w)))).sort((a,b) => (norm(b.n).startsWith(words[0]) - norm(a.n).startsWith(words[0])) || a.n.length - b.n.length).slice(0, 30);
           const nLoc = list.length, pl = pdbSearch($("#fd-q", sh).value.trim(), 15, K.stores || ["Kaufland", "Aldi", "Lidl", "Rewe"]); list = list.concat(pl);
           h += nLoc ? `<div class="group">${list.slice(0, nLoc).map(foodRow).join("")}</div>` : (pl.length ? "" : `<p class="note fd-empty">Nicht in deiner Liste.</p>`);
           if (pl.length) h += `<div class="fd-h">🛒 Aldi · Kaufland · Edeka · Lidl · ESN</div><div class="group">${pl.map((x, i) => foodRow(x, nLoc + i)).join("")}</div>`;
@@ -6117,10 +6446,14 @@ function openFoodAdd(meal, d, pick){
 }
 function openAmount(item, meal, d, idx, pick){
   const p = P(), favs = new Set(p.favs || []), edit = idx != null;
-  let g = edit ? item.g : (item.por || 100), m = meal;
+  const draftKey = edit ? JSON.stringify(["formkurve.amountDraft",p.person,d,idx,item.n,item.g,item.m]) : null;
+  const saved = draftKey ? lsGet(draftKey) : null;
+  let g = saved?.g > 0 ? saved.g : edit ? item.g : (item.por || 100), m = saved?.m || meal;
+  const saveDraft = () => { if (draftKey && g > 0) lsSet(draftKey,{g,m}); };
+  const clearDraft = () => { if (draftKey) lsSet(draftKey,null); };
   const chips = [[item.por || 100, item.pl || "1 Portion"], [100, "100 " + (item.u||"g")]].filter((x,i,a) => i === 0 || x[0] !== a[0][0]);
   if (pick) g = item.por && item.por >= 20 ? item.por : 100;
-  openSheet({title: edit ? "Eintrag" : "Menge", right: edit ? "Sichern" : "Hinzufügen", body:`
+  openSheet({title: edit ? "Eintrag" : "Menge", left:edit ? "Schließen" : "Abbrechen", right: edit ? "Sichern" : "Hinzufügen", body:`
     <div class="am-h"><b>${esc(item.n)}</b>${item.brand ? `<small>${esc(item.brand)}</small>` : ""}</div>
     <div class="am-in"><input id="am-g" class="num" inputmode="decimal" value="${fmt(g, g % 1 ? 1 : 0)}"><span>${esc(item.u || "g")}</span></div>
     <div class="am-chips">${chips.map(([v,l]) => `<button type="button" class="chip-btn" data-g="${v}">${esc(l)}${l.startsWith("100 ") ? "" : ` · ${fmt(v)} ${item.u||"g"}`}</button>`).join("")}${[0.5,2].map(f => `<button type="button" class="chip-btn ghost" data-f="${f}">${f === 0.5 ? "½" : "×2"}</button>`).join("")}</div>
@@ -6129,13 +6462,13 @@ function openAmount(item, meal, d, idx, pick){
       <label class="row" for="am-fav"><span class="lbl">Favorit</span><input type="checkbox" class="switch" id="am-fav" ${favs.has(item.n) ? "checked" : ""}></label></div></div>
     ${edit ? `<div class="section"><div class="group"><button type="button" class="row tap" id="am-del" style="width:100%"><span class="lbl" style="color:var(--red)">Eintrag löschen</span></button></div></div>` : ""}`,
     onOpen: sh => {
-      const upd = () => { g = parseNum($("#am-g", sh).value) || 0; const v = entryVals(Object.assign({}, item, {g})); $("#am-mac", sh).innerHTML = `<div><b class="num">${fmt(v.k)}</b><small>kcal</small></div><div><b class="num">${fmt(v.p,1)}</b><small>Protein</small></div><div><b class="num">${fmt(v.c,1)}</b><small>Kohlenh.</small></div><div><b class="num">${fmt(v.f,1)}</b><small>Fett</small></div>`;
+      const upd = () => { g = parseNum($("#am-g", sh).value) || 0; saveDraft(); const v = entryVals(Object.assign({}, item, {g})); $("#am-mac", sh).innerHTML = `<div><b class="num">${fmt(v.k)}</b><small>kcal</small></div><div><b class="num">${fmt(v.p,1)}</b><small>Protein</small></div><div><b class="num">${fmt(v.c,1)}</b><small>Kohlenh.</small></div><div><b class="num">${fmt(v.f,1)}</b><small>Fett</small></div>`;
         const nx = nxSum([Object.assign({}, item, {g})]); $("#am-nx", sh).innerHTML = Object.keys(nx.tot).length ? nxChipsHTML(nx.tot, nx.cov, null, {min: .1}) : ""; };
       $("#am-g", sh).oninput = upd; upd(); setTimeout(() => { const i = $("#am-g", sh); i.focus(); i.select(); }, 250);
       $$("[data-g]", sh).forEach(b => b.onclick = () => { $("#am-g", sh).value = fmt(Number(b.dataset.g)); upd(); });
       $$("[data-f]", sh).forEach(b => b.onclick = () => { $("#am-g", sh).value = fmt(Math.round(g*Number(b.dataset.f))); upd(); });
-      $$("#am-m button", sh).forEach(b => b.onclick = () => { m = b.dataset.v; $$("#am-m button", sh).forEach(x => x.setAttribute("aria-pressed", String(x===b))); });
-      const del = $("#am-del", sh); if (del) del.onclick = () => { const f = (S.days[d]?.food||[]).slice(); f.splice(idx,1); closeSheet(); setFood(d, f); };
+      $$("#am-m button", sh).forEach(b => b.onclick = () => { m = b.dataset.v; saveDraft(); $$("#am-m button", sh).forEach(x => x.setAttribute("aria-pressed", String(x===b))); });
+      const del = $("#am-del", sh); if (del) del.onclick = () => { const f = (S.days[d]?.food||[]).slice(); f.splice(idx,1); clearDraft(); closeSheet(); setFood(d, f); };
     },
     onSave: sh => {
       if (!(g > 0)){ toast("Menge fehlt"); return false; }
@@ -6143,7 +6476,7 @@ function openAmount(item, meal, d, idx, pick){
       if (item.brand) e.brand = item.brand; if (item.bc) e.bc = item.bc; if (item.nx && Object.keys(item.nx).length) e.nx = item.nx;
       if (pick){ const p0 = P(); if (item.src === "off" && !(p0.foods||[]).some(x => x.n === item.n)) writeDoc("profile","me", Object.assign({}, S.profile, {foods: [{n:item.n, brand:item.brand, k100:item.k100, p100:item.p100, c100:item.c100, f100:item.f100, por:item.por, pl:item.pl, u:item.u, bc:item.bc}].concat(p0.foods||[]).slice(0,300)}));
         closeSheet(true); pick(e); return false; }
-      const f = (S.days[d]?.food||[]).slice(); if (edit) f[idx] = e; else f.push(e);
+      const f = (S.days[d]?.food||[]).slice(); if (edit) { f[idx] = e; clearDraft(); } else f.push(e);
       const fav = $("#am-fav", sh).checked; let fl = (p.favs||[]).filter(x => x !== item.n); if (fav) fl.unshift(item.n);
       const own = (p.foods||[]).slice(); if ((item.src === "off" || item.src === "pdb") && !own.some(x => x.n === item.n)){ own.unshift({n:item.n, brand:item.brand, k100:item.k100, p100:item.p100, c100:item.c100, f100:item.f100, por:item.por, pl:item.pl, u:item.u, bc:item.bc, nx:item.nx}); }
       if (fav !== favs.has(item.n) || own.length !== (p.foods||[]).length) writeDoc("profile","me", Object.assign({}, S.profile, {favs: fl.slice(0,60), foods: own.slice(0,300)}));
@@ -6800,18 +7133,30 @@ function openCookIngredient(r, index, plan, meal, day, back, apply){
   search();
 }
 
+const COOK_DRAFTS_KEY = "formkurve.cookDrafts";
+const cookDrafts = () => lsGet(COOK_DRAFTS_KEY) || [];
 function openCook(r, pre){
   if(r.hotel && !pre?.shared) return openHotel(r, pre?.plan);
   pre = pre || {};
-  r=JSON.parse(JSON.stringify(r));r._cookAdj=JSON.parse(JSON.stringify(r._cookAdj||ingAdj(r)));const session=pre._cookSession;
+  const draftKey = JSON.stringify([P().person, pre.plan?.id || null, r.n]);
+  const draft = !pre.shared && !pre._cookSession ? cookDrafts().find(item =>
+    item.key === draftKey && (pre.plan?.id || item.session?.date >= todayISO() || pre.resumeDraft)
+  ) : null;
+  const session = pre._cookSession || draft?.session;
+  const savedRecipe = draft?.recipe;
+  r = JSON.parse(JSON.stringify(savedRecipe || r));
+  r._cookAdj = JSON.parse(JSON.stringify(r._cookAdj || savedRecipe?._cookAdj || ingAdj(r)));
   try { document.activeElement && document.activeElement.blur(); } catch(e){}
   const p = P(), cat = CAT[r.cat] || CAT.h, T = recTotals(r), today = todayISO();
   const wst = {o:0, m:defMeal(r), recipePortion:pre.plan ? false : undefined};
   if (pre.plan){ wst.o = kitDiff(pre.plan.d); wst.m = pre.plan.m; }
-  if (session?.wst) Object.assign(wst,session.wst);
+  if (session?.wst) Object.assign(wst, session.wst);
+  if (session?.date) wst.o = kitDiff(session.date);
   const people = cookPeople(r, wst), comps = recComps(r);
   if (pre.plan?.e?.length) people.forEach(x => { x.c = pre.plan.e.includes(x.n) ? 1 : 0; });
-  if (session?.counts) people.forEach((x,i) => { x.c = session.counts[i] ?? x.c; });
+  if (session?.counts) people.forEach((x,i) => {
+    x.c = (session.portions ? session.portions[x.n] : session.counts[i]) ?? x.c;
+  });
   let mode = session?.mode || (comps.length>1||comps.some(c=>c.m==="p")?"comp":"pot"), inputs = session?.inputs || {}, plan = null;
   const fm = kitPantry().length ? fridgeMatch(r) : null;
   if (pre.shared){ return openSharedPlate(r, pre); }
@@ -6847,10 +7192,35 @@ function openCook(r, pre){
       <button type="button" class="btn plain" id="ck-send">Teller an die Familie senden</button>
       ${kitRO() ? "" : `<button type="button" class="btn plain" id="ck-plan">📅 In den Küchen-Plan</button>`}
       ${fm && fm.have.length ? `<button type="button" class="btn plain" id="ck-used">🧊 Verbrauchtes vom Vorrat abziehen</button>` : ""}
-      <button type="button" class="btn plain" id="ck-edit">${r.own ? "Rezept bearbeiten" : "Als eigenes Rezept anpassen"}</button></div>`,
+      <button type="button" class="btn plain" id="ck-edit">${r.own ? "Rezept bearbeiten" : "Als eigenes Rezept anpassen"}</button>
+      <button type="button" class="link" id="ck-discard">Kochentwurf verwerfen</button></div>`,
     onOpen: sh => {
       $(".r", sh).style.visibility = "hidden"; sh._recipe = r; let iaOpen = -1;
-      const snapshot=()=>({wst:{o:wst.o,m:wst.m,recipePortion:wst.recipePortion},counts:people.map(x=>x.c),mode,inputs,stepsOpen:$("#ck-directions",sh).open,rateOpen:$("#ck-rate-s",sh).open});
+      const snapshot = () => ({
+        wst:{o:wst.o,m:wst.m,recipePortion:wst.recipePortion}, date:whenDay(wst),
+        counts:people.map(x => x.c), portions:Object.fromEntries(people.map(x => [x.n,x.c])),
+        mode, inputs, stepsOpen:$("#ck-directions",sh).open, rateOpen:$("#ck-rate-s",sh).open
+      });
+      const leaveCook = () => {
+        closeSheet();
+        if (S.tab === "essen") renderEssen();
+      };
+      $(".l", sh).onclick = leaveCook;
+      $("#ck-discard", sh).onclick = () => {
+        if (!confirm(trText("Kochentwurf verwerfen?"))) return;
+        if (lsSet(COOK_DRAFTS_KEY,cookDrafts().filter(item => item.key !== draftKey))) leaveCook();
+      };
+      sh.previousElementSibling.onclick = null;
+      let lastDraft = "";
+      const saveDraft = () => {
+        if (pre.sessionOnly) return;
+        const state = {key:draftKey, person:p.person, recipe:r, plan:pre.plan?.id || null, session:snapshot()};
+        const serial = JSON.stringify(state);
+        if (serial === lastDraft) return;
+        if (lsSet(COOK_DRAFTS_KEY, [state,...cookDrafts().filter(item => item.key !== draftKey)].slice(0,12))) {
+          lastDraft = serial;
+        }
+      };
       const resume=(rr,groupsChanged,productChanged)=>openCook(rr,Object.assign({},pre,{_cookSession:Object.assign(snapshot(),groupsChanged?{mode:recComps(rr).length>1?"comp":"pot",inputs:{},atPortions:true}:productChanged?{inputs:{}}:{})}));
       const scrollToPortions = () => requestAnimationFrame(() => $("#ck-portion", sh).scrollIntoView({block:"start"}));
       $("#ck-portion-jump", sh).onclick = scrollToPortions;
@@ -6947,6 +7317,7 @@ function openCook(r, pre){
       };
       const upd2 = () => {
         plan = ckPlan();
+        saveDraft();
         const plates = plan.plates.filter(Boolean);
         $("#ck-scale", sh).disabled = !plates.length;
         $$("[data-serving]", sh).forEach(box => {
@@ -6982,7 +7353,7 @@ function openCook(r, pre){
         const g = roundG(pl.g || 1), e = {n: r.n, g, k100: r1(pl.k/g*100), p100: r1(pl.p/g*100), c100: r1((pl.kh||0)/g*100), f100: r1((pl.fa||0)/g*100), u:"g", m: meal, src:"recipe", por:g, pl:"1 Portion", nx: nxRec100(plan.rr||r)};
         const x = S.days[d] || (S.days[d] = {}); x.food = (x.food||[]).concat([e]);
         if (x.food.length){ const t = foodTotals(x); x.kcal = Math.round(t.k); x.p = Math.round(t.p); x.carb = Math.round(t.c); x.fat = Math.round(t.f); }
-        writeDoc("days", d, Object.assign({}, S.days[d], {date:d})); toast(label); builtDate = null; renderAll(); };
+        writeDoc("days", d, Object.assign({}, S.days[d], {date:d})); persistLocal(true); toast(label); builtDate = null; renderAll(); };
       const bumpCooked = extra => { const c = Object.assign({}, P().cooked || {}); c[r.n] = (c[r.n]||0) + 1; const o = {cooked:c}; if (extra) Object.assign(o, extra(P())); saveProfile(o); };
       $("#ck-log", sh).onclick = () => {
         logMine(whenDay(wst), wst.m, `${fmt(plan.plates[0]?.k || 0)} kcal eingetragen – ${whenLabel(wst)}`); setTimeout(() => { const rs = document.querySelector(".sheet.on #ck-rate-s"); if (rs){rs.open=true;rs.scrollIntoView({behavior:"smooth", block:"center"});} }, 450);
@@ -6992,7 +7363,10 @@ function openCook(r, pre){
         const sr=plan.rr||r;const rr = {home:r.home,fresh:r.fresh,n:r.n, cat:r.cat, min:r.min, serv:r.serv, tags:r.tags, steps:r.steps, cmode:r.cmode, ing:sr.ing.map((e,i) => ({n:e.n, g:e.g, k100:e.k100, p100:e.p100, c100:e.c100, f100:e.f100, u:e.u, por:e.por, pl:e.pl, originalN:e.originalN, nx:e.nx, c:weighLabels(sr)[i]}))};
         const plates = {}; plan.plates.filter(Boolean).forEach(pl => { plates[pl.n.toLowerCase()] = {c:pl.c, k:Math.round(pl.k), p:Math.round(pl.p), kh:Math.round(pl.kh||0), fa:Math.round(pl.fa||0), g:Math.round(pl.g), it: pl.items.map(it => [it.l, Math.round(it.g), it.pcs])}; });
         const url = location.origin + location.pathname + "#cook=" + b64e({r:rr, plates, by:p.person, sessionOnly:!!r._sessionOriginal});
-        await shareLink(r.n, `${r.n} – dein Teller in ITOGO:`, url);
+        saveDraft();
+        const shared = await shareLink(r.n, `${r.n} – dein Teller in ITOGO:`, url);
+        if (!sheetClose && !document.hidden) resume(r);
+        if (shared && navigator.share) toast("Teilen abgeschlossen. Deine Portion kannst du jetzt eintragen.");
       };
       const used = $("#ck-used", sh); if (used) used.onclick = () => openKitUse(plan && plan.rr || r, plan ? plan.f : 1, pre.plan && pre.plan.id);
       const kpl = $("#ck-plan", sh); if (kpl) kpl.onclick = () => { const e = people.filter(x => x.c > 0).map(x => x.n); kitPut("plan", {id: kitId(), d: whenDay(wst), m: wst.m, r: r.n, e: e.length ? e : [p.person]}); toast("In den Küchen-Plan: " + whenLabel(wst)); };
@@ -7091,7 +7465,7 @@ function openPantry(){
   };
   const sugg = sh => { const q = norm($("#pt-q", sh).value.trim()), box = $("#pt-s", sh); if (q.length < 2){ box.innerHTML = ""; return; }
     const have = new Set(list.map(x => x.n)), seen = new Set();
-    const res = allLocal().filter(x => !have.has(x.n) && (norm(x.n).includes(q) || (LANG === "ru" && norm(trText(x.n)).includes(q)))).filter(x => { const g = ingGroup(x.n); if (seen.has(g)) return false; seen.add(g); return true; }).slice(0, 8);
+    const res = allLocal().filter(x => !have.has(x.n) && (norm(x.n).includes(q) || (LANG !== "de" && norm(trText(x.n)).includes(q)))).filter(x => { const g = ingGroup(x.n); if (seen.has(g)) return false; seen.add(g); return true; }).slice(0, 8);
     box.innerHTML = res.map(x => `<button type="button" class="chip-btn" data-add="${esc(x.n)}">+ ${esc(x.n)}</button>`).join("");
     $$("[data-add]", box).forEach(b => b.onclick = () => { list.push({n:b.dataset.add, u:false}); $("#pt-q", sh).value = ""; box.innerHTML = ""; draw(sh); }); };
   openSheet({title:"Kühlschrank", right:"Sichern", body:`<div class="fd-search"><input id="pt-q" type="search" placeholder="Was ist da? z. B. Hähnchen, Paprika …" autocomplete="off"></div>
@@ -7212,10 +7586,14 @@ function openQuickRec(pre){
 }
 let rDraft = null;
 function openRecipeEdit(r, origName){
-  rDraft = rDraft && rDraft._keep ? rDraft : JSON.parse(JSON.stringify(r || {n:"", cat:"h", min:30, serv:4, tags:[], steps:[], ing:[]}));
+  const continued = r === undefined && rDraft && rDraft._keep;
+  const key = continued ? rDraft._draftKey : JSON.stringify(["formkurve.recipeDraft",P().person,r?.n || null]);
+  const initial = r || {n:"", cat:"h", min:30, serv:4, tags:[], steps:[], ing:[]};
+  rDraft = continued ? rDraft : (lsGet(key) || JSON.parse(JSON.stringify(initial)));
+  rDraft._draftKey = key;
   rDraft._keep = false; if (origName !== undefined) rDraft._orig = origName;
   const d = rDraft, T = recTotals(d);
-  openSheet({title: d._orig ? "Rezept bearbeiten" : "Neues Rezept", right:"Sichern", body:`
+  openSheet({title: d._orig ? "Rezept bearbeiten" : "Neues Rezept", left:"Schließen", right:"Sichern", body:`
     <div class="section"><div class="group">
       <label class="row" for="re-n"><span class="lbl">Name</span><input class="field" style="width:62%;text-align:right" id="re-n" value="${esc(d.n)}" placeholder="z. B. Omas Gulasch light"></label>
       <div class="row col"><div class="seg" id="re-c">${Object.entries(CAT).map(([k,v]) => `<button type="button" data-v="${k}" aria-pressed="${d.cat===k}">${v[0]}</button>`).join("")}</div></div>
@@ -7230,18 +7608,23 @@ function openRecipeEdit(r, origName){
     onOpen: sh => {
       const grab = () => { d.n = $("#re-n", sh).value; d.serv = parseNum($("#re-s", sh).value) || 1; d.min = parseNum($("#re-m", sh).value) || 0; d.steps = $("#re-st", sh).value.split("\n").map(x => x.trim()).filter(Boolean); d.cat = $("#re-c [aria-pressed=true]", sh)?.dataset.v || "h";
         $$("[data-ig]", sh).forEach(i => { const v = parseNum(i.value); if (v > 0) d.ing[Number(i.dataset.ig)].g = v; });
-        $$("[data-ic]", sh).forEach(i => { d.ing[Number(i.dataset.ic)].c = i.value === "Gericht" ? undefined : i.value; }); };
-      $$("#re-c button", sh).forEach(b => b.onclick = () => $$("#re-c button", sh).forEach(x => x.setAttribute("aria-pressed", String(x===b))));
-      $$("[data-rm]", sh).forEach(b => b.onclick = () => { grab(); d.ing.splice(Number(b.dataset.rm),1); d._keep = true; openRecipeEdit(); });
-      const pick = e => { d.ing.push({n:e.n, g:e.g, k100:e.k100, p100:e.p100, c100:e.c100, f100:e.f100, u:e.u, por:e.por, pl:e.pl}); d._keep = true; setTimeout(() => openRecipeEdit(), 360); };
+        $$("[data-ic]", sh).forEach(i => { d.ing[Number(i.dataset.ic)].c = i.value === "Gericht" ? undefined : i.value; }); lsSet(key,d); };
+      sh.addEventListener("input", grab);
+      sh.addEventListener("change", grab);
+      $$("#re-c button", sh).forEach(b => b.onclick = () => {
+        $$("#re-c button", sh).forEach(x => x.setAttribute("aria-pressed", String(x===b)));
+        grab();
+      });
+      $$("[data-rm]", sh).forEach(b => b.onclick = () => { grab(); d.ing.splice(Number(b.dataset.rm),1); lsSet(key,d); d._keep = true; openRecipeEdit(); });
+      const pick = e => { d.ing.push({n:e.n, g:e.g, k100:e.k100, p100:e.p100, c100:e.c100, f100:e.f100, u:e.u, por:e.por, pl:e.pl}); lsSet(key,d); d._keep = true; setTimeout(() => openRecipeEdit(), 360); };
       $("#re-add", sh).onclick = () => { grab(); d._keep = true; openFoodAdd("d", S.date, pick); };
       $("#re-scan", sh).onclick = () => { grab(); d._keep = true; openScanner("d", S.date, pick); };
-      const del = $("#re-del", sh); if (del) del.onclick = () => { const rs = (P().recipes||[]).filter(x => x.n !== d._orig); rDraft = null; closeSheet(); saveProfile({recipes:rs}); toast("Gelöscht"); };
+      const del = $("#re-del", sh); if (del) del.onclick = () => { const rs = (P().recipes||[]).filter(x => x.n !== d._orig); lsSet(key,null); rDraft = null; closeSheet(); saveProfile({recipes:rs}); toast("Gelöscht"); };
       sh._grab = grab;
     },
     onSave: sh => { sh._grab(); if (!d.n.trim()){ toast("Name fehlt"); return false; } if (!d.ing.length){ toast("Mindestens eine Zutat"); return false; }
       const clean = {n:d.n.trim(), cat:d.cat, min:d.min, serv:d.serv, tags:d.tags||[], steps:d.steps, ing:d.ing, cmode:d.cmode||{}};
-      const rs = (P().recipes||[]).filter(x => x.n !== d._orig && x.n !== clean.n); rs.unshift(clean); rDraft = null; saveProfile({recipes:rs.slice(0,200)}); toast("Rezept gespeichert"); }});
+      const rs = (P().recipes||[]).filter(x => x.n !== d._orig && x.n !== clean.n); rs.unshift(clean); lsSet(key,null); rDraft = null; saveProfile({recipes:rs.slice(0,200)}); toast("Rezept gespeichert"); }});
 }
 let recQ = "", recF = "alle";
 
@@ -7497,7 +7880,7 @@ function recMatch(r, k, ck){
   return false; }
 function recipeList(){
   const q = norm(recQ.trim()), ck = P().cooked || {};
-  if (q) return allRecipes().filter(r => norm(r.n).includes(q) || (LANG === "ru" && norm(trText(r.n)).includes(q)) || r.ing.some(e => norm(e.n).includes(q) || (LANG === "ru" && norm(trText(e.n)).includes(q))));
+  if (q) return allRecipes().filter(r => norm(r.n).includes(q) || (LANG !== "de" && norm(trText(r.n)).includes(q)) || r.ing.some(e => norm(e.n).includes(q) || (LANG !== "de" && norm(trText(e.n)).includes(q))));
   if (!recCat || recCat === "ff") return [];
   return allRecipes().filter(r => recMatch(r, recCat, ck) && recMatch(r, recF, ck));
 }
@@ -7511,7 +7894,7 @@ function recipeSortHTML(id){
 function sortRecipes(list){
   const mode = lsGet("formkurve.recipeSort");
   if (!mode || mode === "default") return list;
-  const language = LANG === "ru" ? "ru" : "de";
+  const language = LANG;
   const byName = (a,b) => trText(a.n).localeCompare(trText(b.n),language);
   const score = {
     protein:r=>-recTotals(r).p/(r.serv||1),
@@ -7573,7 +7956,10 @@ function renderEssen(){
   const el = $("#s-essen"), d = S.date, today = todayISO();
   const sub = d === today ? "Heute" : d === addDays(today,-1) ? "Gestern" : d === addDays(today,1) ? "Morgen (geplant)" : d === addDays(today,2) ? "Übermorgen (geplant)" : WD[dow(d)] + ", " + dateShort(d);
   el.innerHTML = `${banner()}<div class="nav"><span class="sub">${esc(sub)}</span><div class="nav-btns"><button class="icon-btn" id="e-prev" aria-label="Vorheriger Tag">${ICON.left}</button><button class="icon-btn" id="e-next" aria-label="Nächster Tag" ${d >= addDays(today,2) ? "disabled" : ""}>${ICON.right}</button></div></div>
-    <h1 class="large-title">Essen</h1><button type="button" class="link" id="e-household" style="margin:0 0 14px">Haushalt & Ziele · Tages-Update</button>
+    <h1 class="large-title">Essen</h1>${(() => {
+      const draft = cookDrafts().find(item => item.person === P().person && item.session?.date === d);
+      return draft ? `<button type="button" class="health-btn" id="e-cook-resume"><span class="hb-i">🍽️</span><span><b>Kochen fortsetzen</b><small>${esc(draft.recipe.n)}</small></span>${ICON.chev}</button>` : "";
+    })()}<button type="button" class="link" id="e-household" style="margin:0 0 14px">Haushalt & Ziele · Tages-Update</button>
     <div class="section"><div class="glass food" id="food"></div></div>
     ${alinaFoodInspiration("food")}
     <div class="section"><button type="button" class="health-btn qk-btn" id="qk-open"><span class="hb-i" style="background:linear-gradient(135deg,#FF9F0A,#FF375F)">⚡</span><span><b>Schnell-Rezept</b><small>Wer isst mit? Was ist da? – Mengen für alle, roh abgewogen</small></span>${ICON.chev}</button></div>
@@ -7585,6 +7971,14 @@ function renderEssen(){
       <button type="button" class="health-btn" id="rec-eat" style="margin-top:14px"><span class="hb-i" style="background:linear-gradient(135deg,var(--indigo),var(--tint))">🏠</span><span><b>Haushalt – für wen ich koche</b><small>${(() => { const h = household(); return h.length ? esc(h.map(x => x.n).join(", ")) : "Personen eintragen"; })()}</small></span>${ICON.chev}</button></div>
     <button type="button" class="paste-mini" id="ps-go">📋 Link aus WhatsApp einfügen</button>`;
   renderFood(el, d);
+  const resumeCook = $("#e-cook-resume", el);
+  if (resumeCook) resumeCook.onclick = () => {
+    const draft = cookDrafts().find(item => item.person === P().person && item.session?.date === d);
+    if (!draft) return;
+    const planned = draft.plan && K.plan[draft.plan];
+    const recipe = allRecipes().find(r => r.n === draft.recipe.n) || draft.recipe;
+    openCook(recipe, {resumeDraft:true, plan:planned && !planned.del ? planned : {id:draft.plan, d:d, m:draft.session.wst.m}});
+  };
   $("#e-household",el).onclick=()=>openEaters();
   drawRecipes(el);
   $("#fr-open", el).onclick = openPantry;
@@ -8547,7 +8941,7 @@ function openKitPick(d, m){
         $$("[data-en]", sh).forEach(b => b.onclick = () => { const n = b.dataset.en; if (eat.has(n)) eat.delete(n); else eat.add(n); drawE(); }); };
       let L = [];
       const drawL = () => { const qq = norm(q.trim()), st = kitStock();
-        L = allRecipes().filter(r => (scope === "smoothies" ? r.tags?.includes("smoothies") : scope === "1" || qq || r.cat === catOf) && (!qq || norm(r.n).includes(qq) || (LANG === "ru" && norm(trText(r.n)).includes(qq)) || r.ing.some(e => norm(e.n).includes(qq))))
+        L = allRecipes().filter(r => (scope === "smoothies" ? r.tags?.includes("smoothies") : scope === "1" || qq || r.cat === catOf) && (!qq || norm(r.n).includes(qq) || (LANG !== "de" && norm(trText(r.n)).includes(qq)) || r.ing.some(e => norm(e.n).includes(qq))))
           .map(r => [r, r.ing.filter(e => kitHas(st, e.n)).length]).sort((a, b) => b[1] - a[1] || (avgRating(b[0])?.a || 0) - (avgRating(a[0])?.a || 0)).slice(0, 40);
         $("#kp-l", sh).innerHTML = L.map(([r, h], i) => { const T = recTotals(r), photo = r.tags?.includes("smoothies") && recipeCardPhoto(r); return `<button type="button" class="kp-r" data-kr="${i}">${photo ? `<img class="kp-smoothie-photo" src="${esc(photo)}" alt="" loading="lazy" decoding="async">` : `<span class="frc-e">${recEmoji(r)}</span>`}<span class="frc-t"><b>${esc(r.n)}</b><small class="num">${fmt(T.k / r.serv)} kcal · ${r.min} min${h ? ` · <span>🧊 ${h} im Vorrat</span>` : ""}</small></span></button>`; }).join("") || `<p class="note">Nichts gefunden.</p>`;
         $$("[data-kr]", sh).forEach(b => b.onclick = () => { const r = L[Number(b.dataset.kr)][0]; if (!eat.size){ toast("Mindestens eine Person wählen"); return; }
@@ -8664,7 +9058,7 @@ function kitStockBind(el, ro){
     if (!PDB) pdbLoad().then(() => { if (PDB && document.body.contains(inp) && inp.value.trim()) inp.oninput(); });
     const qs = gStem(q), seen = new Set(), gs = gSearch(inp.value.trim(), 5); gs.forEach(g => seen.add(norm(g[0])));
     const ffn = kitStockBind._ff || (kitStockBind._ff = new Set(FF_FOODS.map(f => f[0])));
-    const res = allLocal().filter(x => !ffn.has(x.n)).filter(x => { const k = norm(x.n); return k.includes(q) || (qs.length >= 3 && k.includes(qs)) || (LANG === "ru" && norm(trText(x.n)).includes(q)); }).filter(x => { const k = norm(x.n); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
+    const res = allLocal().filter(x => !ffn.has(x.n)).filter(x => { const k = norm(x.n); return k.includes(q) || (qs.length >= 3 && k.includes(qs)) || (LANG !== "de" && norm(trText(x.n)).includes(q)); }).filter(x => { const k = norm(x.n); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
     const pp = pdbSearch(inp.value.trim(), 4, K.stores);
     box.innerHTML = gs.map(g => `<button type="button" class="chip-btn" data-kn="${esc(g[0])}">${g[2]} ${esc(g[0])}</button>`).join("") + pp.map(x => `<button type="button" class="chip-btn" data-kpd="${esc(x.bc)}">🏷 ${esc(x.n)}${x.brand ? ` <small class="ks-gl">${esc(x.brand)}${x.qty ? " · " + esc(x.qty) : ""}</small>` : ""}</button>`).join("") + res.map(x => `<button type="button" class="chip-btn" data-kn="${esc(x.n)}">+ ${esc(x.n)}</button>`).join("") + (seen.has(q) ? "" : `<button type="button" class="chip-btn" data-kn="${esc(inp.value.trim())}">+ „${esc(inp.value.trim())}“</button>`) + (q.length >= 3 ? `<button type="button" class="chip-btn off-s" data-koff="1">🔎 Produkt online suchen</button>` : "");
     $$("[data-kn]", box).forEach(b => b.onclick = () => openKitItem(null, {n: b.dataset.kn}));
@@ -8700,7 +9094,7 @@ function openKitItem(it, pre){
       const bi = $("#ki-b", sh), bs = $("#ki-bs", sh);
       $("#ki-n", sh).oninput = () => { if (!bTouched){ const g = kitGuessBase($("#ki-n", sh).value.trim()); bi.value = g || ""; $("#ki-bh", sh).textContent = trText(g ? "automatisch erkannt" : "keine Zuordnung"); } };
       bi.oninput = () => { bTouched = true; $("#ki-bh", sh).textContent = trText("selbst gewählt"); const q = norm(bi.value.trim()); if (q.length < 2){ bs.innerHTML = ""; return; }
-        const res = kitIngList().filter(c => norm(c.n).includes(q) || (LANG === "ru" && norm(trText(c.n)).includes(q))).slice(0, 8);
+        const res = kitIngList().filter(c => norm(c.n).includes(q) || (LANG !== "de" && norm(trText(c.n)).includes(q))).slice(0, 8);
         bs.innerHTML = res.map(c => `<button type="button" class="chip-btn" data-kb="${esc(c.n)}">${esc(c.n)}</button>`).join("");
         $$("[data-kb]", bs).forEach(b => b.onclick = () => { bi.value = b.dataset.kb; bs.innerHTML = ""; }); }; },
     onSave: sh => { const n = $("#ki-n", sh).value.trim(); if (!n){ toast("Bitte einen Namen eingeben"); return false; }
@@ -8956,7 +9350,7 @@ function kbDecodeSetup(t){
   try { let b = m[1].replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "="; const o = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b), c => c.charCodeAt(0)))); return o && typeof o === "object" && PEOPLE[o.tmpl] ? o : null; } catch(e){ return null; }
 }
 function kbApply(o, raw){ if (!o || !o.tmpl){ toast(/setup=|kb=|ITOGOKB/.test(raw || "") ? "Link unvollständig – bitte den ganzen Link kopieren (er ist sehr lang)" : raw ? "Das ist kein ITOGO-Link" : "Kein ITOGO-Code erkannt"); return false; }
-  S.profile = Object.assign({}, S.profile || {}, o); persistLocal(); if (o.lang) setLang(o.lang === "ru" ? "ru" : "de", true); applyPerson();
+  S.profile = Object.assign({}, S.profile || {}, o); persistLocal(); if (o.lang) setLang(o.lang, true); applyPerson();
   toast("Verbunden als " + (S.profile.name || S.profile.person || "")); kb.view = "lib"; kb.cat = "start"; setTimeout(() => kochRender(), 50); return true; }
 function openKbQR(){
   const url = location.origin + location.pathname + "#setup=" + btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(kbPayload())))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
@@ -9092,7 +9486,7 @@ function kochRailBind(root){
 }
 function kochList(){
   const ck = P().cooked || {}, q = norm(kb.q.trim());
-  let L = q ? allRecipes().filter(r => norm(r.n).includes(q) || (LANG === "ru" && norm(trText(r.n)).includes(q)) || r.ing.some(e => norm(e.n).includes(q) || (LANG === "ru" && norm(trText(e.n)).includes(q))))
+  let L = q ? allRecipes().filter(r => norm(r.n).includes(q) || (LANG !== "de" && norm(trText(r.n)).includes(q)) || r.ing.some(e => norm(e.n).includes(q) || (LANG !== "de" && norm(trText(e.n)).includes(q))))
     : allRecipes().filter(r => recMatch(r, kb.cat, ck));
   if (!q && kb.cat === "top") L.sort((a,b) => (avgRating(b)?.a||0) - (avgRating(a)?.a||0));
   if (!q && kb.cat === "haut") L.sort((a,b) => skinOf(b).n - skinOf(a).n);
