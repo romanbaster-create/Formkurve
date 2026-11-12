@@ -1668,6 +1668,20 @@ body:has(.sheet.on) .ks-fab{display:none} .km-q{display:flex;gap:10px;align-item
 .meal-plan b{font-size:13px}
 .meal-plan-open{font-size:12px;font-weight:700;color:var(--tint)}
 </style>
+<style>
+.cook-step-timer{display:block;margin-top:7px;text-decoration:none}
+.cook-step-timer summary{width:fit-content;min-height:34px;display:flex;align-items:center;gap:5px;padding:0 8px;border-radius:10px;background:var(--fill);color:var(--tint);font-weight:700;font-size:13px;cursor:pointer}
+.cook-step-timer summary::-webkit-details-marker{display:none}
+.cook-timer-form{display:flex;align-items:end;flex-wrap:wrap;gap:7px;margin-top:8px}
+.cook-timer-form label{display:grid;gap:2px;font-size:11px;color:var(--label2)}
+.cook-timer-form input{width:64px;height:34px;padding:3px 6px;border:0;border-radius:8px;background:var(--card);color:var(--label);font-size:16px}
+.cook-timer-form button{min-height:34px}
+.cook-timer-float{position:fixed;z-index:55;right:12px;bottom:calc(85px + env(safe-area-inset-bottom,0px));display:grid;gap:5px;max-width:calc(100vw - 24px);max-height:32vh;overflow:auto}
+.cook-timer-float[hidden]{display:none}
+.cook-timer-float .kb-tmr{border:1px solid var(--sep);background:var(--card)}
+.cook-timer-float .kb-tmr.ring{background:var(--orange)}
+@media(prefers-reduced-motion:reduce){.kb-tmr.ring{animation:none}}
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -4365,6 +4379,13 @@ Object.assign(I18N_RU, {
   "Cannelloni, trocken": "Каннеллони, сухие",
   "Grüne Bohnen (Dose, abgetropft)": "Стручковая фасоль, консервированная без жидкости",
   "Zitronengras": "Лемонграсс"
+});
+Object.assign(I18N_RU, {
+  "Timer stellen":"Установить таймер", "Timer starten":"Запустить таймер", "Sekunden":"Секунды",
+  "Kochtimer":"Кухонный таймер", "Timer beenden":"Остановить таймер", "Timer quittieren":"Закрыть уведомление таймера",
+  "Timer läuft":"Таймер запущен", "Timer abgelaufen":"Время вышло",
+  "⏱ Timer gestartet":"⏱ Таймер запущен", "⏰ Kochtimer abgelaufen":"⏰ Время приготовления вышло",
+  "Bitte eine Timerzeit zwischen 1 Sekunde und 12 Stunden eingeben.":"Задай время от 1 секунды до 12 часов."
 });
 function trText(t){
   if (LANG === "de" || !t || !LETTER.test(t)) return t;
@@ -9164,11 +9185,12 @@ function openCook(r, pre){
           ${choose ? `<div class="meth-o">${opts.map(([k,i,n]) => `<button type="button" data-dv="${k}" aria-pressed="${k === dv}">${i} ${k === "herd" ? "Kochfeld & Pfanne" : n}<small>${fopts ? RFULL[r.n].v[k][0] : (k === "herd" ? r.min : r.dev[k][0])} min</small></button>`).join("")}<p class="note" style="margin:2px 4px 0">Das Rezept bleibt gleich – das Gerät bestimmt nur, womit gegart wird.</p></div>` : ""}`;
         let last = null, html = "";
         st.forEach((x,i) => { if (x.sec !== last && SEC[x.sec]){ last = x.sec; html += `<li class="sec">${SEC[x.sec]}</li>`; }
-          html += `<li data-si="${i}" class="${done.has(i) ? "done" : ""}"><span class="sd">${ICO[x.d] || "•"}</span><span class="st-t">${x.t ? stepHTML(plan && plan.rr || r, x.t, f) : ""}${x.c ? `<span class="st-c">${devChipHTML(x.d, x.c)}</span>` : ""}</span></li>`; });
+          html += `<li data-si="${i}" class="${done.has(i) ? "done" : ""}"><span class="sd">${ICO[x.d] || "•"}</span><span class="st-t">${x.t ? stepHTML(plan && plan.rr || r, x.t, f) : ""}${x.c ? `<span class="st-c">${devChipHTML(x.d, x.c)}</span>` : ""}${cookTimerHTML(x,i)}</span></li>`; });
         $("#ck-st", sh).innerHTML = `<ol class="ck-steps uni">${html}</ol><p class="note" style="margin:8px 4px 0">Mengen passen sich den Portionen oben an. Erledigte Schritte antippen.</p>`;
         const mc = $("#meth-ch", sh); if (mc) mc.onclick = () => { choose = !choose; drawDev(); };
         $$("[data-dv]", sh).forEach(b => b.onclick = () => { dv = b.dataset.dv; const m = lsGet("formkurve.devr") || {}; m[r.n] = dv; lsSet("formkurve.devr", m); lsSet("formkurve.dev", dv); choose = false; done.clear(); drawDev(); });
-        $$("[data-si]", sh).forEach(li => li.onclick = () => { const i = Number(li.dataset.si); done.has(i) ? done.delete(i) : done.add(i); li.classList.toggle("done"); if (navigator.vibrate) navigator.vibrate(8); }); };
+        bindCookTimers($("#ck-st",sh), st, r.n);
+        $$("[data-si]", sh).forEach(li => li.onclick = e => { if (e.target.closest(".cook-step-timer")) return; const i = Number(li.dataset.si); done.has(i) ? done.delete(i) : done.add(i); li.classList.toggle("done"); if (navigator.vibrate) navigator.vibrate(8); }); };
       const fi = $("#ck-file", sh); fi.onchange = async () => { const f = fi.files && fi.files[0]; if (!f) return; try { await savePhoto(r.n, f); toast("Foto gespeichert"); setTimeout(() => resume(r), 200); } catch(e){ toast("Foto konnte nicht gespeichert werden"); } };
       sh._relang = () => { drawPeople(); upd(); drawDev(); };
       drawRate(sh);
@@ -11104,7 +11126,8 @@ const KOCH_Q = /[?&]koch=1/.test(location.search);
 if (KOCH_Q && (navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches))) lsSet("formkurve.koch", true);
 const KOCH = KOCH_Q || lsGet("formkurve.koch") === true;
 let kb = {view:"lib", cat: "start", q:""};
-let kbWake = null, kbTimers = [], kbTick = null, kbAudio = null;
+const COOK_TIMER_KEY = "formkurve.cookTimers";
+let kbWake = null, kbTimers = lsGet(COOK_TIMER_KEY) || [], kbTick = null, kbAudio = null;
 const KB_CATS = [["start","🏠","Start"],["rinderhack","🥩","Rinderhack"],["zuhause-schnell","🏡","Schnell zu Hause"],["smoothies","🥤","Smoothies"],["bowls","🥗","Bowls"],["hotel","🏨","Hotel-Frühstück"],["plan","📅","Geplant"],["top","⭐","Favoriten"],["f","☀️","Frühstück"],["h","🍽️","Hauptgerichte"],["büro","💼","Büro"],["meal prep","🥡","Meal Prep"],["wochenende","🍕","Wochenende"],["russisch","🥟","Russische Küche"],["s","🍰","Snacks & Desserts"],["haut","✨","Haut & Glow"],["darm","🌿","Darmflora"],["own","👤","Eigene"],["alle","📚","Alle"]];
 const KB_SEC = {p:"Vorbereiten", c:"Garen", f:"Anrichten"};
 const kbCls = t => /^(Mitnehmen|Einfrieren|Tipp):/.test(t) ? "plate" : /Airfryer/.test(t) ? "af" : /(Ofen|Ober-\/Unterhitze|Umluft|Blech|backen|Auflaufform|ofenfest)/.test(t) ? "ov" : /(brat|brät|gar(en|t)|koch|köchel|dämpf|dünst|anschwitz|bräun|röst|erhitz|stocken|schmor|Pfanne|back|schmelz)/i.test(t) ? "herd" : "knife";
@@ -11113,7 +11136,7 @@ function kochRender(){
   let root = $("#koch"); if (!root){ root = document.createElement("div"); root.id = "koch"; document.body.appendChild(root); }
   if (!S.profile){ kochConnect(root); return; }
   root.classList.toggle("classic", kochClassic()); kochApplyStyle(root);
-  if (kb.view === "rec" && kb.r) kochRecipe(root); else kochLib(root);
+  if (kb.view === "rec" && kb.r) kochRecipe(root); else { kochLib(root); kochTimerDraw(); }
 }
 
 // ---------- Kochbuch verbinden: QR / Link ----------
@@ -11254,7 +11277,7 @@ function kochRailBind(root){
     lsSet(key,closed);
     updateRail(closed);
   };
-  $$("[data-kc]", root).forEach(b => b.onclick = () => { kochTimersKeep(); kb.view = "lib"; kb.cat = b.dataset.kc; kb.q = ""; lsSet("formkurve.kbcat", kb.cat); kochWake(false); kochRender(); });
+  $$("[data-kc]", root).forEach(b => b.onclick = () => { kb.view = "lib"; kb.cat = b.dataset.kc; kb.q = ""; lsSet("formkurve.kbcat", kb.cat); kochWake(false); kochRender(); });
   const ps = $("#kb-paste", root); if (ps) ps.onclick = pasteShared;
   const dvb = $("#kb-dev", root); if (dvb) dvb.onclick = () => openDevices(() => kochRender());
   const re = $("#kb-re", root); if (re) re.onclick = openKbScan;
@@ -11405,8 +11428,8 @@ function kochRecipe(root){
     pl.deps[i].filter(j => lanes[j] !== lanes[i] && pl.kind[j] !== "i").slice(0, 2).forEach(j => { h += `<span class="kb-dep" data-dep="${j}"><i>⏳</i> <span>wartet auf</span> <b>${esc(kochName(lanes[j]))}</b> · <span class="num">Schritt ${j + 1}</span></span>`; });
     if (pl.kind[i] === "p"){ const q = st.findIndex((x, k) => pl.deps[k].includes(i) && lanes[k] !== lanes[i]); if (q >= 0) h += `<span class="kb-hand">➜ <span>danach an</span> <b>${esc(kochName(lanes[q]))}</b></span>`; }
     return h ? `<div class="kb-chips">${h}</div>` : ""; };
-  const card = (x, i) => { const mins = kochMin(x);
-    return `<li class="kb-st ${kb.done.has(i) ? "done" : ""}" data-ks="${i}"><span class="kb-sd">${ICO[x.d] || "•"}${two ? `<small class="kb-no num">${i + 1}</small>` : ""}</span><div class="kb-stt">${x.t ? stepHTML(r, x.t, f) : ""}${x.c ? `<div class="st-c">${devChipHTML(x.d, x.c)}</div>` : ""}${mins ? `<button type="button" class="kb-tm" data-kt="${i}|${mins}">⏱ ${mins} min</button>` : ""}${chips(i)}</div>${two ? `<button type="button" class="kb-mv" data-km="${i}" aria-label="Anderer Koch">⇄</button>` : ""}<span class="kb-ck" aria-hidden="true"></span></li>`; };
+  const card = (x, i) => {
+    return `<li class="kb-st ${kb.done.has(i) ? "done" : ""}" data-ks="${i}"><span class="kb-sd">${ICO[x.d] || "•"}${two ? `<small class="kb-no num">${i + 1}</small>` : ""}</span><div class="kb-stt">${x.t ? stepHTML(r, x.t, f) : ""}${x.c ? `<div class="st-c">${devChipHTML(x.d, x.c)}</div>` : ""}${cookTimerHTML(x,i)}${chips(i)}</div>${two ? `<button type="button" class="kb-mv" data-km="${i}" aria-label="Anderer Koch">⇄</button>` : ""}<span class="kb-ck" aria-hidden="true"></span></li>`; };
   const lane = li => { let last = null, h = ""; st.forEach((x, i) => { if (two && (lanes[i] !== li || pl.kind[i] === "i")) return; if (x.sec !== last && KB_SEC[x.sec]){ last = x.sec; h += `<li class="kb-sec">${KB_SEC[x.sec]}</li>`; } h += card(x, i); });
     return `<section class="kb-lane l${li}" data-lane="${li}">${two ? `<div class="kb-lh"><button type="button" class="kb-ln" data-kn="${li}">👤 <b>${esc(kochName(li))}</b> ▾</button>${pl.roles[li] ? `<span class="kb-role">${pl.roles[li]}</span>` : ""}<span class="kb-lm"><span class="num kb-cnt"></span>${pl.eta[li] ? ` · <span class="num">≈ ${pl.eta[li]} min</span>` : ""}</span></div>` : ""}<ol class="kb-steps">${h || `<li class="kb-free">Nichts zu tun – hilf beim anderen mit 🙂</li>`}</ol></section>`; };
   const ph = recipeCardPhoto(r);
@@ -11514,10 +11537,10 @@ function kochClassicRecipe(root){
   const devName = (DEVS.find(d => d[0] === kb.dv) || ["", "", "Kochfeld"])[2];
   const stars = n => [1,2,3,4,5].map(i => `<span class="${i <= Math.round(n) ? "on" : ""}">★</span>`).join("");
   let num = 0, last = null;
-  const steps = st.map((x, i) => { let h = ""; if (x.sec !== last && KB_SEC[x.sec]){ last = x.sec; h += `<li class="cb-sec">${KB_SEC[x.sec]}</li>`; } num++; const mins = kochMin(x);
+  const steps = st.map((x, i) => { let h = ""; if (x.sec !== last && KB_SEC[x.sec]){ last = x.sec; h += `<li class="cb-sec">${KB_SEC[x.sec]}</li>`; } num++;
     const who = pl && pl.kind[i] !== "i" ? `<button type="button" class="cb-who l${pl.lane[i]}" data-km="${i}" aria-label="Anderer Koch">${esc(kochName(pl.lane[i]))}</button>` : "";
     const wt = pl ? pl.deps[i].filter(j => pl.lane[j] !== pl.lane[i] && pl.kind[j] !== "i").slice(0, 1).map(j => `<span class="kb-dep cb-dep" data-dep="${j}"><i>⏳</i> <span>wartet auf</span> <b>${esc(kochName(pl.lane[j]))}</b> · <span class="num">Schritt ${j + 1}</span></span>`).join("") : "";
-    return h + `<li class="kb-st cb-st ${kb.done.has(i) ? "done" : ""}" data-ks="${i}" data-ln="${pl ? pl.lane[i] : 0}"><span class="cb-n num">${num}.</span><div class="kb-stt">${who}${x.t ? stepHTML(r, x.t, f) : ""}${x.c ? `<div class="st-c">${devChipHTML(x.d, x.c)}</div>` : ""}${mins ? `<button type="button" class="kb-tm" data-kt="${i}|${mins}">⏱ ${mins} min</button>` : ""}${wt}</div><span class="kb-ck" aria-hidden="true"></span></li>`; }).join("");
+    return h + `<li class="kb-st cb-st ${kb.done.has(i) ? "done" : ""}" data-ks="${i}" data-ln="${pl ? pl.lane[i] : 0}"><span class="cb-n num">${num}.</span><div class="kb-stt">${who}${x.t ? stepHTML(r, x.t, f) : ""}${x.c ? `<div class="st-c">${devChipHTML(x.d, x.c)}</div>` : ""}${cookTimerHTML(x,i)}${wt}</div><span class="kb-ck" aria-hidden="true"></span></li>`; }).join("");
   const tabs = KB_CATS.filter(c => !["start","plan","own"].includes(c[0]));
   root.innerHTML = `<main class="cb-wrap"><div class="cb-book"><div class="cb-page">
     <div class="cb-bar">${kochRailToggle("kb-page-tabs")}<button type="button" class="cb-ib" id="kb-back" aria-label="Zurück">‹</button><button type="button" class="cb-ib" id="kb-home" aria-label="Start">⌂</button>
@@ -11546,14 +11569,14 @@ function kochBindRec(root, r, st){
   const target=$(".cb-ing,.kb-il",root);if(target&&!$("#kb-exact",root)){const b=document.createElement("button");b.id="kb-exact";b.type="button";b.className="btn secondary";b.textContent="Genau abwiegen & Produkte scannen";b.onclick=()=>openCook(kb.r,{_cookSession:{wst:kb.wst,counts:kb.people.map(x=>x.c)}});target.after(b);}
 
   kochRailBind(root); kochMarkNext(root); kochTimerDraw(); kochStyleBind(root);
-  $("#kb-back", root).onclick = () => { kochTimersKeep(); kb.view = "lib"; kochWake(false); kochRender(); };
-  $$("[data-ks]", root).forEach(li => li.onclick = e => { if (e.target.closest(".kb-tm,.kb-mv,.cb-who,.qty-x")) return; const i = Number(li.dataset.ks); if (kb.done.has(i)) kb.done.delete(i); else kb.done.add(i); li.classList.toggle("done"); kochMarkNext(root); const all = $$("[data-ks]", root); if (all.length && all.every(x => x.classList.contains("done"))) toast("🎉 Alles erledigt – guten Appetit!"); });
+  $("#kb-back", root).onclick = () => { kb.view = "lib"; kochWake(false); kochRender(); };
+  $$("[data-ks]", root).forEach(li => li.onclick = e => { if (e.target.closest(".cook-step-timer,.kb-mv,.cb-who,.qty-x")) return; const i = Number(li.dataset.ks); if (kb.done.has(i)) kb.done.delete(i); else kb.done.add(i); li.classList.toggle("done"); kochMarkNext(root); const all = $$("[data-ks]", root); if (all.length && all.every(x => x.classList.contains("done"))) toast("🎉 Alles erledigt – guten Appetit!"); });
   $$("[data-ki]", root).forEach(li => li.onclick = e => { if (e.target.closest(".ia-btn")) return; const i = Number(li.dataset.ki); if (kb.ing.has(i)) kb.ing.delete(i); else kb.ing.add(i); li.classList.toggle("done"); });
   kochIaBind(root);
   $$("[data-km]", root).forEach(b => b.onclick = e => { e.stopPropagation(); const i = Number(b.dataset.km), n = kochN(), all = kochLanes(st); all.forEach((l, k) => { kb.assign[k] = l; }); kb.assign[i] = (all[i] + 1) % n; kochKeepScroll(root, () => kochRender()); });
   $$("[data-kn]", root).forEach(b => b.onclick = () => kochNamePick(Number(b.dataset.kn)));
   $$("[data-n]", root).forEach(b => b.onclick = () => { lsSet("formkurve.kbn", Number(b.dataset.n)); kb.assign = {}; kochKeepScroll(root, () => kochRender()); });
-  $$("[data-kt]", root).forEach(b => b.onclick = () => { const [i, m] = b.dataset.kt.split("|").map(Number); kochTimerStart(st[i], m); });
+  bindCookTimers(root, st, r.n);
   $$("[data-kd]", root).forEach(b => b.onclick = () => { kb.dv = b.dataset.kd; const m = lsGet("formkurve.devr") || {}; m[r.n] = kb.dv; lsSet("formkurve.devr", m); kb.done.clear(); kb.assign = {}; kochRender(); });
   $$("[data-two]", root).forEach(b => b.onclick = () => { lsSet("formkurve.kbtwo", b.dataset.two === "1"); kochRender(); });
   $("#kb-who", root).onclick = kochWho;
@@ -11578,21 +11601,96 @@ function kochWho(){
 }
 // ---------- Timer ----------
 function kochBeep(){ try { if (!kbAudio) return; const t0 = kbAudio.currentTime; [0, .35, .7].forEach(d => { const o = kbAudio.createOscillator(), g = kbAudio.createGain(); o.frequency.value = 880; o.connect(g); g.connect(kbAudio.destination); g.gain.setValueAtTime(.0001, t0 + d); g.gain.exponentialRampToValueAtTime(.4, t0 + d + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + d + .28); o.start(t0 + d); o.stop(t0 + d + .3); }); } catch(e){} }
-function kochTimerStart(x, mins){
-  try { if (!kbAudio) kbAudio = new (window.AudioContext || window.webkitAudioContext)(); if (kbAudio.state === "suspended") kbAudio.resume(); } catch(e){}
-  const tmp = document.createElement("div"); tmp.innerHTML = x.t ? stepHTML(kb.r, x.t, kochF()) : ""; let label = tmp.textContent.replace(/^~/, "").trim(); if (LANG === "ru" && !tmp.querySelector("[data-notr]")) label = trText(label);
-  kbTimers.push({id: Date.now(), label: label.length > 38 ? label.slice(0, 36) + "…" : label, end: Date.now() + mins*60000, mins, rang: false});
-  if (!kbTick) kbTick = setInterval(kochTimerDraw, 1000); kochTimerDraw(); toast(`⏱ Timer ${mins} min gestartet`);
+function cookTimerSuggestion(step){
+  const settings = String(step.c || "").split("|");
+  const deviceTime = {af:settings[3], ov:settings[2], tm:settings[0]}[step.d];
+  const deviceMatch = String(deviceTime || "").trim().match(/^(\d+)\s*(s|min)?$/i);
+  if (deviceMatch) return Number(deviceMatch[1]) * (deviceMatch[2]?.toLowerCase() === "s" ? 1 : 60);
+  const match = String(step.t || "").match(/\b(\d+)(?:\s*[–-]\s*(\d+))?\s*(Minuten?|Min\.?|Sekunden?|Sek\.?)(?![\p{L}])/iu);
+  return match ? Number(match[2] || match[1]) * (/^sek/i.test(match[3]) ? 1 : 60) : 0;
 }
-function kochTimersKeep(){}
+function cookTimerHTML(step, index){
+  const seconds = cookTimerSuggestion(step);
+  return `<details class="cook-step-timer" data-timer-step="${index}">
+    <summary>⏱ <span>Timer stellen</span>${seconds ? ` <small class="num">· ${Math.floor(seconds/60)}:${pad(seconds%60)}</small>` : ""}</summary>
+    <form class="cook-timer-form">
+      <label>Minuten <input name="minutes" type="number" inputmode="numeric" min="0" max="720" step="1" value="${Math.floor(seconds/60)}" required></label>
+      <label>Sekunden <input name="seconds" type="number" inputmode="numeric" min="0" max="59" step="1" value="${seconds%60}" required></label>
+      <button type="submit" class="chip-btn">Timer starten</button>
+    </form>
+  </details>`;
+}
+function bindCookTimers(root, steps, recipe){
+  $$("[data-timer-step]", root).forEach(details => {
+    const index = Number(details.dataset.timerStep);
+    const form = $("form", details);
+    form.onsubmit = event => {
+      event.preventDefault();
+      const seconds = Number(form.elements.minutes.value) * 60 + Number(form.elements.seconds.value);
+      if (!Number.isInteger(seconds) || seconds < 1 || seconds > 43200){
+        toast(trText("Bitte eine Timerzeit zwischen 1 Sekunde und 12 Stunden eingeben."));
+        return;
+      }
+      const label = String(steps[index].t || "").replace(/\[\[(.+?)\]\]/g, "$1").trim();
+      kochTimerStart(label, recipe, index + 1, seconds);
+      details.open = false;
+    };
+  });
+}
+function unlockCookTimerAudio(){
+  try {
+    if (!kbAudio) kbAudio = new (window.AudioContext || window.webkitAudioContext)();
+    if (kbAudio.state !== "running") kbAudio.resume().catch(() => {});
+  } catch(e){}
+}
+function kochTimerStart(label, recipe, step, seconds){
+  unlockCookTimerAudio();
+  kbTimers.push({id:kitId(),label,recipe,step,end:Date.now()+seconds*1000,rang:false});
+  lsSet(COOK_TIMER_KEY,kbTimers);
+  kochTimerDraw();
+  toast(trText("⏱ Timer gestartet"));
+}
 function kochTimerDraw(){
-  const box = $("#kb-timers"); const now = Date.now();
-  kbTimers.forEach(t => { if (!t.rang && now >= t.end){ t.rang = true; kochBeep(); toast("⏰ Timer fertig: " + t.label); } });
-  if (!kbTimers.length && kbTick){ clearInterval(kbTick); kbTick = null; }
-  if (!box) return;
-  box.innerHTML = kbTimers.map(t => { const s = Math.max(0, Math.round((t.end - now)/1000)); return `<button type="button" class="kb-tmr ${t.rang ? "ring" : ""}" data-tid="${t.id}"><b class="num">${t.rang ? "⏰ 0:00" : Math.floor(s/60) + ":" + String(s%60).padStart(2,"0")}</b><small>${esc(t.label)}</small></button>`; }).join("");
-  $$("[data-tid]", box).forEach(b => b.onclick = () => { kbTimers = kbTimers.filter(t => String(t.id) !== b.dataset.tid); kochTimerDraw(); });
+  const now = Date.now();
+  const expired = kbTimers.filter(timer => !timer.rang && now >= timer.end);
+  if (expired.length && !document.hidden){
+    expired.forEach(timer => { timer.rang = true; });
+    lsSet(COOK_TIMER_KEY,kbTimers);
+    kochBeep();
+    if (navigator.vibrate) navigator.vibrate([200,150,200,150,200]);
+    toast(trText("⏰ Kochtimer abgelaufen"));
+  }
+  if (kbTimers.some(timer => !timer.rang) && !kbTick) kbTick = setInterval(kochTimerDraw,500);
+  else if (!kbTimers.some(timer => !timer.rang) && kbTick){ clearInterval(kbTick); kbTick = null; }
+
+  const toolbar = $("#kb-timers");
+  const floating = $("#cook-timer-float");
+  const box = toolbar || floating;
+  floating.hidden = !!toolbar || !kbTimers.length;
+  const signature = JSON.stringify([LANG,kbTimers]);
+  if (box.dataset.signature !== signature){
+    box.dataset.signature = signature;
+    box.innerHTML = kbTimers.map(timer => {
+      const step = `${trText("Schritt")} ${timer.step}`;
+      const action = timer.rang ? "Timer quittieren" : "Timer beenden";
+      return `<button type="button" class="kb-tmr${timer.rang ? " ring" : ""}" data-tid="${esc(timer.id)}" aria-label="${esc(trText(action) + " · " + step)}" title="${esc(trText(timer.label) || step)}">
+        <b class="num" data-cook-clock role="timer"></b><small>${esc(step)} · ${esc(trText(timer.rang ? "Timer abgelaufen" : "Timer läuft"))} <span aria-hidden="true">×</span></small><small>${esc(trText(timer.recipe || ""))}</small></button>`;
+    }).join("");
+    $$("[data-tid]", box).forEach(button => button.onclick = () => {
+      kbTimers = kbTimers.filter(timer => timer.id !== button.dataset.tid);
+      lsSet(COOK_TIMER_KEY,kbTimers);
+      kochTimerDraw();
+    });
+  }
+  $$("[data-cook-clock]",box).forEach((clock,index) => {
+    const seconds = Math.max(0,Math.ceil((kbTimers[index].end-now)/1000));
+    const text = (kbTimers[index].rang ? "⏰ " : "") + Math.floor(seconds/60) + ":" + pad(seconds%60);
+    if (clock.textContent !== text) clock.textContent = text;
+  });
 }
+document.body.insertAdjacentHTML("beforeend", '<div id="cook-timer-float" class="cook-timer-float" role="group" aria-label="Kochtimer" hidden></div>');
+document.addEventListener("visibilitychange", () => { if (!document.hidden) kochTimerDraw(); });
+if (kbTimers.some(timer => !timer.rang)) document.addEventListener("click", unlockCookTimerAudio, {once:true,capture:true});
 async function kochWake(on){
   try { if (on){ if (!kbWake && navigator.wakeLock) kbWake = await navigator.wakeLock.request("screen"); } else if (kbWake){ await kbWake.release(); kbWake = null; } } catch(e){ kbWake = null; }
 }
@@ -11627,6 +11725,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && S.
 applyPerson();
 setTab(S.tab);
 initStore();
+kochTimerDraw();
 })();
 </script>
 </body>
