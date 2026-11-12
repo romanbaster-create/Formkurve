@@ -1,5 +1,5 @@
 // ITOGO – Offline-Cache. Version erhöhen, wenn sich index.html ändert.
-const CACHE = "itogo-v67-russisch";
+const CACHE = "itogo-v68-rinderhack";
 const DATA = "itogo-data-v1"; // Produktdatenbank (pdb-…) und Bilder-Pakete (img-…) bleiben über App-Updates erhalten
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png", "./zxing.min.js", "./koch.html", "./koch.webmanifest", "./koch-180.png", "./koch-192.png", "./koch-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
