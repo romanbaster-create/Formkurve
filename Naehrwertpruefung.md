@@ -51,3 +51,20 @@ Die Werte sind Schätzungen für die angegebenen Zutaten, Marken können abweich
 Bei Desserts mit unbestimmten Packungsgrößen oder Zutaten wurden eigene Rezeptfassungen mit konkreten Mengen entwickelt. Die Skyr- und Quarkvarianten verwenden weniger Sahne bzw. Kondensmilch und behalten die Idee aus dem jeweiligen Bild bei.
 
 Referenz für Hähnchenbrust: https://fdc.nal.usda.gov/food-details/171077/nutrients. Weitere Angaben sind typische Zutaten- oder Etikettwerte.
+
+## Weitere Rezepte aus der Instagram-Recherche
+
+Die Werte basieren auf üblichen Produktwerten. Öl wurde abgewogen angesetzt. Bei den Nuggets wird die gesamte vorbereitete Panade mitgerechnet. Beim Kaiserschmarrn ist das Apfelmus enthalten. Der Cheesecake ergibt zwei Stücke. Die Bowl ist eine eigene Umsetzung der FitMethods-Idee.
+
+| Rezept | Ansatz | ITOGO pro Portion (kcal / P / KH / F) | Angabe im Post (kcal / P) |
+|---|---:|---:|---|
+| [Spicy Ramen mit Hoisin-Hähnchen](https://pikory.com/tag/healthy-ramen-noodle-options-with-chicken) | 2 | 587 / 44 / 56 / 19 | 661 / 56 je Portion |
+| [Cremige Rinderhack-Pasta mit Frischkäse](https://pikory.com/tag/rezept-reis-und-hackfleisch) | 4 | 676 / 58 / 63 / 19 | 600 / 58 je Portion |
+| [Hähnchen-Penne in cremiger Tomatensoße](https://www.instagram.com/p/Da0p36BMe0Y/) | 4 | 570 / 49 / 61 / 13 | 530 / 52 je Portion |
+| [Chicken Alfredo mit Parmesan](https://www.instagram.com/p/DOD42yUDGFz/) | 4 | 409 / 33 / 41 / 11 | 376 / 31.4 je Portion |
+| [Spinat-Feta-Pide aus Dinkel-Quarkteig](https://www.instagram.com/p/Dd1sGbeM6-F/) | 6 | 341 / 28 / 36 / 9 | 345 / 28 je Stück |
+| [Schinken-Käse-Hörnchen aus Quarkteig](https://www.instagram.com/p/Da3aKZRsQs_/) | 5 | 331 / 27 / 36 / 8 | 390 / 34 je Stück |
+| [Skyr-Kaiserschmarrn mit Apfelmus](https://www.instagram.com/p/DZaSRPHsp7m/) | 2 | 375 / 28 / 41 / 10 | 635 / 50 je Portion ohne Apfelmus |
+| [Gebackener Himbeer-Quark-Cheesecake](https://pictame.com/en/discover/hashtag/joghurt-torte-ohne-backen) | 2 | 185 / 17 / 14 / 5 | 295 / 38 je Ansatz |
+| [Cornflakes-Chicken-Nuggets](https://www.instagram.com/p/DZuBZC-sAkb/) | 2 | 566 / 57 / 51 / 13 | 1220 / 123 je Ansatz |
+| [Hähnchen-Bohnen-Bowl mit Guacamole](https://www.instagram.com/fitmethods/) | 2 | 575 / 52 / 45 / 16 | keine Mengen |
