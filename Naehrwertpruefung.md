@@ -68,3 +68,37 @@ Die Werte basieren auf üblichen Produktwerten. Öl wurde abgewogen angesetzt. B
 | [Gebackener Himbeer-Quark-Cheesecake](https://pictame.com/en/discover/hashtag/joghurt-torte-ohne-backen) | 2 | 185 / 17 / 14 / 5 | 295 / 38 je Ansatz |
 | [Cornflakes-Chicken-Nuggets](https://www.instagram.com/p/DZuBZC-sAkb/) | 2 | 566 / 57 / 51 / 13 | 1220 / 123 je Ansatz |
 | [Hähnchen-Bohnen-Bowl mit Guacamole](https://www.instagram.com/fitmethods/) | 2 | 575 / 52 / 45 / 16 | keine Mengen |
+
+## Rind-, Garnelen- und Festtagssalate sowie Kürbisdessert
+
+Die Angaben sind Schätzwerte auf Basis typischer Zutatenwerte. Die 20 Salate aus den Übersichten ergeben je eine Portion. Das Fleisch und die Garnelen sind als Rohgewicht eingetragen. Kartoffeln, Rote Bete und Quinoa werden gekocht abgewogen. Stück- und Löffelangaben wurden in Gramm umgerechnet. Für Festtagssalate wurden Mayonnaise und die optionalen Toppings in der eingetragenen Menge mitgerechnet. Im Kürbisdessert ist Naturjoghurt 3,5 % als feste Variante berechnet. Der warme Rind-Pilz-Festtagssalat ist eine eigene Fassung nach dem Übersichtsbild.
+
+| Rezept | Portionen je Ansatz | kcal je Portion | Eiweiß (g) | KH (g) | Fett (g) |
+|---|---:|---:|---:|---:|---:|
+| Rindfleischsalat mit Avocado und Kirschtomaten | 1 | 425 | 37,1 | 8,2 | 25,4 |
+| Warmer Rindfleischsalat mit Grillgemüse | 1 | 371 | 38,1 | 14,6 | 15,3 |
+| Asiatischer Rindfleischsalat mit Gurke | 1 | 346 | 37,3 | 17,2 | 12,4 |
+| Rindfleischsalat mit Feta und Ofenpaprika | 1 | 452 | 42,2 | 9,5 | 26,0 |
+| Rindfleischsalat mit Brokkoli und Sesam | 1 | 345 | 38,6 | 15,7 | 12,4 |
+| Rindfleischsalat mit Champignons und Rucola | 1 | 369 | 47,2 | 6,7 | 16,5 |
+| Rindfleischsalat mit jungen Kartoffeln | 1 | 377 | 41,0 | 25,6 | 10,6 |
+| Mexikanischer Rindfleischsalat mit Bohnen | 1 | 478 | 43,5 | 22,1 | 21,4 |
+| Rindfleischsalat mit Birne, Gouda und Walnüssen | 1 | 537 | 43,6 | 16,1 | 32,1 |
+| Rindfleischsalat mit Ei, Avocado und Gemüse | 1 | 492 | 43,0 | 8,2 | 30,2 |
+| Garnelensalat mit Avocado und Mango | 1 | 480 | 34,1 | 26,8 | 25,3 |
+| Garnelen-Caesar mit Vollkorncroûtons | 1 | 365 | 46,2 | 15,1 | 12,7 |
+| Garnelensalat mit Orange, Avocado und Rucola | 1 | 469 | 34,8 | 21,6 | 25,1 |
+| Asiatischer Garnelensalat mit Rotkohl | 1 | 324 | 35,8 | 22,9 | 8,2 |
+| Garnelensalat mit Mozzarella, Tomaten und Basilikum | 1 | 548 | 50,8 | 9,6 | 33,5 |
+| Garnelensalat mit Ei, Gurke und Paprika | 1 | 294 | 42,5 | 11,9 | 7,4 |
+| Warmer Garnelensalat mit Brokkoli und grünen Bohnen | 1 | 280 | 37,0 | 21,8 | 3,2 |
+| Mexikanischer Garnelensalat mit Avocado und Bohnen | 1 | 394 | 41,2 | 22,6 | 13,2 |
+| Garnelensalat mit Erdbeeren, Feta und Walnüssen | 1 | 546 | 41,6 | 13,2 | 35,7 |
+| Garnelensalat mit Quinoa und Gemüse | 1 | 469 | 36,4 | 18,1 | 26,1 |
+| Festtagssalat mit Hähnchen, Trockenpflaumen und Walnüssen | 5 | 446 | 26,4 | 18,9 | 29,2 |
+| Festlicher Lachsschichtsalat mit Gurke und Rogen | 4 | 263 | 24,8 | 4,7 | 15,3 |
+| Granatapfel-Armband mit Hähnchen und Roter Bete | 6 | 251 | 14,1 | 19,2 | 11,8 |
+| Festlicher Garnelen-Avocado-Salat mit Sesam | 3 | 265 | 22,6 | 3,9 | 17,0 |
+| Hähnchen-Ananas-Festtagssalat mit Gouda | 5 | 347 | 22,9 | 8,9 | 24,0 |
+| Warmer Festtagssalat mit Rind, Pilzen und Zwiebeln | 4 | 252 | 30,1 | 6,1 | 11,4 |
+| Kürbis-Orangen-Joghurtdessert mit Schokokeksen | 8 | 191 | 5,6 | 29,6 | 5,4 |
