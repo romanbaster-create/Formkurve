@@ -816,7 +816,13 @@ details.tech p{margin:6px 0 0;font-size:13px;color:var(--label2);line-height:1.4
 .ks-n{flex:1;min-width:0} .ks-n b{display:block;font-size:15px;font-weight:600} .ks-n small{display:block;font-size:12px;color:var(--label2)}
 .ks-a{font-size:14px;font-weight:700;white-space:nowrap}
 .ks-more{margin-top:14px} .ks-more summary{list-style:none;cursor:pointer;font-size:14px;font-weight:700;padding:6px 2px;display:flex;justify-content:space-between} .ks-more summary::-webkit-details-marker{display:none} .ks-more summary b{color:var(--label2);font-weight:600}
-.kv-row{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;text-align:left;border-top:.5px solid var(--sep)} .group>.kv-row:first-child{border-top:0}
+.kv-row{display:flex;align-items:center;border-top:.5px solid var(--sep)} .group>.kv-row:first-child{border-top:0}
+.kv-row[hidden]{display:none}
+.kv-edit{display:flex;align-items:center;gap:6px;flex:1;min-width:0;min-height:44px;padding:6px 10px;text-align:left}
+.kv-use{flex:none;width:44px;min-height:44px;color:var(--blue);font-size:22px}
+.kv-filters{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.kv-filters .chip-btn{min-height:36px}
+#kv-more{margin-top:8px}
 .kv-n{flex:1;min-width:0} .kv-n b{display:block;font-size:15px;font-weight:600} .kv-n small{display:block;font-size:12px;color:var(--label2)}
 .kv-d{font-size:12px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap} .kv-d.ok{background:var(--fill);color:var(--label2)} .kv-d.warn{background:color-mix(in srgb,var(--orange) 20%,transparent);color:var(--orange)} .kv-d.bad{background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red)}
 .kv-rec{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px} .kv-rec small{color:var(--label2);font-size:12px;margin-right:2px} .kv-rec .chip-btn{height:32px;font-size:13px}
@@ -17354,6 +17360,7 @@ function openCook(r, pre){
   if (session?.counts) people.forEach((x,i) => {
     x.c = (session.portions ? session.portions[x.n] : session.counts[i]) ?? x.c;
   });
+  let stockBooked = !!session?.stockBooked;
   let mode = session?.mode || (comps.length>1||comps.some(c=>c.m==="p")?"comp":"pot"), inputs = session?.inputs || {}, plan = null;
   const fm = kitPantry().length ? fridgeMatch(r) : null;
   if (pre.shared){ return openSharedPlate(r, pre); }
@@ -17367,6 +17374,7 @@ function openCook(r, pre){
     ${homeRecipeHTML(r)}${freshRecipeHTML(r)}
     ${ckMoreHTML(r, cat)}
     ${fm && fm.have.length ? `<div class="fr-hit"><b>🧊 ${fm.have.length} von ${fm.have.length + fm.miss.length} Zutaten im Kühlschrank</b>${fm.miss.length ? "Fehlt: " + esc(fm.miss.map(e => e.n).join(", ")) : "Alles da."}</div>` : ""}
+    ${kitRO() ? "" : `<button type="button" class="btn secondary" id="ck-used-top" hidden>Verbrauch buchen</button>`}
     <div id="ck-when">${whenHTML(wst.m,wst.o)}${pre.plan ? '<p class="when-n">Geplante Gerichte teilen sich das Mahlzeitenbudget. Beilagen und Desserts reservieren einen Teil, das Hauptgericht bekommt den Rest.</p>' : r.proteinMeal
       ? `<label class="row"><span class="lbl">Volle Rezeptportion für mich<small>${fmt(T.p/r.serv)} g Eiweiß · ${fmt(T.k/r.serv)} kcal</small></span><input id="ck-protein-serving" class="switch" type="checkbox" ${wst.recipePortion !== false ? "checked" : ""}></label><p class="when-n">Beim Wechsel der Mahlzeit passt ITOGO die Menge ans Budget an. Hier kannst du wieder die volle Portion wählen.</p>`
       : '<p class="when-n">Danach richten sich die Portionen: jede Person bekommt ihr Ziel für diese Mahlzeit – du zusätzlich höchstens das, was dir an diesem Tag noch bleibt.</p>'}</div>
@@ -17389,10 +17397,9 @@ function openCook(r, pre){
       <button type="button" class="btn" id="ck-scale" style="margin-top:10px">⚖️ Waage-Modus – Teller für Teller</button></div>
     <details class="section ck-fold" id="ck-rate-s" ${session?.rateOpen?"open":""}><summary>Wie hat's geschmeckt? <span class="meta-s" id="ck-rate-avg"></span></summary><div class="group" id="ck-rate"></div>
       <div class="section-f">Jeder bewertet in seiner App – die Sterne kommen mit dem täglichen Familien-Update. Für die Kinder tippst du selbst.</div></details>
-    <div class="ck-btns"><button type="button" class="btn secondary" id="ck-log">Meine Portion eintragen</button>
+    <div class="ck-btns">${kitRO() ? "" : `<button type="button" class="btn secondary" id="ck-used" hidden>Verbrauch buchen</button>`}<button type="button" class="btn secondary" id="ck-log">Meine Portion eintragen</button>
       <button type="button" class="btn secondary" id="ck-box" hidden>Box für morgen eintragen</button>
       <button type="button" class="btn plain" id="ck-send">Teller an die Familie senden</button>
-      ${fm && fm.have.length ? `<button type="button" class="btn plain" id="ck-used">🧊 Verbrauchtes vom Vorrat abziehen</button>` : ""}
       <button type="button" class="btn plain" id="ck-edit">${r.own ? "Rezept bearbeiten" : "Als eigenes Rezept anpassen"}</button>
       <button type="button" class="link" id="ck-discard">Kochentwurf verwerfen</button></div>`,
     onOpen: sh => {
@@ -17400,7 +17407,7 @@ function openCook(r, pre){
       const snapshot = () => ({
         wst:{o:wst.o,m:wst.m,planId:wst.planId,recipePortion:wst.recipePortion}, date:whenDay(wst),
         counts:people.map(x => x.c), portions:Object.fromEntries(people.map(x => [x.n,x.c])),
-        mode, inputs, stepsOpen:$("#ck-directions",sh).open, rateOpen:$("#ck-rate-s",sh).open
+        mode, inputs, stockBooked, stepsOpen:$("#ck-directions",sh).open, rateOpen:$("#ck-rate-s",sh).open
       });
       const leaveCook = () => {
         closeSheet();
@@ -17553,6 +17560,13 @@ function openCook(r, pre){
           <small>${fmt(pl.k)} kcal · ${macLine({p:pl.p, c:pl.kh, f:pl.fa})} je Portion</small></div>`).join("")}</div></details>` : "";
         const budgetBox = $("#ck-budget",sh), plate = plan.plates[0];
         const isOpen = $("details",budgetBox)?.open ?? true;
+        const bookedStock = stockBooked || !!selectedPlan()?.done;
+        const hasStock = kitLive("items").length > 0 && (plan.f > 0 || !!bookedStock);
+        for (const b of $$("#ck-used, #ck-used-top", sh)){
+          b.hidden = !hasStock;
+          b.disabled = bookedStock;
+          b.textContent = trText(bookedStock ? "Verbrauch bereits gebucht" : "Verbrauch buchen");
+        }
         $("#ck-log",sh).disabled = $("#ck-box",sh).disabled = !plate || !(plate.g > 0);
         const add = plate ? {k:plate.k,p:plate.p,c:plate.kh,f:plate.fa} : {k:0,p:0,c:0,f:0};
         budgetBox.innerHTML = `<details class="ck-fold ck-plate-summary" ${isOpen ? "open" : ""}><summary>Mahlzeit &amp; Tagesbudget</summary>${mealBudgetHTML(add,wst)}</details>`;
@@ -17582,8 +17596,8 @@ function openCook(r, pre){
       $("#ck-log", sh).onclick = () => {
         if (!logMine(whenDay(wst), wst.m, `${fmt(plan.plates[0]?.k || 0)} kcal eingetragen – ${whenLabel(wst)}`)) return;
         if (selectedPlan()?.id === wst.planId && wst.planId) $("#ck-log",sh).disabled = true;
-        setTimeout(() => { const rs = document.querySelector(".sheet.on #ck-rate-s"); if (rs){rs.open=true;rs.scrollIntoView({behavior:"smooth", block:"center"});} }, 450);
-        bumpCooked(pp => ({boxes: (pp.boxes||0) + Math.max(0, people[0].c - 1), fridgeCooks: (pp.fridgeCooks||0) + (fm && fm.cov >= 0.5 ? 1 : 0)})); };
+        bumpCooked(pp => ({boxes: (pp.boxes||0) + Math.max(0, people[0].c - 1), fridgeCooks: (pp.fridgeCooks||0) + (fm && fm.cov >= 0.5 ? 1 : 0)}));
+        if (!bookStock(true)) showRating(); };
       $("#ck-box", sh).onclick = () => logMine(addDays(today,1), "l", "Box für morgen eingetragen (Mittag)");
       $("#ck-send", sh).onclick = async () => {
         const sr=plan.rr||r;const rr = {home:r.home,fresh:r.fresh,n:r.n, cat:r.cat, min:r.min, serv:r.serv, tags:r.tags, steps:r.steps, cmode:r.cmode, ing:sr.ing.map((e,i) => ({n:e.n, g:e.g, k100:e.k100, p100:e.p100, c100:e.c100, f100:e.f100, u:e.u, por:e.por, pl:e.pl, originalN:e.originalN, nx:e.nx, c:weighLabels(sr)[i]}))};
@@ -17594,7 +17608,21 @@ function openCook(r, pre){
         if (!sheetClose && !document.hidden) resume(r);
         if (shared && navigator.share) toast("Teilen abgeschlossen. Deine Portion kannst du jetzt eintragen.");
       };
-      const used = $("#ck-used", sh); if (used) used.onclick = () => openKitUse(plan && plan.rr || r, plan ? plan.f : 1, selectedPlan()?.id === wst.planId ? wst.planId : null);
+      const showRating = () => setTimeout(() => {
+        const rating = document.querySelector(".sheet.on #ck-rate-s");
+        if (rating){ rating.open = true; rating.scrollIntoView({behavior:"smooth", block:"center"}); }
+      },450);
+      const bookStock = (afterLogging = false) => {
+        if (kitRO() || stockBooked || selectedPlan()?.done || !(plan?.f > 0)) return false;
+        saveDraft();
+        return openKitUse(plan.rr || r, plan.f, selectedPlan()?.id, booked => {
+          if (booked) stockBooked = true;
+          saveDraft();
+          resume(r);
+          if (afterLogging) showRating();
+        }, afterLogging);
+      };
+      $$("#ck-used, #ck-used-top", sh).forEach(b => b.onclick = () => bookStock());
       if (planButton) planButton.onclick = () => {
         if (kitRO()) return;
         const existing = selectedPlan();
@@ -19049,7 +19077,22 @@ const kitWhen = ms => { const d = new Date(ms), iso = d.getFullYear() + "-" + St
 // Haltbarkeit nach dem Öffnen (Tage)
 const KIT_OPEN = [[/milch|kefir|sahne/,4],[/joghurt|skyr|quark|huttenkase|frischkase|ricotta|mascarpone/,5],[/mozzarella|feta/,3],[/kase|parmesan|cheddar|gouda/,14],[/schinken|aufschnitt|salami|wurst/,4],[/hack(?!t)/,1],[/hahnchen|pute|rind|schwein|steak|fleisch/,2],[/lachs|fisch|forelle|garnelen|kabeljau|thunfisch/,2],[/tofu|tempeh/,4],[/passierte|gehackte tomaten|mais|bohnen|kichererbsen|linsen/,4],[/pesto|tomatenmark/,7],[/kimchi|sauerkraut/,14],[/saft/,5],[/brot|toast|wrap|tortilla/,5],[/eiklar/,4]];
 const kitOpenDays = n => { const k = norm(n), x = KIT_OPEN.find(([re]) => re.test(k)); return x ? x[1] : 5; };
-function kitDaysLeft(i){ const o = i.open && i.od && i.loc !== "f" ? addDays(i.od, kitOpenDays(i.n)) : null; const m = [i.mhd, o].filter(Boolean).sort()[0]; return m ? kitDiff(m) : null; }
+Object.assign(I18N_RU, {
+  "Im Vorrat suchen …":"Поиск в запасах", "Alle":"Все", "Vorrat filtern":"Фильтры запасов",
+  "Keine passenden Vorräte":"Нет подходящих продуктов", "Mehr anzeigen":"Показать ещё",
+  "Mit − direkt Verbrauch buchen.":"Нажмите −, чтобы списать продукт.",
+  "Restbestand":"Остаток", "Verbraucht":"Израсходовано", "Ganz aufgebraucht":"Израсходовано полностью",
+  "Verbrauch buchen":"Списать продукты", "Verbrauch gebucht":"Расход записан",
+  "Verbrauch bereits gebucht":"Расход уже записан", "Überspringen":"Пропустить",
+  "Bitte eine gültige Menge eingeben":"Укажите допустимое количество",
+  "Keine passenden Vorräte mit gleicher Einheit":"Нет подходящих продуктов с той же единицей измерения",
+  "Vorrat wurde geändert. Bitte erneut öffnen.":"Запасы изменились. Откройте окно заново.",
+  "Mindestens einen Vorrat wählen":"Выберите хотя бы один продукт",
+  "Ganz aufgebraucht?":"Израсходовано полностью?",
+  "Prüfe die vorgeschlagenen Mengen für dieses Gericht.":"Проверьте предлагаемые количества для этого блюда."
+});
+const KIT_DRY = /^(?:(?:basmati|jasmin|vollkorn|langkorn|rundkorn|milch|natur|parboiled)[ -]?)?reis(?:,? (?:roh|trocken|ungekocht))?$|^(?:haferflocken|(?:weizen|dinkel)?mehl|zucker|salz|speisestarke)$/;
+function kitDaysLeft(i){ const o = i.open && i.od && i.loc !== "f" && !KIT_DRY.test(norm(i.n).trim()) ? addDays(i.od, kitOpenDays(i.n)) : null; const m = [i.mhd, o].filter(Boolean).sort()[0]; return m ? kitDiff(m) : null; }
 // Ladenbereiche
 const KIT_AISLE = [["Obst & Gemüse","🥦",/paprika|zucchini|brokkoli|blumenkohl|spinat|salat|rucola|gurke|tomate|karotte|mohre|zwiebel|knoblauch|ingwer|avocado|zitrone|limette|apfel|banane|beeren|himbeer|heidelbeer|erdbeer|kartoffel|champignon|pilz|lauch|sellerie|kohl|bete|kurbis|aubergine|fenchel|petersilie|dill|koriander|basilikum|minze|schnittlauch|kiwi|orange|mango|spargel|grune bohnen|radieschen|chili/],
  ["Kühlregal","🥛",/quark|skyr|joghurt|milch|kefir|kase|mozzarella|feta|parmesan|cheddar|gouda|ricotta|mascarpone|sahne|butter|^ei( |,|$)|eiklar|tofu|tempeh|hummus|schinken|aufschnitt|kimchi|sauerkraut/],
@@ -19283,31 +19326,74 @@ function kitShopBind(el, ro, L){
     kitLive("shop").filter(x => x.man && x.done && !covered.has(x.id)).forEach(x => { const a = x.a != null ? x.a : kitAisleMan(x.n), food = a !== 10 && (a !== 7 || FOODS.some(f => norm(f[0]) === norm(x.n))); if (food){ const q = x.q ? kitQtyAny(x.q) : null; kitPut("items", Object.assign({id: kitId(), n: x.n, loc: KIT_AISLE_LOC[a] || "v"}, q ? {q: q.q, u: q.u} : {})); n++; } kitDel("shop", x.id); });
     toast(`${n} Sachen in den Vorrat gelegt`); renderKueche(); };
 }
+const KIT_STOCK_PAGE = 10;
+let kitStockFilter = "all", kitStockQuery = "", kitStockLimit = KIT_STOCK_PAGE;
+const kitRemaining = i => i.q > 0 ? i.q * (i.open ? (i.lvl || 1) : 1) : null;
+const kitStockLoc = i => KIT_LOC.find(([key]) => key === i.loc) || KIT_LOC[0];
 function kitStockHTML(ro){
-  const items = kitLive("items"), soon = items.map(i => [i, kitDaysLeft(i)]).filter(([, d]) => d != null && d <= 3).sort((a, b) => a[1] - b[1]);
-  const dTxt = d => d == null ? "" : d < 0 ? "abgelaufen" : d === 0 ? "heute" : d === 1 ? "morgen" : `noch ${d} Tage`;
-  const dCls = d => d == null ? "" : d <= 0 ? "bad" : d <= 2 ? "warn" : "ok";
-  const row = i => { const d = kitDaysLeft(i), lv = KIT_LVL.find(x => x[0] === (i.lvl || 1));
-    const bs = kitBase(i);
-    return `<button type="button" class="kv-row" data-ki="${i.id}" data-kq="${esc(norm(i.n + " " + (bs || "") + (LANG === "ru" ? " " + trText(i.n) + " " + (bs ? trText(bs) : "") : "")))}" ${ro ? "disabled" : ""}><span class="kv-n"><b>${esc(i.n)}</b><small>${bs && kitKey(bs) !== kitKey(i.n) ? `<span class="kv-base">→ <span>${esc(bs)}</span></span> ` : ""}${i.q ? `${fmt(i.q)} ${esc(i.u || "g")}` : ""}${i.open ? `${i.q ? " · " : ""}<span>angebrochen</span>${lv && lv[0] < 1 ? " " + lv[1] : ""}` : ""}</small></span>${d != null ? `<span class="kv-d ${dCls(d)}">${dTxt(d)}</span>` : ""}</button>`; };
-  let soonRec = "";
-  if (soon.length){ const st = kitStock(), hits = allRecipes().map(r => [r, r.ing.filter(e => { const x = kitHas(st, e.n); return x && x.items.some(i => { const d = kitDaysLeft(i); return d != null && d <= 3; }); }).length]).filter(x => x[1]).sort((a, b) => b[1] - a[1]).slice(0, 4);
-    soonRec = hits.length ? `<div class="kv-rec"><small>Passt dazu:</small>${hits.map(([r], i) => `<button type="button" class="chip-btn" data-kr="${i}">${recEmoji(r)} ${esc(r.n)}</button>`).join("")}</div>` : ""; kitStockHTML._hits = hits; }
-  return `${ro ? `<div class="fd-search" style="margin:12px 0 6px"><input id="kv-q" type="search" placeholder="Im Vorrat suchen …" autocomplete="off"></div>` : `<div class="kit-addrow"><div class="fd-search" style="flex:1;margin:0"><input id="kv-q" type="search" placeholder="Suchen oder hinzufügen …" autocomplete="off"></div><button type="button" class="btn sm" id="kv-scan">📷 Scannen</button><button type="button" class="btn sm plain" id="kv-prod" aria-label="Produkt-Datenbank">📦</button></div><div id="kv-s" class="pt-s"></div>`}
-    ${soon.length ? `<div class="section"><div class="section-h"><span>⏰ Läuft bald ab</span></div><div class="group">${soon.map(([i]) => row(i)).join("")}</div>${soonRec}</div>` : ""}
-    ${KIT_LOC.map(([k, ic, l]) => { const xs = items.filter(i => (i.loc || "k") === k).sort((a, b) => (kitDaysLeft(a) ?? 999) - (kitDaysLeft(b) ?? 999) || a.n.localeCompare(b.n));
-      return `<div class="section"><div class="section-h"><span>${ic} ${esc(l)}</span><span class="meta-s num">${xs.length}</span></div>${xs.length ? `<div class="group">${xs.map(row).join("")}</div>` : `<p class="note" style="margin:0 4px">Leer</p>`}</div>`; }).join("")}`;
+  const items = kitLive("items").map(i => ({i, days:kitDaysLeft(i)}))
+    .sort((a,b) => (a.days ?? Infinity) - (b.days ?? Infinity) || a.i.n.localeCompare(b.i.n));
+  const filters = [["all","Alle"],["soon","Läuft bald ab"],["open","Angebrochen"],...KIT_LOC.map(([k,,n]) => [k,n])];
+  const soon = items.filter(({days}) => days != null && days <= 3);
+  const row = ({i, days}) => {
+    const bs = kitBase(i), [loc,icon,name] = kitStockLoc(i), qty = kitRemaining(i);
+    const dateLabel = days < 0 ? "abgelaufen" : days === 0 ? "heute" : days === 1 ? "morgen" : `noch ${days} Tage`;
+    const search = [i.n, bs, trText(i.n), bs && trText(bs)].filter(Boolean).join(" ");
+    return `<div class="kv-row" hidden data-stock-search="${esc(norm(search))}" data-stock-loc="${loc}" data-stock-open="${!!i.open}" data-stock-soon="${days != null && days <= 3}">
+      <button type="button" class="kv-edit" data-ki="${esc(i.id)}" ${ro ? "disabled" : ""}>
+        <span class="kv-n"><b>${esc(i.n)}</b><small><span title="${esc(trText(name))}" aria-label="${esc(trText(name))}">${icon}</span> ${qty == null ? "" : `${fmt(qty, Number.isInteger(qty) ? 0 : 1)} ${esc(i.u || "g")} · `}<span>${i.open ? "angebrochen" : qty == null ? "vorhanden" : "Restbestand"}</span>${bs && kitKey(bs) !== kitKey(i.n) ? ` · <span class="kv-base">→ ${esc(bs)}</span>` : ""}</small></span>
+        ${days == null ? "" : `<span class="kv-d ${days <= 0 ? "bad" : days <= 3 ? "warn" : "ok"}">${dateLabel}</span>`}
+      </button>
+      ${ro ? "" : `<button type="button" class="kv-use" data-stock-use="${esc(i.id)}" title="${esc(trText("Verbrauch buchen"))}" aria-label="${esc(trText("Verbrauch buchen") + " · " + trText(i.n))}">−</button>`}
+    </div>`;
+  };
+  const stock = soon.length ? kitStock() : null;
+  const ids = new Set(soon.map(({i}) => i.id));
+  const hits = stock ? allRecipes().map(r => [r, r.ing.filter(e => kitHas(stock,e.n)?.items.some(i => ids.has(i.id))).length])
+    .filter(([, count]) => count).sort((a,b) => b[1]-a[1]).slice(0,4) : [];
+  kitStockHTML._hits = hits;
+  return `${ro ? `<div class="fd-search" style="margin:12px 0 6px"><input id="kv-q" type="search" placeholder="Im Vorrat suchen …" autocomplete="off"></div>` : `<div class="kit-addrow"><div class="fd-search" style="flex:1;margin:0"><input id="kv-q" type="search" placeholder="Im Vorrat suchen …" autocomplete="off"></div><button type="button" class="btn sm" id="kv-scan">📷 Scannen</button><button type="button" class="btn sm plain" id="kv-prod" aria-label="Produkt-Datenbank">📦</button></div><div id="kv-s" class="pt-s"></div>`}
+    <div class="kv-filters" role="group" aria-label="${esc(trText("Vorrat filtern"))}">${filters.map(([key,label]) => `<button type="button" class="chip-btn" data-stock-filter="${key}" aria-pressed="false"><span>${label}</span>${key === "soon" ? ` <b>${soon.length}</b>` : ""}</button>`).join("")}</div>
+    ${ro ? "" : `<p class="note" style="margin:6px 4px"><span>Mit − direkt Verbrauch buchen.</span> <button type="button" class="chip-btn" id="kv-add">Hinzufügen</button></p>`}
+    <div class="note num" id="kv-count" aria-live="polite" style="margin:6px 4px"></div>
+    <p class="note" id="kv-empty" hidden>Keine passenden Vorräte</p>
+    <div class="group" id="kv-list">${items.map(row).join("")}</div>
+    <button type="button" class="btn secondary" id="kv-more" hidden>Mehr anzeigen</button>
+    ${hits.length ? `<div class="kv-rec" id="kv-rec" hidden style="display:none"><small>Passt dazu:</small>${hits.map(([r],i) => `<button type="button" class="chip-btn" data-kr="${i}">${recEmoji(r)} ${esc(r.n)}</button>`).join("")}</div>` : ""}`;
 }
 function kitStockBind(el, ro){
-  $$("[data-kr]", el).forEach(b => b.onclick = () => { const h = (kitStockHTML._hits || [])[Number(b.dataset.kr)]; if (h) openCook(h[0]); });
-  const filt = q => { $$("#kit-body .kv-row", el).forEach(r => { r.hidden = !!q && !r.dataset.kq.includes(q); }); $$("#kit-body .section", el).forEach(sc => { const rows = $$(".kv-row", sc); if (rows.length) sc.hidden = rows.every(r => r.hidden); }); };
-  if (ro){ const qi = $("#kv-q", el); if (qi) qi.oninput = () => filt(norm(qi.value.trim())); return; }
+  const inp = $("#kv-q", el), rows = $$(".kv-row", el), filters = $$("[data-stock-filter]", el), more = $("#kv-more", el);
+  const filt = () => {
+    const q = norm(kitStockQuery.trim()), key = kitStockFilter;
+    let count = 0;
+    for (const row of rows){
+      const d = row.dataset;
+      const match = (!q || d.stockSearch.includes(q)) &&
+        (key === "all" || key === d.stockLoc || key === "open" && d.stockOpen === "true" || key === "soon" && d.stockSoon === "true");
+      row.hidden = !match || ++count > kitStockLimit;
+    }
+    $("#kv-count", el).textContent = `${Math.min(count,kitStockLimit)} / ${count}`;
+    $("#kv-empty", el).hidden = count > 0;
+    more.hidden = count <= kitStockLimit;
+    const rec = $("#kv-rec", el);
+    if (rec){ rec.hidden = key !== "soon" || !!q; rec.style.display = rec.hidden ? "none" : ""; }
+    filters.forEach(b => { const active = b.dataset.stockFilter === key; b.classList.toggle("on",active); b.setAttribute("aria-pressed",String(active)); });
+  };
+  inp.value = kitStockQuery;
+  const search = () => { if (kitStockQuery !== inp.value){ kitStockQuery = inp.value; kitStockLimit = KIT_STOCK_PAGE; } filt(); };
+  filters.forEach(b => b.onclick = () => { kitStockFilter = b.dataset.stockFilter; kitStockLimit = KIT_STOCK_PAGE; filt(); });
+  more.onclick = () => { kitStockLimit += KIT_STOCK_PAGE; filt(); };
+  filt();
+  $$("[data-kr]", el).forEach(b => b.onclick = () => { const h = kitStockHTML._hits[Number(b.dataset.kr)]; if (h) openCook(h[0]); });
+  if (ro){ inp.oninput = search; return; }
+  $("#kv-add", el).onclick = () => openKitItem(null, {n:inp.value.trim()});
   $$("[data-ki]", el).forEach(b => b.onclick = () => openKitItem(K.items[b.dataset.ki]));
+  $$("[data-stock-use]", el).forEach(b => b.onclick = () => openKitStockUse(b.dataset.stockUse));
   const kpb = $("#kv-prod", el); if (kpb) kpb.onclick = openKitProducts;
   $("#kv-scan", el).onclick = () => openScanner(null, null, {kit: (it, code) => { const known = K.codes[code]; const q = it && it.qty ? kitQty(it.qty) : null;
     openKitItem(null, Object.assign({n: it ? it.n : "", code}, q || {}, known || {})); }});
-  const inp = $("#kv-q", el), box = $("#kv-s", el);
-  inp.oninput = () => { const q = norm(inp.value.trim()); filt(q); if (q.length < 2){ box.innerHTML = ""; return; }
+  const box = $("#kv-s", el);
+  inp.oninput = () => { search(); const q = norm(inp.value.trim()); if (q.length < 2){ box.innerHTML = ""; return; }
     if (!PDB) pdbLoad().then(() => { if (PDB && document.body.contains(inp) && inp.value.trim()) inp.oninput(); });
     const qs = gStem(q), seen = new Set(), gs = gSearch(inp.value.trim(), 5); gs.forEach(g => seen.add(norm(g[0])));
     const ffn = kitStockBind._ff || (kitStockBind._ff = new Set(FF_FOODS.map(f => f[0])));
@@ -19358,17 +19444,89 @@ function openKitItem(it, pre){
       kitPut("items", o); if (o.code){ K.codes[o.code] = Object.assign({}, K.codes[o.code] || {}, {n: o.n, q: o.q, u: o.u, loc: o.loc, base: o.base, t: Date.now()}); kitSave(); }
       setTimeout(renderKueche, 30); toast(isNew ? "Im Vorrat" : "Gesichert"); }});
 }
-function openKitUse(r, f, planId){
-  const st = kitLive("items"), rows = [];
-  r.ing.forEach(e => { const it = st.find(i => kitKey(kitMatchName(i)) === kitKey(e.n)) || st.find(i => ingGroup(kitMatchName(i)) === ingGroup(e.n)); if (it && !rows.some(x => x.it.id === it.id)) rows.push({e, it, use: (e.g || 0) * f}); });
-  if (!rows.length){ toast("Nichts davon ist im Vorrat eingetragen"); return; }
-  openSheet({title:"Vom Vorrat abziehen", right:"Abziehen", body:`<p class="note" style="margin:0 4px 10px">Was du für dieses Gericht verbraucht hast:</p><div class="group">${rows.map((x, i) => `<label class="row" for="ku-${i}"><span class="lbl">${esc(x.it.n)}<small class="num">${x.it.q ? `${fmt(x.it.q)} ${esc(x.it.u || "g")} → ${fmt(Math.max(0, x.it.q - x.use))} ${esc(x.it.u || "g")}` : "ohne Menge – aufgebraucht?"}</small></span><input type="checkbox" class="switch" id="ku-${i}" ${x.it.q ? "checked" : ""}></label>`).join("")}</div>`,
-    onSave: sh => { let n = 0;
-      rows.forEach((x, i) => { if (!$("#ku-" + i, sh).checked) return; n++;
-        if (x.it.q){ const rest = x.it.q - x.use; if (rest < Math.max(5, x.it.q * 0.03)) kitDel("items", x.it.id); else kitPut("items", Object.assign({}, x.it, {q: Math.round(rest), open: true, od: x.it.od || todayISO()})); }
-        else kitDel("items", x.it.id); });
-      if (planId && K.plan[planId]) kitPut("plan", Object.assign({}, K.plan[planId], {done: true}));
-      toast(`${n} Vorräte aktualisiert`); }});
+function kitConsume(id, amount){
+  const item = K.items[id];
+  if (!item || item.del) return false;
+  const qty = kitRemaining(item);
+  if (amount == null || (qty != null && amount >= qty)) kitDel("items", id);
+  else if (qty != null && amount > 0){
+    const rest = Math.round((qty - amount) * 1000) / 1000;
+    if (!rest) kitDel("items", id);
+    else kitPut("items", {...item, q:rest, lvl:1, open:true, od:item.od || todayISO()});
+  } else return false;
+  return true;
+}
+function openKitStockUse(id){
+  if (kitRO()) return;
+  const item = K.items[id];
+  if (!item || item.del) return;
+  const qty = kitRemaining(item), unit = item.u || "g";
+  openSheet({title:"Verbrauch buchen", right:"Abziehen", body:`
+    <h2>${esc(item.n)}</h2>
+    ${qty == null ? "" : `<p class="note"><span>Restbestand</span> · ${fmt(qty, Number.isInteger(qty) ? 0 : 2)} ${esc(unit)}</p>
+      <label class="row group" for="kv-use-amount"><span class="lbl">Verbraucht</span><input class="field" id="kv-use-amount" inputmode="decimal" style="width:90px;text-align:right" placeholder="0" aria-label="${esc(trText("Verbraucht") + " " + unit)}"><span>${esc(unit)}</span></label>
+      <div class="kv-filters">${[[.25,"¼"],[.5,"½"],[.75,"¾"]].map(([f,l]) => `<button type="button" class="chip-btn" data-use-fraction="${f}">${l}</button>`).join("")}</div>`}
+    <div class="group"><label class="row" for="kv-use-all"><span class="lbl">Ganz aufgebraucht</span><input type="checkbox" class="switch" id="kv-use-all" ${qty == null ? "checked" : ""}></label></div>`,
+    onOpen: sh => {
+      const amount = $("#kv-use-amount",sh), all = $("#kv-use-all",sh);
+      all.onchange = () => { if (amount) amount.disabled = all.checked; };
+      $$("[data-use-fraction]",sh).forEach(b => b.onclick = () => { all.checked = false; amount.disabled = false; amount.value = String(Math.round(qty * Number(b.dataset.useFraction) * 1000) / 1000).replace(".",","); });
+    },
+    onSave: sh => {
+      if (kitRO()) return false;
+      if (K.items[id] !== item){ toast(trText("Vorrat wurde geändert. Bitte erneut öffnen.")); return; }
+      const all = $("#kv-use-all",sh).checked, value = ($("#kv-use-amount",sh)?.value || "").trim();
+      const amount = /^[0-9]+(?:[,.][0-9]+)?$/.test(value) ? Number(value.replace(",",".")) : 0;
+      if (!all && (qty == null || !Number.isFinite(amount) || amount <= 0 || amount > qty)){ toast(trText("Bitte eine gültige Menge eingeben")); return false; }
+      if (kitConsume(id, all ? null : amount)){ renderKueche(); toast(trText("Verbrauch gebucht")); }
+    }});
+}
+function kitRecipeUseRows(r,f,stock){
+  const rows = new Map();
+  for (const e of r.ing){
+    const unit = e.u || "g", need = (e.g || 0) * f;
+    if (!(need > 0)) continue;
+    const matches = stock.filter(i => kitKey(kitMatchName(i)) === kitKey(e.n) && (i.u || "g") === unit);
+    let left = need;
+    for (const it of matches){
+      const remaining = kitRemaining(it), assigned = rows.get(it.id)?.use || 0;
+      if (remaining == null) continue;
+      const use = Math.min(left, Math.max(0, remaining - assigned));
+      if (use > 0){ rows.set(it.id, {it, use:assigned + use}); left -= use; }
+      if (left <= 0.000001) break;
+    }
+    if (left > 0.000001){
+      const unknown = matches.find(it => kitRemaining(it) == null);
+      if (unknown) rows.set(unknown.id, {it:unknown, use:0});
+    }
+  }
+  return [...rows.values()];
+}
+function openKitUse(r, f, planId, onReturn, quiet = false){
+  if (kitRO()) return false;
+  const linked = planId ? K.plan[planId] : null;
+  if (linked?.done){ toast(trText("Verbrauch bereits gebucht")); return false; }
+  const stock = kitLive("items").sort((a,b) => (kitDaysLeft(a) ?? Infinity) - (kitDaysLeft(b) ?? Infinity));
+  const rows = kitRecipeUseRows(r, f, stock);
+  if (!rows.length){ if (!quiet) toast(trText("Keine passenden Vorräte mit gleicher Einheit")); return false; }
+  openSheet({title:"Verbrauch buchen", left:"Überspringen", right:"Abziehen", body:`<p class="note" style="margin:0 4px 10px">Prüfe die vorgeschlagenen Mengen für dieses Gericht.</p><div class="group">${rows.map(({it,use}, i) => `<label class="row" for="ku-${i}"><span class="lbl">${esc(it.n)}<small class="num">${use > 0 ? `−${fmt(use,Number.isInteger(use) ? 0 : 2)} ${esc(it.u || "g")}` : "Ganz aufgebraucht?"}</small></span><input type="checkbox" class="switch" id="ku-${i}" ${use > 0 ? "checked" : ""}></label>`).join("")}</div>`,
+    onOpen: sh => {
+      const back = () => onReturn(false);
+      $(".l",sh).onclick = back;
+      sh.previousElementSibling.onclick = back;
+    },
+    onSave: sh => {
+      if (kitRO() || (planId && K.plan[planId]?.done)){ onReturn(false); return; }
+      const selected = rows.filter((row,i) => $("#ku-" + i,sh).checked);
+      if (!selected.length){ toast(trText("Mindestens einen Vorrat wählen")); return false; }
+      if (selected.some(({it}) => K.items[it.id] !== it)){ onReturn(false); toast(trText("Vorrat wurde geändert. Bitte erneut öffnen.")); return; }
+      selected.forEach(({it,use}) => kitConsume(it.id,use || null));
+      if (planId && K.plan[planId] && !K.plan[planId].del) kitPut("plan", {...K.plan[planId], done:true});
+      if (S.tab === "kueche") renderKueche();
+      onReturn(true);
+      toast(trText("Verbrauch gebucht"));
+    }});
+  return true;
 }
 
 const kitAdj = k => { const s = K.shop["p:" + k]; return s && !s.del ? s : null; };
