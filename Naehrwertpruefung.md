@@ -112,3 +112,125 @@ Ergibt sechs kleine Pfannen-Piroschki. Eine Referenzportion sind drei Stück. F�
 | 6 Stück (Ansatz) | 413 | 41,1 | 22,2 | 16,9 |
 | 3 Stück (Referenzportion) | 207 | 20,5 | 11,1 | 8,5 |
 | 1 Stück | 69 | 6,8 | 3,7 | 2,8 |
+
+
+## Bowls, Salate und Aufläufe aus den 32 Screenshots
+
+26 Gerichte. Philly und Iron verteilen sich auf je mehrere Screenshots. Werte pro Referenzportion aus den unten aufgeführten Rechenmengen. Fleisch- und Getreidewerte beziehen sich auf den ausdrücklich angegebenen Zustand. Hülsenfrüchte aus der Dose, Mais und Thunfisch werden abgetropft gewogen. Ein normaler Esslöffel Öl wurde mit 13,5 g angesetzt, ein Teelöffel mit 4,5 g. Zwei Eier entsprechen 100 g ohne Schale. Becher-, Frucht- und Gemüseeinheiten wurden auf übliche essbare Gewichte umgerechnet. KH sind verfügbare Kohlenhydrate. Die Richtwerte für einzelne Zutaten und Marken sind Näherungen. Der Energiegehalt berücksichtigt Angaben je Zutat und kann deshalb von einer reinen 4/4/9-Rückrechnung leicht abweichen.
+
+| Gericht | Portionen | kcal | Eiweiß (g) | KH (g) | Fett (g) | Screenshot pro Portion (kcal / P / KH / F) |
+|---|---:|---:|---:|---:|---:|---|
+| Hähnchen-Brokkoli-Auflauf | 2 | 439 | 60 | 6 | 19 | – |
+| Puten-Zucchini-Auflauf | 2 | 389 | 55 | 6 | 15 | – |
+| Kabeljau-Blumenkohl-Auflauf | 2 | 398 | 43 | 6 | 21 | – |
+| Hähnchen-Champignon-Auflauf | 2 | 463 | 52 | 7 | 25 | – |
+| Tworog-Spinat-Auflauf | 2 | 363 | 40 | 7 | 19 | – |
+| Weißkohl-Hähnchen-Auflauf | 2 | 416 | 44 | 10 | 20 | – |
+| Thunfisch-Tomaten-Auflauf | 2 | 402 | 54 | 5 | 18 | – |
+| Buchweizen-Hähnchen-Auflauf | 2 | 480 | 53 | 24 | 17 | – |
+| Apfel-Zimt-Quarkauflauf | 2 | 469 | 43 | 37 | 16 | – |
+| Hähnchen-Mais-Salat mit Kirschtomaten | 2 | 337 | 41 | 9 | 13 | – |
+| Hähnchen-Ei-Salat mit Gurke und Knoblauchjoghurt | 2 | 232 | 32 | 4 | 8 | – |
+| Thunfischsalat mit weißen Bohnen und Rucola | 2 | 180 | 25 | 13 | 2 | – |
+| Kichererbsen-Avocado-Salat mit Cherrytomaten | 2 | 243 | 6 | 14 | 16 | – |
+| Puten-Rotkohl-Salat mit Joghurt-Senf-Dressing | 2 | 179 | 26 | 10 | 2 | – |
+| Garnelen-Avocado-Salat mit Zitronenjoghurt | 2 | 199 | 23 | 6 | 8 | – |
+| Hähnchen-Quinoa-Bowl mit Rucola | 1 | 554 | 46 | 41 | 21 | 430 / 35 / 45 / 14 |
+| Lachs-Reis-Bowl mit Avocado und Sesam | 1 | 498 | 33 | 31 | 25 | 520 / 28 / 46 / 25 |
+| Thunfisch-Kidneybohnen-Bowl mit Mais | 1 | 420 | 36 | 26 | 16 | 420 / 34 / 42 / 12 |
+| Puten-Buchweizen-Bowl mit Brokkoli | 1 | 555 | 49 | 45 | 18 | 420 / 40 / 48 / 12 |
+| Kartoffel-Ei-Bowl mit Radieschen | 1 | 436 | 18 | 30 | 25 | 420 / 16 / 47 / 18 |
+| Hummus-Kichererbsen-Bowl mit Gemüse | 1 | 442 | 16 | 41 | 20 | 460 / 18 / 48 / 22 |
+| Garnelen-Mango-Reis-Bowl mit Avocado | 1 | 590 | 36 | 46 | 28 | 430 / 28 / 48 / 14 |
+| Steak-Quinoa-Bowl mit Brokkoli und Paprika | 1 | 686 | 48 | 50 | 30 | 510 / 36 / 45 / 18 |
+| Lachs-Quinoa-Bowl mit Avocado und Spinat | 1 | 855 | 44 | 45 | 50 | 560 / 33 / 42 / 28 |
+| Philly Cheesesteak-Reis-Bowl | 7 | 739 | 57 | 40 | 38 | 510 / 65 / 45 / 7 |
+| Iron Bowl mit Rinderhack, Ei und Knusperkartoffeln | 2 | 623 | 61 | 35 | 23 | – / 66 / – / – |
+
+Beim Philly Cheesesteak hängt der Unterschied vor allem am Ribeye. Für die Berechnung wird ein Rohwert von 19 g Fett je 100 g und der gesamte Fettanteil angesetzt. Bei einem magereren Stück oder wenn Bratfett tatsächlich abgegossen wird, sinkt der Wert. Beim Iron Bowl nennt das Reel 132 g für den kompletten Ansatz. Die Rechnung setzt 300 g mageres Hack als Rohgewicht an. Für die Lachs-Quinoa-Bowl werden der Esslöffel Öl, die halbe Avocado und die trockene Quinoa vollständig eingerechnet.
+
+### Zutatenwerte je 100 g
+
+Die Rezeptmengen sind direkt in den Zutatenlisten der App hinterlegt. Die Rechenwerte unten lassen sich bei abweichenden Produkten anhand des Etiketts vergleichen.
+
+| Zutat | kcal | Eiweiß (g) | KH (g) | Fett (g) |
+|---|---:|---:|---:|---:|
+| Hähnchenbrust, roh | 110 | 23 | 0 | 2 |
+| Hähnchenbrust, gegart | 165 | 31 | 0 | 3.6 |
+| Putenbrust, roh | 111 | 24 | 0 | 1.3 |
+| Putenbrust, gegart | 135 | 29 | 0 | 1.6 |
+| Kabeljau, roh | 82 | 17.8 | 0 | 0.7 |
+| Thunfisch im eigenen Saft, abgetropft | 116 | 25.5 | 0 | 1 |
+| Garnelen, roh und geschält | 85 | 20 | 0 | 0.5 |
+| Garnelen, gegart | 99 | 24 | 0.2 | 0.3 |
+| Lachsfilet, roh | 208 | 20 | 0 | 13 |
+| Lachs, mild gesalzen | 180 | 22 | 0 | 10 |
+| Rindersteak, mager und roh | 150 | 22 | 0 | 6.9 |
+| Ribeye, roh | 244 | 19 | 0 | 19 |
+| Rinderhack, 5 % Fett | 137 | 21.4 | 0 | 5 |
+| Ei, ohne Schale | 143 | 12.6 | 0.7 | 9.5 |
+| Ei, hart gekocht | 155 | 12.6 | 1.1 | 10.6 |
+| Tworog 5 % Fett | 121 | 17 | 3 | 5 |
+| Körniger Frischkäse light | 74 | 12.5 | 3 | 1 |
+| Gouda | 356 | 25 | 0.1 | 27.4 |
+| Geriebener Mozzarella fettfrei | 157 | 29 | 7 | 0 |
+| Schmand 15 % Fett | 161 | 3 | 3.8 | 15 |
+| Griechischer Naturjoghurt 2 % | 73 | 9.9 | 3.9 | 2 |
+| Milch 1,5 % | 47 | 3.4 | 4.9 | 1.5 |
+| Haferflocken | 372 | 13.5 | 59 | 7 |
+| Zucker | 400 | 0 | 100 | 0 |
+| Zimt, gemahlen | 247 | 4 | 28 | 1.2 |
+| Brokkoli | 34 | 2.8 | 4 | 0.4 |
+| Zucchini | 17 | 1.2 | 2.1 | 0.3 |
+| Blumenkohl | 25 | 1.9 | 3 | 0.3 |
+| Champignons | 22 | 3.1 | 2.3 | 0.3 |
+| Zwiebel | 40 | 1.1 | 7.6 | 0.1 |
+| Rote Zwiebel | 40 | 1.1 | 7.6 | 0.1 |
+| Spinat | 23 | 2.9 | 1.4 | 0.4 |
+| Weißkohl | 25 | 1.3 | 3.3 | 0.1 |
+| Rotkohl | 31 | 1.4 | 5.3 | 0.2 |
+| Karotte | 41 | 0.9 | 6.8 | 0.2 |
+| Cherrytomaten | 18 | 0.9 | 2.7 | 0.2 |
+| Gurke | 15 | 0.7 | 2.2 | 0.1 |
+| Paprika | 27 | 1 | 4.5 | 0.3 |
+| Grüne Paprika | 20 | 0.9 | 2.9 | 0.2 |
+| Blattsalat | 15 | 1.4 | 1.2 | 0.2 |
+| Rucola | 25 | 2.6 | 2.1 | 0.7 |
+| Avocado, Fruchtfleisch | 160 | 2 | 1.8 | 14.7 |
+| Mango, Fruchtfleisch | 60 | 0.8 | 13.4 | 0.4 |
+| Apfel | 52 | 0.3 | 11.4 | 0.2 |
+| Radieschen | 16 | 0.7 | 1.8 | 0.1 |
+| Kartoffeln, roh | 77 | 2 | 15.4 | 0.1 |
+| Mais, abgetropft | 79 | 2.9 | 12.4 | 1.2 |
+| Erbsen, gegart | 84 | 5.4 | 10.1 | 0.2 |
+| Weiße Bohnen, abgetropft | 110 | 7 | 15 | 0.5 |
+| Kidneybohnen, abgetropft | 110 | 7.5 | 14 | 0.5 |
+| Kichererbsen, gegart und abgetropft | 139 | 7 | 17.5 | 2.4 |
+| Hummus | 230 | 7 | 12 | 17 |
+| Quinoa, trocken | 368 | 14.1 | 57.2 | 6.1 |
+| Buchweizen, trocken | 343 | 13.3 | 61.5 | 3.4 |
+| Buchweizen, gekocht | 92 | 3.4 | 17.2 | 0.6 |
+| Jasminreis, trocken | 356 | 7 | 79 | 0.7 |
+| Reis, gekocht | 130 | 2.7 | 28 | 0.3 |
+| Olivenöl | 884 | 0 | 0 | 100 |
+| Zitronensaft | 22 | 0.4 | 6.5 | 0.2 |
+| Limettensaft | 25 | 0.4 | 8 | 0.1 |
+| Knoblauch | 149 | 6.4 | 28 | 0.5 |
+| Knoblauchpulver | 331 | 16.6 | 63.7 | 0.7 |
+| Paprikapulver | 282 | 14.1 | 19.1 | 12.9 |
+| Dill | 43 | 3.5 | 4.9 | 1.1 |
+| Sojasauce | 53 | 8.1 | 4.9 | 0.1 |
+| Körniger Senf | 100 | 5 | 5 | 6 |
+| Dijon-Senf | 120 | 6 | 3 | 9 |
+| Sesam | 573 | 17.7 | 11.7 | 49.7 |
+| Frühlingszwiebel | 32 | 1.8 | 4.7 | 0.2 |
+| Schnittlauch | 30 | 3.3 | 1.8 | 0.7 |
+| Koriandergrün | 23 | 2.1 | 0.9 | 0.5 |
+| Wasabipaste | 240 | 3 | 38 | 8 |
+| Salz | 0 | 0 | 0 | 0 |
+| Schwarzer Pfeffer | 251 | 10 | 39 | 3.3 |
+| Wasser | 0 | 0 | 0 | 0 |
+
+Ribeye-Referenz: [USDA SR Legacy, Rohware mit Fettanteil](https://restincal.com/foods/beef-rib-eye-steak-roast-boneless-lip-on-separable-lean-and/).
+
+Für die Gar- und Kühlhinweise siehe [BfR – Lebensmittelinfektionen im Privathaushalt](https://www.bfr.bund.de/fragen-und-antworten/thema/lebensmittelinfektionen-im-privathaushalt-quellen-erkennen-risiken-vermeiden/).
