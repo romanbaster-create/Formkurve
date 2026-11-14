@@ -102,3 +102,13 @@ Die Angaben sind Schätzwerte auf Basis typischer Zutatenwerte. Die 20 Salate au
 | Hähnchen-Ananas-Festtagssalat mit Gouda | 5 | 347 | 22,9 | 8,9 | 24,0 |
 | Warmer Festtagssalat mit Rind, Pilzen und Zwiebeln | 4 | 252 | 30,1 | 6,1 | 11,4 |
 | Kürbis-Orangen-Joghurtdessert mit Schokokeksen | 8 | 191 | 5,6 | 29,6 | 5,4 |
+
+## Eier-Piroschki zum Frühstück
+
+Ergibt sechs kleine Pfannen-Piroschki. Eine Referenzportion sind drei Stück. Für die Berechnung sind eine halbe 200-g-Packung Magerquark, 25 g Light-Käse und 3 g Bratöl je Ansatz angesetzt. Die zwei übrigen Eigelbe sind nicht eingerechnet.
+
+| Menge | kcal | Eiweiß (g) | KH (g) | Fett (g) |
+|---|---:|---:|---:|---:|
+| 6 Stück (Ansatz) | 413 | 41,1 | 22,2 | 16,9 |
+| 3 Stück (Referenzportion) | 207 | 20,5 | 11,1 | 8,5 |
+| 1 Stück | 69 | 6,8 | 3,7 | 2,8 |
