@@ -105,13 +105,13 @@ Die Angaben sind Schätzwerte auf Basis typischer Zutatenwerte. Die 20 Salate au
 
 ## Eier-Piroschki zum Frühstück
 
-Ergibt sechs kleine Pfannen-Piroschki. Eine Referenzportion sind drei Stück. Für die Berechnung sind eine halbe 200-g-Packung Magerquark, 25 g Light-Käse und 3 g Bratöl je Ansatz angesetzt. Die zwei übrigen Eigelbe sind nicht eingerechnet.
+Der Grundansatz ergibt acht Mini-Piroschki. Eine Portion sind vier Stück. Die Berechnung setzt vier ganze Eier mit zusammen 200 g ohne Schale und 3 g Rapsöl an. Die Masse wiegt vor dem Braten insgesamt rund 364 g. Das geformte Einzelstück wiegt etwa 45 g.
 
 | Menge | kcal | Eiweiß (g) | KH (g) | Fett (g) |
 |---|---:|---:|---:|---:|
-| 6 Stück (Ansatz) | 413 | 41,1 | 22,2 | 16,9 |
-| 3 Stück (Referenzportion) | 207 | 20,5 | 11,1 | 8,5 |
-| 1 Stück | 69 | 6,8 | 3,7 | 2,8 |
+| 8 Stück (Ansatz) | 524 | 46,3 | 22,6 | 26,8 |
+| 4 Stück (Referenzportion) | 262 | 23,2 | 11,3 | 13,4 |
+| 1 Stück | 65 | 5,8 | 2,8 | 3,4 |
 
 
 ## Bowls, Salate und Aufläufe aus den 32 Screenshots
