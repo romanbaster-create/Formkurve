@@ -7266,6 +7266,7 @@ function qtyText(r, tok, f){
   const m = tok.match(/^(.+?)(?:\/(\d))?$/), name = m[1], div = Number(m[2] || 1), e = (r.ing||[]).find(x => x.n === name || x.originalN === name);
   if (!e) return ingLabel(name);
   const g = e.g * f / div, ru = LANG === "ru";
+  if (e.n === "Ganze Eier") return wholeEggAmount(e, roundG(g));
   if (name === "Ei"){ const c = Math.max(1, Math.round(g/55)); return ru ? `${c} ${c === 1 ? "яйцо" : c < 5 ? "яйца" : "яиц"}` : `${c} ${c === 1 ? "Ei" : "Eier"}`; }
   if (name === "Wrap / Tortilla"){ const c = Math.max(1, Math.round(g/60)); return ru ? `${c} шт. лаваша` : `${c} Wraps`; }
   const u = (e.u || "g") === "ml" ? (ru ? "мл" : "ml") : (ru ? "г" : "g");
@@ -17093,11 +17094,16 @@ function openEaters(after){
  openSheet({title:"Haushalt & Ziele",right:"Sichern",body:`<button type="button" class="health-btn" id="hh-send"><span class="hb-i">⇪</span><span><b>Mein Tages-Update teilen</b><small>Ziele, Gewichtstrend, bereits gegessen und Bewertungen</small></span>${ICON.chev}</button><button type="button" class="health-btn" id="hh-paste"><span class="hb-i">📋</span><span><b>Tages-Update einfügen</b><small>Link aus der App der anderen Person übernehmen</small></span>${ICON.chev}</button><p class="note">Jede Person teilt täglich oder nach neuen Einträgen ihren aktuellen Link. Es gibt keinen automatischen Austausch zwischen getrennten Geräten. Ohne heutiges Update rechnet die App mit dem gespeicherten Tagesziel.</p><div class="group" id="hh-l"></div><button type="button" class="btn secondary" id="hh-add">+ Person hinzufügen</button><p class="note">Erwachsene: Mifflin-St-Jeor × Aktivität. Abnehmen: 15 % unter Erhaltung, höchstens 500 kcal Defizit. Nur eine Schätzung. Kinder: individuell festgelegte Ziele, keine Erwachsenenformel und kein automatisches Defizit. Schwangerschaft/Stillzeit: individuell vereinbarte manuelle Ziele verwenden.</p>`,onOpen:sh=>{draw(sh);$("#hh-add",sh).onclick=()=>{list.push({n:"",on:true});draw(sh);$$(".hh-person",sh).at(-1).open=true;};$("#hh-send",sh).onclick=shareFamily;$("#hh-paste",sh).onclick=pasteShared;},onSave:()=>{for(const x of list){if(x.kid||(x.age>0&&x.age<18))x.lose=false;if(x.calc==="auto"){const e=estimateNeeds(x);if(!e.valid){toast(x.n+": "+e.reason);return false;}x.k=e.k;x.p=e.p;}if(!x.n?.trim()||!(x.k>0&&x.k<=6000)||!(x.p>0&&x.p<=400)){toast("Bitte Name und gültige Tagesziele für jede Person eintragen");return false;}}saveProfile({household:list.map(x=>Object.assign({},x,{n:x.n.trim()})).concat([{n:P().person,k:0,me:true}])});toast("Ziele gesichert");if(after)setTimeout(after,380);}});
 }
 const roundG = g => g < 20 ? Math.round(g) : g < 200 ? Math.round(g/5)*5 : Math.round(g/10)*10;
+function wholeEggAmount(e, grams){
+  const perEgg = e.por > 0 ? e.por : 50;
+  const count = Math.round(grams / perEgg);
+  const unit = LANG === "ru" ? "г без скорлупы" : "g ohne Schale";
+  const weight = fmt(grams, Number.isInteger(grams) ? 0 : 1) + " " + unit;
+  if (!count) return weight;
+  const eggs = LANG === "ru" ? "шт." : count === 1 ? "Ei" : "Eier";
+  return `${grams === count * perEgg ? "" : LANG === "ru" ? "ок. " : "ca. "}${fmt(count)} ${eggs} (${weight})`;
+}
 function countHint(e, g){
-  if (e.n === "Ganze Eier" && e.por && g > 0){
-    const count = g / e.por;
-    return `≈ ${fmt(count, Number.isInteger(count) ? 0 : 1)} ${trText(count === 1 ? "Ei" : "Eier")}`;
-  }
   const m = /^1 (\D+)/.exec(e.pl || ""); if (!m || !e.por || e.por < 20) return ""; const c = Math.round(g/e.por*2)/2; return c >= 0.5 ? ` · ≈ ${fmt(c, c % 1 ? 1 : 0)} ${m[1].replace(/\s*\(.*\)/,"")}` : ""; }
 function ingGroup(n){ const k = norm(n).replace(/\s*[,(].*$/,"").split(" / ")[0].trim();
   if (k.includes("hahnchen") || k.includes("hühnchen")) return "hahnchen"; if (k.includes("hack")) return "hack"; if (/nudel|lasagne|spaghetti/.test(k)) return "nudeln";
@@ -17468,7 +17474,7 @@ function openCook(r, pre){
         $("#ck-fac", sh).textContent = `×${fmt(plan.f, 2)} · ${tot} ${tot === 1 ? "Portion" : "Portionen"}`;
         { const IA = ingAdj(r), ib = $("#ck-ing", sh), labels = weighLabels(plan.rr);
           const sessionNote = r._sessionOriginal ? `<div class="iadj-note"><div><b>Nur für dieses Kochen angepasst</b><small>Die Anleitung zeigt weiterhin die Schritte des Originalrezepts.</small></div><button type="button" class="link" id="ck-reset-ing">Zurücksetzen</button></div>` : "";
-          ib.innerHTML = sessionNote + ingAdjNote(r, plan.adj) + plan.rr.ing.map((e, i) => { const g = e._sessionIngredient ? r1(e.g*plan.f) : roundG(e.g*plan.f); return `<div class="ing${IA[i] ? " adj" : ""}"><span>${esc(e.n)}${IA[i] ? ` <em class="ia-tag">angepasst</em>` : ""}<small>${e.scanned?(e.scanFallback?"Gescannt · ursprüngliche Werte":"Produktwerte · nur dieses Mal"):countHint(e,g)}</small>${comps.length>1 ? `<small class="ck-group-name">${esc(labels[i])}</small>` : ""}</span><b class="num">${fmt(g, e._sessionIngredient && g % 1 ? 1 : 0)} ${e.u||"g"}</b><button type="button" class="ia-btn" data-ia="${i}" aria-label="Menge anpassen">✎</button><button type="button" class="ia-btn scan-ing" data-ing-scan="${i}" aria-label="Produkt für ${esc(e.n)} scannen">${recipeScanIcon()}</button></div>${iaOpen === i ? ingAdjEdHTML(r, i, roundG(r.ing[i].g * plan.f0)) + `<div class="ck-session-actions"><button type="button" class="btn secondary" data-ing-replace="${i}">Zutat ersetzen</button><button type="button" class="link" data-ing-remove="${i}">Zutat entfernen</button></div>` : ""}`; }).join("")
+          ib.innerHTML = sessionNote + ingAdjNote(r, plan.adj) + plan.rr.ing.map((e, i) => { const g = e._sessionIngredient ? r1(e.g*plan.f) : roundG(e.g*plan.f); const wholeEggs = r.n === BREAKFAST_PIROSCHKI.n && e.n === "Ganze Eier"; return `<div class="ing${IA[i] ? " adj" : ""}"><span>${esc(e.n)}${IA[i] ? ` <em class="ia-tag">angepasst</em>` : ""}<small>${e.scanned?(e.scanFallback?"Gescannt · ursprüngliche Werte":"Produktwerte · nur dieses Mal"):wholeEggs ? "" : countHint(e,g)}</small>${comps.length>1 ? `<small class="ck-group-name">${esc(labels[i])}</small>` : ""}</span><b class="num">${wholeEggs ? esc(wholeEggAmount(e,g)) : fmt(g, e._sessionIngredient && g % 1 ? 1 : 0) + " " + (e.u||"g")}</b><button type="button" class="ia-btn" data-ia="${i}" aria-label="Menge anpassen">✎</button><button type="button" class="ia-btn scan-ing" data-ing-scan="${i}" aria-label="Produkt für ${esc(e.n)} scannen">${recipeScanIcon()}</button></div>${iaOpen === i ? ingAdjEdHTML(r, i, roundG(r.ing[i].g * plan.f0)) + `<div class="ck-session-actions"><button type="button" class="btn secondary" data-ing-replace="${i}">Zutat ersetzen</button><button type="button" class="link" data-ing-remove="${i}">Zutat entfernen</button></div>` : ""}`; }).join("")
             + `<p class="note iadj-hint">✎ <span>Tippen, um die Menge zu ändern, die Zutat zu ersetzen oder zu entfernen.</span></p>`;
           $$("[data-ia]", ib).forEach(b => b.onclick = () => { const i = Number(b.dataset.ia); iaOpen = iaOpen === i ? -1 : i; upd(); });
           $$("[data-ing-scan]",ib).forEach(b=>b.onclick=()=>{const i=Number(b.dataset.ingScan),factor=plan.f;openScanner(wst.m,whenDay(wst),{recipe:true,cancel:()=>resume(r),kit:(it,code)=>openRecipeProduct(r,i,it,code,factor,resume)});});
