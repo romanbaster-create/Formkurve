@@ -7266,14 +7266,14 @@ function qtyText(r, tok, f){
   const m = tok.match(/^(.+?)(?:\/(\d))?$/), name = m[1], div = Number(m[2] || 1), e = (r.ing||[]).find(x => x.n === name || x.originalN === name);
   if (!e) return ingLabel(name);
   if (e.rawPrep && name === e.originalN && name !== e.n) return ingLabel(name);
-  const g = e.g * f / div, ru = LANG === "ru";
-  if (e.n === "Ganze Eier") return wholeEggAmount(e, roundG(g));
+  const g = e.g * f / div, shown = recipeGrams(e,f/div), ru = LANG === "ru";
+  if (e.n === "Ganze Eier") return wholeEggAmount(e, shown);
   if (name === "Ei"){ const c = Math.max(1, Math.round(g/55)); return ru ? `${c} ${c === 1 ? "яйцо" : c < 5 ? "яйца" : "яиц"}` : `${c} ${c === 1 ? "Ei" : "Eier"}`; }
   if (name === "Wrap / Tortilla"){ const c = Math.max(1, Math.round(g/60)); return ru ? `${c} шт. лаваша` : `${c} Wraps`; }
   const u = (e.u || "g") === "ml" ? (ru ? "мл" : "ml") : (ru ? "г" : "g");
   const explicitWeight = e.rawPrep || /, (roh|trocken|ungekocht)(,|$)/.test(e.n);
-  if (ru){ const l = explicitWeight ? trText(e.n) : ingLabel(name); return `${l.charAt(0).toLowerCase() + l.slice(1)} (${fmt(roundG(g))} ${u})`; }
-  return `${fmt(roundG(g))} ${u} ${explicitWeight ? e.n : ingLabel(name)}`;
+  if (ru){ const l = explicitWeight ? trText(e.n) : ingLabel(name); return `${l.charAt(0).toLowerCase() + l.slice(1)} (${fmt(shown, shown % 1 ? 1 : 0)} ${u})`; }
+  return `${fmt(shown, shown % 1 ? 1 : 0)} ${u} ${explicitWeight ? e.n : ingLabel(name)}`;
 }
 function stepHTML(r, t, f){
   let tpl = t, notr = "";
@@ -17141,6 +17141,7 @@ function openEaters(after){
  openSheet({title:"Haushalt & Ziele",right:"Sichern",body:`<button type="button" class="health-btn" id="hh-send"><span class="hb-i">⇪</span><span><b>Mein Tages-Update teilen</b><small>Ziele, Gewichtstrend, bereits gegessen und Bewertungen</small></span>${ICON.chev}</button><button type="button" class="health-btn" id="hh-paste"><span class="hb-i">📋</span><span><b>Tages-Update einfügen</b><small>Link aus der App der anderen Person übernehmen</small></span>${ICON.chev}</button><p class="note">Jede Person teilt täglich oder nach neuen Einträgen ihren aktuellen Link. Es gibt keinen automatischen Austausch zwischen getrennten Geräten. Ohne heutiges Update rechnet die App mit dem gespeicherten Tagesziel.</p><div class="group" id="hh-l"></div><button type="button" class="btn secondary" id="hh-add">+ Person hinzufügen</button><p class="note">Erwachsene: Mifflin-St-Jeor × Aktivität. Abnehmen: 15 % unter Erhaltung, höchstens 500 kcal Defizit. Nur eine Schätzung. Kinder: individuell festgelegte Ziele, keine Erwachsenenformel und kein automatisches Defizit. Schwangerschaft/Stillzeit: individuell vereinbarte manuelle Ziele verwenden.</p>`,onOpen:sh=>{draw(sh);$("#hh-add",sh).onclick=()=>{list.push({n:"",on:true});draw(sh);$$(".hh-person",sh).at(-1).open=true;};$("#hh-send",sh).onclick=shareFamily;$("#hh-paste",sh).onclick=pasteShared;},onSave:()=>{for(const x of list){if(x.kid||(x.age>0&&x.age<18))x.lose=false;if(x.calc==="auto"){const e=estimateNeeds(x);if(!e.valid){toast(x.n+": "+e.reason);return false;}x.k=e.k;x.p=e.p;}if(!x.n?.trim()||!(x.k>0&&x.k<=6000)||!(x.p>0&&x.p<=400)){toast("Bitte Name und gültige Tagesziele für jede Person eintragen");return false;}}saveProfile({household:list.map(x=>Object.assign({},x,{n:x.n.trim()})).concat([{n:P().person,k:0,me:true}])});toast("Ziele gesichert");if(after)setTimeout(after,380);}});
 }
 const roundG = g => g < 20 ? Math.round(g) : g < 200 ? Math.round(g/5)*5 : Math.round(g/10)*10;
+const recipeGrams = (e, factor) => e._sessionIngredient ? r1(e.g*factor) : roundG(e.g*factor);
 function wholeEggAmount(e, grams){
   const perEgg = e.por > 0 ? e.por : 50;
   const count = Math.round(grams / perEgg);
@@ -17209,12 +17210,51 @@ function mealPlanAmounts(day, meal, person, target, available, recipes){
   mains.forEach(plan => amounts.set(plan.id,Math.max(0,budget-sum)/mains.length));
   return amounts;
 }
+
+I18N_RU["Portionen gespeichert"] = "Порции сохранены";
+function planRecipe(plan, base){
+  return plan?.batch ? {...base, ...plan.batch.recipe} : base;
+}
+function planBatch(recipe, portions, factor){
+  const {n, cat, min, serv, ing, steps, dev, tags, intro, cmode, weighGroups, own, hotel, home, fresh, base, proteinMeal} = recipe;
+  return {
+    recipe:{n, cat, min, serv, ing, steps, dev, tags, intro, cmode, weighGroups, own, hotel, home, fresh, base, proteinMeal},
+    portions:portions.filter(x => x.c > 0).map(({n,c,k}) => ({n,c,k})),
+    factor
+  };
+}
+function freezePlan(plan, recipe, recipes, counts = {}){
+  if (plan.batch || !recipe) return plan;
+  const portions = (plan.e?.length ? plan.e : [plan.by || P().person]).map(n => ({
+    n, c:counts[n] ?? 1, k:plannedKcal(plan,n,recipes)
+  }));
+  const total = recTotals(recipe).k;
+  const factor = total > 0 ? portions.reduce((sum,x) => sum + x.c*x.k,0)/total : 1;
+  return {...plan, batch:planBatch(recipe,portions,factor)};
+}
+function applyPlanPeople(people, plan, me){
+  const saved = plan.batch?.portions || (plan.e || []).map(n => ({n,c:1}));
+  const byName = new Map(saved.map(x => [x.n,x]));
+  people.forEach(x => {
+    const portion = byName.get(x.n);
+    if (saved.length) x.c = portion?.c ?? 0;
+    if (portion?.k != null) {
+      x.k = portion.k;
+      x.empty = x.k <= 0;
+      x.lim = null;
+    }
+    byName.delete(x.n);
+  });
+  byName.forEach(x => people.push({...x, meal:plan.m, me:x.n === me, k:x.k ?? 0}));
+  return people;
+}
+
 function plannedKcal(plan, person, recipes){
-  const sh = MEAL_SHARE[plan.m] || .3;
+  if (plan.batch) return plan.batch.portions.find(x => x.n === person)?.k ?? 0;
   const me = person === P().person;
   const x = me ? null : household().find(item => item.n === person);
   if (!me && !x) return 0;
-  const budget = me ? mealBudget(plan.d,plan.m) : {target:(x.k || 0)*sh};
+  const budget = me ? mealBudget(plan.d,plan.m) : {target:mealKcalGoal(x.k || 0,plan.m)};
   const available = me ? budget.left : x.src === "app" && x.upd === plan.d && Number.isFinite(x.remaining) ? Math.min(budget.target,x.remaining) : budget.target;
   return mealPlanAmounts(plan.d,plan.m,person,budget.target,available,recipes).get(plan.id) || 0;
 }
@@ -17222,14 +17262,15 @@ function cookPeople(r, wst){
   const p = P(), m = (wst && wst.m) || (CAT[r.cat] || CAT.h)[2], sh = MEAL_SHARE[m] || .3, d = wst ? whenDay(wst) : todayISO(), w = Math.max(1, weekOf(d));
   const mg = macroGoals(w), budget = mealBudget(d,m), kMeal = budget.target, T = recTotals(r);
   const savedPlan = wst?.planId && K.plan[wst.planId];
-  const plan = savedPlan && !savedPlan.del && savedPlan.d === d && savedPlan.m === m ? savedPlan : null;
-  const recipes = plan ? new Map(allRecipes().map(item => [item.n,item])) : null;
+  const plan = savedPlan && !savedPlan.del && savedPlan.r === r.n && savedPlan.d === d && savedPlan.m === m ? savedPlan : null;
+  const recipes = plan && !plan.batch ? new Map(allRecipes().map(item => [item.n,item])) : null;
   const recipePortion = !plan && r.proteinMeal && wst?.recipePortion !== false;
-  let k = plan ? plannedKcal(plan,p.person,recipes) : recipePortion ? T.k / r.serv : budget.left;
+  let k = plan?.e?.includes(p.person) ? plannedKcal(plan,p.person,recipes) : recipePortion ? T.k / r.serv : budget.left;
   const lim = !recipePortion && k < kMeal ? "kcal" : null;
   const empty = k <= 0; k = Math.max(k, 0);
   const sc = kMeal > 0 ? k / kMeal : 0, me = {n:p.person, k, p:recipePortion ? T.p/r.serv : mg.p*sh*sc, kh:recipePortion ? T.c/r.serv : mg.c*sh*sc, fa:recipePortion ? T.f/r.serv : mg.f*sh*sc, me:true, c:k>0?1:0, lim, empty, meal:m};
-  return [me].concat(household().map(x => { const kk = plan ? plannedKcal(plan,x.n,recipes) : x.src==="app" && x.upd===d && Number.isFinite(x.remaining) ? Math.min(x.k*sh,x.remaining) : x.k*sh, pp = (x.p || estimateNeeds(x).p)*sh, fa = kk*0.28/9; return {n:x.n, k:kk, p:pp, fa, kh: Math.max(0, (kk - pp*4 - fa*9)/4), kid:x.kid, c: r.cat === "h" && !r.proteinMeal && x.on !== false ? 1 : 0, meal:m}; }));
+  const people = [me].concat(household().map(x => { const target = mealKcalGoal(x.k || 0,m), kk = plan?.e?.includes(x.n) ? plannedKcal(plan,x.n,recipes) : x.src==="app" && x.upd===d && Number.isFinite(x.remaining) ? Math.min(target,x.remaining) : target, pp = (x.p || estimateNeeds(x).p)*sh, fa = kk*0.28/9; return {n:x.n, k:kk, p:pp, fa, kh: Math.max(0, (kk - pp*4 - fa*9)/4), kid:x.kid, c: r.cat === "h" && !r.proteinMeal && x.on !== false ? 1 : 0, meal:m}; }));
+  return plan ? applyPlanPeople(people,plan,p.person) : people;
 }
 function cookPlan(r, people, mode, inputs, fF){
   const T = recTotals(r), need = people.reduce((a,x) => a + x.c*x.k, 0), f = fF != null ? fF : T.k > 0 ? need / T.k : 1;
@@ -17372,17 +17413,22 @@ function openCookIngredient(r, index, plan, meal, day, back, apply){
 const COOK_DRAFTS_KEY = "formkurve.cookDrafts";
 const cookDrafts = () => lsGet(COOK_DRAFTS_KEY) || [];
 function openCook(r, pre){
-  if(r.hotel && !pre?.shared) return openHotel(r, pre?.plan);
   pre = pre || {};
+  const requested = pre.plan && (K.plan[pre.plan.id] || pre.plan);
+  if (requested && !requested.del) pre = {...pre, plan:requested};
+  r = planRecipe(requested?.del ? null : requested,r);
+  if (!r) return;
+  if(r.hotel && !pre.shared) return openHotel(r, pre.plan);
   const draftKey = JSON.stringify([P().person, pre.plan?.id || null, r.n]);
   const draft = !pre.shared && !pre._cookSession ? cookDrafts().find(item =>
     item.key === draftKey && (pre.plan?.id || item.session?.date >= todayISO() || pre.resumeDraft)
   ) : null;
-  const session = pre._cookSession || draft?.session;
-  const savedRecipe = draft?.recipe;
+  const draftMatches = !requested?.batch || draft?.session?.planStamp === requested.t;
+  const session = pre._cookSession || (draftMatches ? draft?.session : null);
+  const savedRecipe = draftMatches ? draft?.recipe : null;
   const needsEggUpdate = isOldPiroschki(savedRecipe || r);
   r = JSON.parse(JSON.stringify(pre.shared ? r : recipeRawWeights(currentPiroschki(savedRecipe || r))));
-  r._cookAdj = JSON.parse(JSON.stringify(needsEggUpdate && !pre.shared ? {} : r._cookAdj || ingAdj(r)));
+  r._cookAdj = JSON.parse(JSON.stringify(needsEggUpdate && !pre.shared ? {} : r._cookAdj || (requested?.batch ? {} : ingAdj(r))));
   try { document.activeElement && document.activeElement.blur(); } catch(e){}
   const p = P(), cat = CAT[r.cat] || CAT.h, T = recTotals(r), today = todayISO();
   const wst = {o:0, m:defMeal(r), planId:pre.plan?.id, recipePortion:pre.plan ? false : undefined};
@@ -17391,12 +17437,12 @@ function openCook(r, pre){
   if (session?.date) wst.o = kitDiff(session.date);
   const initialPlan = recipePlanAt(r.n,whenDay(wst),wst.m,wst.planId);
   if (initialPlan) wst.planId = initialPlan.id;
+  if (initialPlan?.batch && !requested && !pre._cookSession) r = {...planRecipe(initialPlan,r), _cookAdj:{}};
   const people = cookPeople(r, wst), comps = recComps(r);
-  if (initialPlan?.e?.length) people.forEach(x => { x.c = initialPlan.e.includes(x.n) ? 1 : 0; });
-  if (session?.counts) people.forEach((x,i) => {
+  if (session?.counts && (!initialPlan?.batch || session.planStamp === initialPlan.t)) people.forEach((x,i) => {
     x.c = (session.portions ? session.portions[x.n] : session.counts[i]) ?? x.c;
   });
-  let mode = session?.mode || (comps.length>1||comps.some(c=>c.m==="p")?"comp":"pot"), inputs = needsEggUpdate && !pre.shared ? {} : session?.inputs || {}, plan = null;
+  let mode = session?.mode || (comps.length>1||comps.some(c=>c.m==="p")?"comp":"pot"), inputs = (needsEggUpdate && !pre.shared) || (initialPlan?.batch && session?.planStamp !== initialPlan.t) ? {} : session?.inputs || {}, plan = null;
   if (pre.shared){ return openSharedPlate(r, pre); }
   const ckPh = recipeCardPhoto(r);
   openSheet({title: "Kochen", left:"Schließen", right:"", body:`
@@ -17438,7 +17484,7 @@ function openCook(r, pre){
       $(".r", sh).style.visibility = "hidden"; sh._recipe = r; let iaOpen = -1;
       const snapshot = () => ({
         wst:{o:wst.o,m:wst.m,planId:wst.planId,recipePortion:wst.recipePortion}, date:whenDay(wst),
-        counts:people.map(x => x.c), portions:Object.fromEntries(people.map(x => [x.n,x.c])),
+        planStamp:K.plan[wst.planId]?.t, counts:people.map(x => x.c), portions:Object.fromEntries(people.map(x => [x.n,x.c])),
         mode, inputs, stepsOpen:$("#ck-directions",sh).open, rateOpen:$("#ck-rate-s",sh).open
       });
       const leaveCook = () => {
@@ -17468,7 +17514,12 @@ function openCook(r, pre){
       if (session?.atPortions) scrollToPortions();
       const ckPlan = () => {
         const need = people.reduce((sum, person) => sum + person.c * person.k, 0);
-        const factor = r._sessionOriginal ? (need === 0 ? 0 : r._sessionReference > 0 ? need / r._sessionReference : r._sessionFactor) : null;
+        const batch = recipePlanAt(r.n,whenDay(wst),wst.m,wst.planId)?.batch;
+        const active = people.filter(x => x.c > 0);
+        const samePortions = batch && active.length === batch.portions.length &&
+          batch.portions.every(saved => active.some(x => x.n === saved.n && x.c === saved.c && x.k === saved.k));
+        const factor = r._sessionOriginal ? (need === 0 ? 0 : r._sessionReference > 0 ? need / r._sessionReference : r._sessionFactor) :
+          samePortions ? batch.factor : null;
         const p0 = cookPlan(r, people, mode, inputs, factor); if (!p0.f) return Object.assign(p0,{rr:r,f0:0}); const a = ingAdjApply(r, p0.f); if (a.r === r && Math.abs(a.f - p0.f) < 1e-9) return Object.assign(p0, {rr: r, f0: p0.f});
         return Object.assign(cookPlan(a.r, people, mode, inputs, a.f), {rr: a.r, f0: p0.f, adj: a}); };
       const reopenIngredients = (rr, changed = {}) => openCook(rr, Object.assign({}, pre, {
@@ -17511,7 +17562,7 @@ function openCook(r, pre){
         inputs = {};
         wst.cb();
       };
-      const drawPeople = () => { $("#ck-people-summary",sh).textContent=people.filter(x=>x.c).map(x=>x.n+(x.c>1?" + "+(x.c-1)+" Box":"")).join(" · ") || "Niemand ausgewählt"; $("#ck-pp", sh).innerHTML = people.map((x,i) => `<div class="row pp"><span class="lbl">${esc(x.n)}${x.me ? " (ich)" : ""}<small>${MEALS.find(y => y[0] === x.meal)[1]}: ${fmt(x.k)} kcal</small>${x.me && x.empty ? `<small class="pp-lim warn">${x.lim === "Kohlenhydrate" ? "Deine Kohlenhydrate für diesen Tag sind aufgebraucht" : x.lim === "Fett" ? "Dein Fett für diesen Tag ist aufgebraucht" : "Deine Kalorien für diesen Tag sind aufgebraucht"} – keine Portion eingeplant.</small>` : x.me && x.lim ? `<small class="pp-lim">${x.lim === "kcal" ? "Angepasst an deine restlichen Kalorien" : x.lim === "Kohlenhydrate" ? "Angepasst an deine restlichen Kohlenhydrate" : "Angepasst an dein restliches Fett"}</small>` : ""}</span>
+      const drawPeople = () => { $("#ck-people-summary",sh).textContent=people.filter(x=>x.c).map(x=>x.n+(x.c>1?" + "+(x.c-1)+" Box":"")).join(" · ") || "Niemand ausgewählt"; $("#ck-pp", sh).innerHTML = people.map((x,i) => `<div class="row pp"><span class="lbl">${esc(x.n)}${x.me ? " (ich)" : ""}<small>${MEALS.find(y => y[0] === x.meal)[1]}: ${fmt(x.c ? x.k : 0)} kcal</small>${x.me && x.c && x.empty ? `<small class="pp-lim warn">${x.lim === "Kohlenhydrate" ? "Deine Kohlenhydrate für diesen Tag sind aufgebraucht" : x.lim === "Fett" ? "Dein Fett für diesen Tag ist aufgebraucht" : "Deine Kalorien für diesen Tag sind aufgebraucht"} – keine Portion eingeplant.</small>` : x.me && x.lim ? `<small class="pp-lim">${x.lim === "kcal" ? "Angepasst an deine restlichen Kalorien" : x.lim === "Kohlenhydrate" ? "Angepasst an deine restlichen Kohlenhydrate" : "Angepasst an dein restliches Fett"}</small>` : ""}</span>
         <span class="pp-l">${x.c >= 2 ? "+" + (x.c-1) + " Box" : x.c ? "heute" : "–"}</span><div class="stp2"><button type="button" data-pc="${i}:-1" aria-label="Weniger">−</button><b class="num">${x.c}</b><button type="button" data-pc="${i}:1" aria-label="Mehr">+</button></div></div>`).join("");
         $$("[data-pc]", sh).forEach(b => b.onclick = () => { const [i,d] = b.dataset.pc.split(":").map(Number); people[i].c = clamp(people[i].c + d, 0, 4); drawPeople(); upd(); }); };
       const upd = () => {
@@ -17521,7 +17572,7 @@ function openCook(r, pre){
         $("#ck-fac", sh).textContent = `×${fmt(plan.f, 2)} · ${tot} ${tot === 1 ? "Portion" : "Portionen"}`;
         { const IA = ingAdj(r), ib = $("#ck-ing", sh), labels = weighLabels(plan.rr);
           const sessionNote = r._sessionOriginal ? `<div class="iadj-note"><div><b>Nur für dieses Kochen angepasst</b><small>Die Anleitung zeigt weiterhin die Schritte des Originalrezepts.</small></div><button type="button" class="link" id="ck-reset-ing">Zurücksetzen</button></div>` : "";
-          ib.innerHTML = sessionNote + ingAdjNote(r, plan.adj) + plan.rr.ing.map((e, i) => { const g = e._sessionIngredient ? r1(e.g*plan.f) : roundG(e.g*plan.f); const wholeEggs = e.n === "Ganze Eier"; return `<div class="ing${IA[i] ? " adj" : ""}"><span>${esc(e.n)}${IA[i] ? ` <em class="ia-tag">angepasst</em>` : ""}<small>${e.scanned?(e.scanFallback?"Gescannt · ursprüngliche Werte":"Produktwerte · nur dieses Mal"):wholeEggs ? "" : countHint(e,g)}</small>${comps.length>1 ? `<small class="ck-group-name">${esc(labels[i])}</small>` : ""}</span><b class="num">${wholeEggs ? esc(wholeEggAmount(e,g)) : fmt(g, e._sessionIngredient && g % 1 ? 1 : 0) + " " + (e.u||"g")}</b><button type="button" class="ia-btn" data-ia="${i}" aria-label="Menge anpassen">✎</button><button type="button" class="ia-btn scan-ing" data-ing-scan="${i}" aria-label="Produkt für ${esc(e.n)} scannen">${recipeScanIcon()}</button></div>${iaOpen === i ? ingAdjEdHTML(r, i, roundG(r.ing[i].g * plan.f0)) + `<div class="ck-session-actions"><button type="button" class="btn secondary" data-ing-replace="${i}">Zutat ersetzen</button><button type="button" class="link" data-ing-remove="${i}">Zutat entfernen</button></div>` : ""}`; }).join("")
+          ib.innerHTML = sessionNote + ingAdjNote(r, plan.adj) + plan.rr.ing.map((e, i) => { const g = recipeGrams(e,plan.f); const wholeEggs = e.n === "Ganze Eier"; return `<div class="ing${IA[i] ? " adj" : ""}"><span>${esc(e.n)}${IA[i] ? ` <em class="ia-tag">angepasst</em>` : ""}<small>${e.scanned?(e.scanFallback?"Gescannt · ursprüngliche Werte":"Produktwerte · nur dieses Mal"):wholeEggs ? "" : countHint(e,g)}</small>${comps.length>1 ? `<small class="ck-group-name">${esc(labels[i])}</small>` : ""}</span><b class="num">${wholeEggs ? esc(wholeEggAmount(e,g)) : fmt(g, e._sessionIngredient && g % 1 ? 1 : 0) + " " + (e.u||"g")}</b><button type="button" class="ia-btn" data-ia="${i}" aria-label="Menge anpassen">✎</button><button type="button" class="ia-btn scan-ing" data-ing-scan="${i}" aria-label="Produkt für ${esc(e.n)} scannen">${recipeScanIcon()}</button></div>${iaOpen === i ? ingAdjEdHTML(r, i, roundG(r.ing[i].g * plan.f0)) + `<div class="ck-session-actions"><button type="button" class="btn secondary" data-ing-replace="${i}">Zutat ersetzen</button><button type="button" class="link" data-ing-remove="${i}">Zutat entfernen</button></div>` : ""}`; }).join("")
             + `<p class="note iadj-hint">✎ <span>Tippen, um die Menge zu ändern, die Zutat zu ersetzen oder zu entfernen.</span></p>`;
           $$("[data-ia]", ib).forEach(b => b.onclick = () => { const i = Number(b.dataset.ia); iaOpen = iaOpen === i ? -1 : i; upd(); });
           $$("[data-ing-scan]",ib).forEach(b=>b.onclick=()=>{const i=Number(b.dataset.ingScan),factor=plan.f;openScanner(wst.m,whenDay(wst),{recipe:true,cancel:()=>resume(r),kit:(it,code)=>openRecipeProduct(r,i,it,code,factor,resume)});});
@@ -17543,22 +17594,22 @@ function openCook(r, pre){
       };
       const coursePicker = $("#ck-course",sh), planButton = $("#ck-plan",sh), planStatus = $("#ck-plan-status",sh);
       const selectedPlan = () => recipePlanAt(r.n,whenDay(wst),wst.m,wst.planId);
-      let peopleEdited = false;
-      $("#ck-pp",sh).addEventListener("click", event => {
-        if (event.target.closest("button")) peopleEdited = true;
-      });
-      $$(".ck-q button",sh).forEach(button => button.addEventListener("click", () => { peopleEdited = true; }));
       const syncCoursePicker = () => {
         if (!coursePicker) return;
         const existing = selectedPlan();
         coursePicker.value = existing ? planCourse(existing,r) : recipeCourse(r,wst.m);
         planButton.textContent = trText(existing ? "Eintrag aktualisieren" : "In den Küchen-Plan");
         planStatus.hidden = !existing;
-        planStatus.textContent = existing ? trText("Bereits eingeplant") + " · " + trText(MEAL_COURSES[planCourse(existing,r)]) : "";
+        planStatus.textContent = existing ? trText("Bereits eingeplant") + " · " + trText(MEAL_COURSES[planCourse(existing,r)]) +
+          (existing.batch ? " · " + trText("Portionen gespeichert") : "") : "";
       };
       syncCoursePicker();
       wst.cb = change => {
-        if (change === "day" || change === "meal") syncCoursePicker();
+        if (change === "day" || change === "meal") {
+          const next = selectedPlan();
+          if (next?.batch && next.id !== wst.planId) { openCook(r,{plan:next}); return; }
+          syncCoursePicker();
+        }
         if (change === "meal") {
           wst.recipePortion = false;
           if (servingToggle) servingToggle.checked = false;
@@ -17566,8 +17617,10 @@ function openCook(r, pre){
         const previous = plan?.f;
         const np = cookPeople(r,wst);
         people.forEach((x,i) => {
-          const c = x.me && x.empty && !x.c ? np[i].c : x.c;
-          Object.assign(x,np[i],{c});
+          const next = np.find(p => p.n === x.n);
+          if (!next) return;
+          const c = x.me && x.empty && !x.c ? next.c : x.c;
+          Object.assign(x,next,{c});
         });
         if (previous != null && Math.abs(ckPlan().f - previous) > 1e-8) inputs = {};
         drawPeople(); upd();
@@ -17600,7 +17653,7 @@ function openCook(r, pre){
       $$("#ck-mode button", sh).forEach(b => b.onclick = () => { mode = b.dataset.v; $$("#ck-mode button", sh).forEach(x => x.setAttribute("aria-pressed", String(x===b))); upd(); });
       $$("[data-q]", sh).forEach(b => b.onclick = () => { people.forEach(x => x.c = b.dataset.q === "all" ? 1 : (x.me ? 1 : 0)); drawPeople(); upd(); });
       $("#ck-eat", sh).onclick = () => openEaters(() => openCook(r, pre));
-      $("#ck-shop", sh).onclick = async () => { const txt = `Einkauf: ${r.n} (×${fmt(plan.f,2)})\n` + kitShoppingIngredients(plan.rr).filter(e => !kitIsWater(e)).map(e => `• ${e.n}: ${e.n === "Eier" ? kitAmt(e.n,e.g*plan.f).txt : fmt(roundG(e.g*plan.f)) + " " + (e.u||"g")}`).join("\n");
+      $("#ck-shop", sh).onclick = async () => { const txt = `Einkauf: ${r.n} (×${fmt(plan.f,2)})\n` + kitShoppingIngredients(plan.rr).filter(e => !kitIsWater(e)).map(e => `• ${e.n}: ${e.n === "Eier" ? kitAmt(e.n,e.g*plan.f).txt : fmt(recipeGrams(e,plan.f), recipeGrams(e,plan.f) % 1 ? 1 : 0) + " " + (e.u||"g")}`).join("\n");
         try { if (navigator.share) await navigator.share({text:trText(txt)}); else { await navigator.clipboard.writeText(txt); toast("Kopiert"); } } catch(e){} };
       $("#ck-scale", sh).onclick = () => {
         const saved = Object.assign(snapshot(), {atPortions:true});
@@ -17640,15 +17693,27 @@ function openCook(r, pre){
       if (planButton) planButton.onclick = () => {
         if (kitRO()) return;
         const existing = selectedPlan();
-        const active = people.filter(x => x.c > 0).map(x => x.n);
-        const e = existing?.e?.length && !peopleEdited ? existing.e : active;
-        if (!e.length){ toast(trText("Mindestens eine Person wählen")); return; }
+        const active = people.filter(x => x.c > 0);
+        if (!active.length){ toast(trText("Mindestens eine Person wählen")); return; }
+        const e = active.map(x => x.n), counts = Object.fromEntries(active.map(x => [x.n,x.c]));
         const id = existing?.id || kitId();
-        kitPut("plan", {...existing, id, d:whenDay(wst), m:wst.m, r:r.n, e, course:coursePicker.value});
-        if (e !== active) people.forEach(x => { x.c = e.includes(x.n) ? Math.max(1,x.c) : 0; });
+        const current = ckPlan();
+        const adjusted = current.rr !== r || r._sessionOriginal || r.ing.some(x => x.scanned && !existing?.batch?.recipe.ing.some(e => e.n === x.n && e.bc === x.bc));
+        const planData = {...existing, id, d:whenDay(wst), m:wst.m, r:r.n, e, course:coursePicker.value};
+        const previous = existing?.batch?.portions;
+        const peopleChanged = previous && (previous.length !== active.length || previous.some(x => counts[x.n] !== x.c));
+        if (adjusted || peopleChanged){
+          planData.batch = planBatch(current.rr,current.plates.filter(Boolean),current.f);
+        }
+        kitPut("plan", planData, r, counts);
         wst.planId = id;
         wst.recipePortion = false;
         if (servingToggle) servingToggle.checked = false;
+        if (adjusted) {
+          openCook(planRecipe(K.plan[id],r),{plan:K.plan[id],_cookSession:{...snapshot(),planStamp:K.plan[id].t}});
+          toast(trText("Im Küchen-Plan gespeichert"));
+          return;
+        }
         wst.cb();
         syncCoursePicker();
         if (S.tab === "kueche") renderKueche();
@@ -17922,7 +17987,7 @@ function openHotel(r, plan){
  const wst={o:plan ? kitDiff(plan.d) : 0,m:plan?.m || "b"};let factor=1;const T=recTotals(r);
  openSheet({title:"Hotel-Frühstück",left:"Schließen",right:"",body:`<img class="hotel-photo" src="${HOTEL_IMAGES[r.hotel.id]}" alt="Beispielbild des Frühstücks"><h2 class="ck-t">${esc(r.n.replace(/^Hotel: /,""))}</h2><p class="note">KI-Beispielbild · Mengen am Buffet grob abschätzen</p><details class="hotel-help" open><summary><b>So stellst du deinen Teller zusammen</b></summary><ul>${r.hotel.visual.map(v=>`<li>${esc(v)}</li>`).join("")}</ul><small>${esc(r.hotel.tip)}</small></details><div class="hotel-portion">${[[.5,"½ Beispiel"],[1,"1 Beispiel"],[1.5,"1½ Beispiele"]].map(([v,l])=>`<button type="button" data-hp="${v}" aria-pressed="${v===1}">${l}</button>`).join("")}</div><p class="note">Die Auswahl vervielfacht alle oben beschriebenen Mengen.</p><div class="glass"><b id="hotel-kcal"></b><p class="note" id="hotel-mac"></p></div><p class="note">Schätzwerte: Handgröße, Löffelfüllung und Zubereitung variieren. Deine morgendliche Auswahl setzt auf Eiweiß, Fett und Gemüse, ohne Brot, Müsli, süße Aufstriche oder Saft. Kleine Mengen Kohlenhydrate aus Milchprodukten und Gemüse werden mitgezählt. Bratfett ist bei Rührei und Spiegelei bereits geschätzt. Wasser, ungesüßter Tee oder Kaffee passen dazu; Milch im Kaffee extra erfassen.</p><div id="hotel-when">${whenHTML(wst.m,wst.o)}</div><div id="hotel-budget"></div><button type="button" class="btn" id="hotel-log">Frühstück eintragen</button><details class="ck-more"><summary>Deine Frühstücksstrategie</summary><p class="note">Morgens Eiweiß und Fett, dazu Gemüse oder ungesüßte Milchprodukte. Brot, Haferflocken und andere stärkehaltige Beilagen planst du erst ab mittags ein.</p><p class="note">Food Sequencing meint die Reihenfolge innerhalb einer Mahlzeit: Gemüse und Eiweiß vor einer Kohlenhydratbeilage. Das kann die Blutzuckerreaktion nach dem Essen abmildern; es garantiert keinen bestimmten Blutzuckerwert und bedeutet nicht automatisch, Kohlenhydrate bis mittags wegzulassen.</p><p class="note"><a href="https://pubmed.ncbi.nlm.nih.gov/28989726/" target="_blank" rel="noopener">Studie zur Reihenfolge bei Menschen mit Typ-2-Diabetes</a></p></details><details class="ck-more"><summary>Rechengrundlage & Orientierung</summary><p class="note">${r.ing.map(e=>esc(e.n)+": ca. "+fmt(e.g)+" g").join(" · ")}. Die Berechnung nutzt diese Beispielmengen. Das Handmaß ist eine Orientierung, keine feste Umrechnung in Gramm.</p><p class="note"><a href="https://www.bzfe.de/essen-und-gesundheit/ernaehrungspyramide/wieviel-esse-ich-wovon" target="_blank" rel="noopener">BZfE: Hand, Scheibe, Glas und Löffel als Portionsmaß</a></p></details>`,onOpen:sh=>{
  $(".r",sh).style.visibility="hidden";whenBind($("#hotel-when",sh),wst);
- const draw=()=>{$("#hotel-kcal",sh).textContent="≈ "+fmt(T.k*factor)+" kcal";const add={k:T.k*factor,p:T.p*factor,c:T.c*factor,f:T.f*factor};$("#hotel-mac",sh).textContent=macLine(add,true);$("#hotel-budget",sh).innerHTML=mealBudgetHTML(add,wst);$("#hotel-log",sh).disabled=!(factor>0);};wst.cb=()=>{factor=T.k>0?mealBudget(whenDay(wst),wst.m).left/T.k:1;$$("[data-hp]",sh).forEach(x=>x.setAttribute("aria-pressed","false"));draw();};draw();
+ const draw=()=>{$("#hotel-kcal",sh).textContent="≈ "+fmt(T.k*factor)+" kcal";const add={k:T.k*factor,p:T.p*factor,c:T.c*factor,f:T.f*factor};$("#hotel-mac",sh).textContent=macLine(add,true);$("#hotel-budget",sh).innerHTML=mealBudgetHTML(add,wst);$("#hotel-log",sh).disabled=!(factor>0);};wst.cb=()=>{factor=plan?.batch && plan.d === whenDay(wst) && plan.m === wst.m ? plan.batch.factor : T.k>0?mealBudget(whenDay(wst),wst.m).left/T.k:1;$$("[data-hp]",sh).forEach(x=>x.setAttribute("aria-pressed","false"));draw();};draw();
  $$("[data-hp]",sh).forEach(b=>b.onclick=()=>{factor=Number(b.dataset.hp);$$("[data-hp]",sh).forEach(x=>x.setAttribute("aria-pressed",String(x===b)));draw();});
  $("#hotel-log",sh).onclick=()=>{const d=whenDay(wst),g=T.g*factor,e={n:r.n+" (geschätzt)",g,k100:T.k/T.g*100,p100:T.p/T.g*100,c100:T.c/T.g*100,f100:T.f/T.g*100,u:"g",m:wst.m,src:"recipe",por:T.g,pl:"1 Buffet-Beispiel"},o=S.days[d]||(S.days[d]={});o.food=(o.food||[]).concat(e);const t=foodTotals(o);Object.assign(o,{kcal:Math.round(t.k),p:Math.round(t.p),carb:Math.round(t.c),fat:Math.round(t.f)});writeDoc("days",d,Object.assign({},o,{date:d}));closeSheet();builtDate=null;renderAll();toast("Frühstück als Schätzung eingetragen");};
  }});
@@ -19044,7 +19109,16 @@ let kitView = lsGet("formkurve.kitv") === "shop" ? "shop" : "plan", kitDays = ls
 function kitSave(){ const cut = Date.now() - 30*864e5; ["items","shop","plan","cart"].forEach(c => Object.keys(K[c]).forEach(id => { const x = K[c][id]; if (x && x.del && x.t < cut) delete K[c][id]; })); lsSet(KIT_KEY, K); }
 const kitId = () => K.dev + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 const kitRO = () => lsGet("formkurve.kitro") === true;
-function kitPut(col, o){ K[col][o.id] = Object.assign({}, o, {t: Date.now(), by: P().person, dv: K.dev}); kitSave(); }
+function kitPut(col, o, recipe, counts){
+  const previous = K[col][o.id];
+  const row = {...o, t:Math.max(Date.now(),(previous?.t || 0) + 1), by:P().person, dv:K.dev};
+  K[col][o.id] = row;
+  if (col === "plan" && !row.del && !row.batch){
+    const recipes = new Map(allRecipes().map(r => [r.n,r]));
+    K.plan[row.id] = freezePlan(row,recipe || recipes.get(row.r),recipes,counts);
+  }
+  kitSave();
+}
 function kitDel(col, id){ if (K[col][id]) kitPut(col, {id, del:true}); }
 const kitLive = col => Object.values(K[col]).filter(x => x && !x.del);
 const kitDirty = () => ["shop","plan","cart"].reduce((a,c) => a + Object.values(K[c]).filter(x => x && x.dv === K.dev && x.t > (K.sharedAt || 0)).length, 0);
@@ -19117,6 +19191,7 @@ function kitGuessBase(name){ if (!name) return null; if (KIT_BC.has(name)) retur
   const res = bs >= 12 ? best : null; KIT_BC.set(name, res); return res; }
 // Plan → Mengen
 function kitFactor(r, p, recipes){
+  if (p.batch) return p.batch.factor;
   const T = recTotals(r);
   if (!(T.k > 0)) return 1;
   const people = p.e?.length ? p.e : [P().person];
@@ -19137,7 +19212,7 @@ function kitShoppingIngredients(r){
 }
 function kitShopList(){
   const recs = new Map(allRecipes().map(r => [r.n, r])), need = new Map();
-  kitPlans().forEach(p => { const r = recs.get(p.r); if (!r) return; const f = kitFactor(r, p, recs); if (!f) return;
+  kitPlans().forEach(p => { const r = planRecipe(p,recs.get(p.r)); if (!r) return; const f = kitFactor(r, p, recs); if (!f) return;
     kitShoppingIngredients(r).forEach(e => { if (kitIsWater(e)) return; const k = kitKey(e.n), x = need.get(k) || {k, n:e.n, g:0, recs:new Set()}; x.g += (e.g || 0) * f; x.recs.add(r.n); need.set(k, x); }); });
   return [...need.values()].map(x => ({...x, aisle:kitAisle(x.n), amt:kitAmt(x.n,x.g)}))
     .sort((a,b) => a.aisle - b.aisle || a.n.localeCompare(b.n)); }
@@ -19169,7 +19244,7 @@ function kitPlanHTML(ro){
     ${ro ? "" : `<button type="button" class="btn secondary" id="k-auto" style="margin-top:10px">✨ Leere Plätze vorschlagen</button>`}
     ${days.map(d => `<div class="kit-day glass"><div class="kd-h">${esc(kitDayLabel(d))}</div>${MEALS.map(([m, l, ic]) => { const ps = plans.filter(p => p.d === d && p.m === m);
       return `<div class="kd-m"><span class="kd-ml">${ic} <span>${esc(l)}</span></span><div class="kd-r">${ps.map(p => { const r = recs.get(p.r); return `<span class="kd-p ${p.done ? "done" : ""}"><button type="button" class="kd-o" data-kpo="${p.id}">${r ? recEmoji(r) : "🍽️"} <span class="kd-pn">${esc(p.r)}</span> <small>${esc(MEAL_COURSES[planCourse(p,r)])} · 👤${(p.e||[]).length || 1}</small></button>${ro ? "" : `<button type="button" class="kd-x" data-kpx="${p.id}" aria-label="Entfernen">×</button>`}</span>`; }).join("")}${ro ? "" : `<button type="button" class="kd-add" data-kpa="${d}|${m}" aria-label="Gericht hinzufügen">+</button>`}${!ps.length && ro ? `<span class="kd-empty">–</span>` : ""}</div></div>`; }).join("")}</div>`).join("")}
-    <p class="section-f">Tippe auf ein geplantes Gericht, um es mit den passenden Portionen zu kochen. Mengen für die Einkaufsliste richten sich nach dem Mahlzeit-Ziel jeder Person.</p>`;
+    <p class="section-f">Tippe auf ein geplantes Gericht, um es mit den passenden Portionen zu kochen. Gespeicherte Portionen gelten auch für den Einkaufszettel. Teile den Küchen-Plan, damit alle dieselben Mengen sehen.</p>`;
 }
 function kitPlanBind(el, ro){
   $$("[data-kd]", el).forEach(b => b.onclick = () => { kitDays = Number(b.dataset.kd); lsSet("formkurve.kitd", kitDays); renderKueche(); });
@@ -19180,7 +19255,7 @@ function kitPlanBind(el, ro){
 }
 function openPlannedRecipe(id){
   const plan = K.plan[id];
-  const recipe = plan && !plan.del && allRecipes().find(r => r.n === plan.r);
+  const recipe = plan && !plan.del && planRecipe(plan,allRecipes().find(r => r.n === plan.r));
   if (recipe) openCook(recipe, {plan});
   else toast("Rezept nicht gefunden");
 }
@@ -19433,6 +19508,15 @@ async function kitUnpack(t){
   const ds = new Blob([u]).stream().pipeThrough(new DecompressionStream("deflate-raw")); return JSON.parse(await new Response(ds).text());
 }
 async function kitShare(){
+  const legacy = kitLive("plan").filter(p => !p.batch && !p.done && p.d >= todayISO());
+  if (legacy.length){
+    const recipes = new Map(allRecipes().map(r => [r.n,r]));
+    const updated = legacy.map(p => freezePlan(p,recipes.get(p.r),recipes));
+    updated.forEach(p => {
+      if (p.batch) K.plan[p.id] = {...p,t:Math.max(Date.now(),(p.t || 0) + 1),by:P().person,dv:K.dev};
+    });
+    kitSave();
+  }
   const o = {v:1, by: P().person, at: Date.now(), shop: Object.values(K.shop), plan: Object.values(K.plan), cart: Object.values(K.cart), codes: K.codes};
   const url = location.origin + location.pathname + "#kit=" + await kitPack(o);
   const ok = await shareLink("ITOGO Küche", "ITOGO-Küche: neuer Stand (Plan und Einkaufsliste)", url);
@@ -19442,7 +19526,11 @@ async function kitImport(t){
   let o; try { o = await kitUnpack(t); } catch(e){ toast("Link konnte nicht gelesen werden"); return; }
   let nNew = 0, nUpd = 0;
   ["shop","plan","cart"].forEach(c => (o[c] || []).forEach(x => { if (!x || !x.id) return; const cur = K[c][x.id];
-    if (!cur){ K[c][x.id] = x; if (!x.del) nNew++; } else if ((x.t || 0) > (cur.t || 0)){ K[c][x.id] = x; nUpd++; } }));
+    if (!cur){ K[c][x.id] = x; if (!x.del) nNew++; } else {
+      const newer = (x.t || 0) > (cur.t || 0) || ((x.t || 0) === (cur.t || 0) && String(x.dv || "") > String(cur.dv || ""));
+      if (c === "plan" && cur.batch && !x.batch && !x.del) return;
+      if (newer || (c === "plan" && !cur.del && !cur.batch && x.batch && !x.del)){ K[c][x.id] = x; nUpd++; }
+    } }));
   Object.entries(o.codes || {}).forEach(([c, v]) => { const cur = K.codes[c]; if (!cur || (v.t || 0) > (cur.t || 0)) K.codes[c] = v; });
   if (o.by && o.by !== P().person) K.lastIn = {by: o.by, at: o.at || Date.now()};
   kitSave(); if (KOCH){ kb.view = "lib"; kb.cat = "plan"; kochRender(); } else setTab("kueche");
@@ -19647,17 +19735,23 @@ function kochLib(root){
   if (sort) sort.onchange = event => { lsSet("formkurve.recipeSort",event.target.value); kochLib(root); $("#kb-sort",root)?.focus(); };
   { const qb = $("#kb-quick", root); if (qb) qb.onclick = () => openQuickRec(); }
   $$("[data-kc2]", root).forEach(b => b.onclick = () => { kb.cat = b.dataset.kc2; kochRender(); $(".kb-main", $("#koch")).scrollTop = 0; });
-  $$("[data-kr]", root).forEach(b => b.onclick = () => { const k = b.dataset.kr; if (k[0] === "p"){ const p = P2[Number(k.slice(1))]; kochOpen(allRecipes().find(r => r.n === p.r), {plan: p}); } else kochOpen(L[Number(k)]); });
+  $$("[data-kr]", root).forEach(b => b.onclick = () => { const k = b.dataset.kr; if (k[0] === "p"){ const p = P2[Number(k.slice(1))]; kochOpen(planRecipe(p,allRecipes().find(r => r.n === p.r)), {plan:p}); } else kochOpen(L[Number(k)]); });
   const qi = $("#kb-q", root); let tmr = null; qi.oninput = () => { kb.q = qi.value; clearTimeout(tmr); tmr = setTimeout(() => { kochLib(root); const n = $("#kb-q", root); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 250); };
 }
 function kochOpen(r, pre){
-  if (!r) return; pre = pre || {};
+  pre = pre || {};
+  if (r && !pre.plan && !pre.shared){
+    const scheduled = recipePlanAt(r.n,todayISO(),defMeal(r));
+    if (scheduled) pre = {...pre,plan:scheduled};
+  }
+  r = planRecipe(pre.plan,r);
+  if (!r) return;
   if (!pre.shared) r = recipeRawWeights(currentPiroschki(r));
+  if (pre.plan?.batch) r = {...r,_cookAdj:{}};
   const wst = {o:0, m: defMeal(r), planId:pre.plan?.id, recipePortion:pre.plan ? false : undefined};
   if (pre.plan){ wst.o = kitDiff(pre.plan.d); wst.m = pre.plan.m; }
   const people = cookPeople(r, wst);
-  if (pre.plan && pre.plan.e && pre.plan.e.length) people.forEach(x => { x.c = pre.plan.e.includes(x.n) ? 1 : 0; });
-  let fixedF = null;
+  let fixedF = pre.plan?.batch?.factor ?? null;
   if (pre.shared){ const T = recTotals(r), need = Object.values(pre.shared).reduce((a, pl) => a + (pl.c || 1) * (pl.k || 0), 0); if (T.k > 0 && need > 0) fixedF = need / T.k;
     people.forEach(x => { const pl = pre.shared[x.n.toLowerCase()]; x.c = pl ? (pl.c || 1) : 0; }); }
   const fo = fullOptions(r), opts = fo || devOptions(r), mem = lsGet("formkurve.devr") || {};
@@ -19730,7 +19824,7 @@ function kochNamePick(l){
     onOpen: sh => $$("[data-nm]", sh).forEach(b => b.onclick = () => { const a = lsGet("formkurve.kbnames") || []; a[l] = b.dataset.nm === KB_NAMES_DEF[l] ? null : b.dataset.nm; lsSet("formkurve.kbnames", a); closeSheet(true); kochKeepScroll($("#koch"), () => kochRender()); })});
 }
 const kbNSeg = n => `<div class="seg kb-mode" role="group" aria-label="Köche">${[1,2,3].map(k => `<button type="button" data-n="${k}" aria-pressed="${n === k}">${k === 1 ? "👤" : "👥"} <b class="num">${k}</b><span>${k === 1 ? "Koch" : "Köche"}</span></button>`).join("")}</div>`;
-function kochF(){ if (kb.fixedF) return kb.fixedF; const T = recTotals(kb.r), need = kb.people.reduce((a,x) => a + x.c*x.k, 0); return T.k > 0 ? need / T.k : 1; }
+function kochF(){ if (kb.fixedF != null) return kb.fixedF; const T = recTotals(kb.r), need = kb.people.reduce((a,x) => a + x.c*x.k, 0); return T.k > 0 ? need / T.k : 1; }
 function kochSteps(){ const r = kb.r, full = kb.full ? fullSteps(r, kb.dv) : null;
   const st = rawPreparationSteps(r, full ? full.steps : (r.dev ? unifiedSteps(r, kb.dv).map(x => Object.assign({sec:"c"}, x)) : (r.steps||[]).map(t => ({sec:"x", d: kbCls(t), t}))));
   return {st, min: full ? full.min : (kb.dv === "herd" || !r.dev || !r.dev[kb.dv] ? r.min : r.dev[kb.dv][0])}; }
